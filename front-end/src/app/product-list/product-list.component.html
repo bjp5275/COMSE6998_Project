@@ -1,0 +1,15 @@
+<mat-grid-list *ngIf="products$ | async as products" [cols]="columns" rowHeight="450px">
+  <mat-grid-tile *ngFor="let product of products">
+    <mat-card class="product-card">
+      <mat-card-header>
+        <mat-card-title>{{ product.name }}</mat-card-title>
+        <mat-card-subtitle>${{ product.basePrice }}.00</mat-card-subtitle>
+      </mat-card-header>
+      <img mat-card-image [src]="product.imageUrl" />
+      <mat-card-actions>
+        <button mat-raised-button>Customize</button>
+        <button mat-raised-button color="primary">Add to Cart</button>
+      </mat-card-actions>
+    </mat-card>
+  </mat-grid-tile>
+</mat-grid-list>

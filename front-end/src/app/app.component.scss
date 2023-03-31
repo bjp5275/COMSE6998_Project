@@ -1,0 +1,17 @@
+.page-container {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr; // mat-toolbar main
+
+  .toolbar {
+    z-index: 1000;
+
+    .toolbar-spacer {
+      flex: 1 1 auto;
+    }
+  }
+
+  .content {
+    overflow-y: auto;
+  }
+}
