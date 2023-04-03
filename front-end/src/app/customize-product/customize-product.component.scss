@@ -16,5 +16,9 @@
     overflow: auto;
     margin: auto;
     margin-left: 5em;
+
+    mat-button-toggle-group {
+      border-radius: 1em;
+    }
   }
 }

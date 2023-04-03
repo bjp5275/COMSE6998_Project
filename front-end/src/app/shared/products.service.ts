@@ -22,7 +22,38 @@ export class ProductsService {
   public getProductAdditions(
     includeDisabled?: boolean
   ): Observable<ProductAddition[]> {
-    return of([]);
+    return of([
+      {
+        "id": "caramel-syrup",
+        "name": "Caramel Syrup",
+        "price": 0.50,
+        "enabled": true
+      },
+      {
+        "id": "chocolate-syrup",
+        "name": "Chocolate Syrup",
+        "price": 0.25,
+        "enabled": true
+      },
+      {
+        "id": "hazelnut-syrup",
+        "name": "Hazelnut Syrup",
+        "price": 0.50,
+        "enabled": true
+      },
+      {
+        "id": "whipped-cream",
+        "name": "Whipped Cream",
+        "price": 0.30,
+        "enabled": true
+      },
+      {
+        "id": "pumpkin-spice-syrup",
+        "name": "Pumpkin Spice Syrup",
+        "price": 0.75,
+        "enabled": false
+      },
+    ]);
   }
 
   /**

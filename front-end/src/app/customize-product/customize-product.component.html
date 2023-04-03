@@ -12,19 +12,45 @@
     </mat-card>
   </div>
   <div class="product-details">
-    Coffee Type:
-    <mat-button-toggle-group>
-      <mat-button-toggle value="regular">Regular</mat-button-toggle>
-      <mat-button-toggle value="decaf">Decaf</mat-button-toggle>
-    </mat-button-toggle-group>
-    <br />
-    Milk Type:
-    <mat-button-toggle-group>
-      <mat-button-toggle value="regular">Regular</mat-button-toggle>
-      <mat-button-toggle value="almond">Almond</mat-button-toggle>
-      <mat-button-toggle value="oat">Oat</mat-button-toggle>
-    </mat-button-toggle-group>
-    <br />
-    <i>More to be added soon...</i>
+    <form [formGroup]="productForm">
+      Coffee Type:
+      <mat-button-toggle-group formControlName="coffeeType">
+        <mat-button-toggle value="regular">Regular</mat-button-toggle>
+        <mat-button-toggle value="decaf">Decaf</mat-button-toggle>
+      </mat-button-toggle-group>
+      <br />
+      Milk Type:
+      <mat-button-toggle-group formControlName="milkType">
+        <mat-button-toggle value="regular">Regular</mat-button-toggle>
+        <mat-button-toggle value="almond">Almond</mat-button-toggle>
+        <mat-button-toggle value="oat">Oat</mat-button-toggle>
+      </mat-button-toggle-group>
+      <br />
+      <mat-form-field appearance="outline">
+        <mat-icon matPrefix>add_circle_outlined</mat-icon>
+        <input
+          matInput
+          placeholder="Additions"
+          [matAutocomplete]="auto"
+          formControlName="additionEntry"
+        />
+        <mat-icon matSuffix>search</mat-icon>
+        <mat-autocomplete #auto="matAutocomplete">
+          <mat-option
+            *ngFor="let addition of filteredAdditions | async"
+            [value]="addition.id"
+          >
+            <span>{{ addition.name }}</span> |
+            <small>Price: {{ addition.price }}</small>
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+      <br />
+      <i>More to be added soon...</i>
+    </form>
+    <div>
+      {{ productForm.value | json }}<br />
+      {{ productForm.valid }}
+    </div>
   </div>
 </div>
