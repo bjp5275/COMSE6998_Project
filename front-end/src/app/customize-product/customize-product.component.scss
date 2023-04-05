@@ -14,11 +14,33 @@
   .product-details {
     padding: 1em 0;
     overflow: auto;
-    margin: auto;
-    margin-left: 5em;
+    display: flex;
 
-    mat-button-toggle-group {
-      border-radius: 1em;
+    .inner-product-details {
+      width: min-content;
+      margin: auto;
+
+      div.toggle-group-holder {
+        margin-bottom: 0.5em;
+
+        label {
+          padding-right: 0.5em;
+        }
+      }
+
+      mat-button-toggle-group {
+        border-radius: 1em;
+      }
+
+      mat-spinner.loading-additions {
+        width: 24px !important;
+        height: 24px !important;
+        margin: 0 3px;
+      }
+
+      mat-chip-set.selected-additions {
+        width: min-content;
+      }
     }
   }
 }

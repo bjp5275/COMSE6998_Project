@@ -12,45 +12,67 @@
     </mat-card>
   </div>
   <div class="product-details">
-    <form [formGroup]="productForm">
-      Coffee Type:
-      <mat-button-toggle-group formControlName="coffeeType">
-        <mat-button-toggle value="regular">Regular</mat-button-toggle>
-        <mat-button-toggle value="decaf">Decaf</mat-button-toggle>
-      </mat-button-toggle-group>
-      <br />
-      Milk Type:
-      <mat-button-toggle-group formControlName="milkType">
-        <mat-button-toggle value="regular">Regular</mat-button-toggle>
-        <mat-button-toggle value="almond">Almond</mat-button-toggle>
-        <mat-button-toggle value="oat">Oat</mat-button-toggle>
-      </mat-button-toggle-group>
-      <br />
-      <mat-form-field appearance="outline">
-        <mat-icon matPrefix>add_circle_outlined</mat-icon>
-        <input
-          matInput
-          placeholder="Additions"
-          [matAutocomplete]="auto"
-          formControlName="additionEntry"
-        />
-        <mat-icon matSuffix>search</mat-icon>
-        <mat-autocomplete #auto="matAutocomplete">
-          <mat-option
-            *ngFor="let addition of filteredAdditions | async"
-            [value]="addition.id"
+    <div class="inner-product-details">
+      <form [formGroup]="productForm" (ngSubmit)="onSubmit(productForm.value)">
+        <div class="toggle-group-holder">
+          <label for="coffeeType">Coffee Type:</label>
+          <mat-button-toggle-group formControlName="coffeeType">
+            <mat-button-toggle value="regular">Regular</mat-button-toggle>
+            <mat-button-toggle value="decaf">Decaf</mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+        <div class="toggle-group-holder">
+          <label for="coffeeType">Milk Type:</label>
+          <mat-button-toggle-group formControlName="milkType">
+            <mat-button-toggle value="regular">Regular</mat-button-toggle>
+            <mat-button-toggle value="almond">Almond</mat-button-toggle>
+            <mat-button-toggle value="oat">Oat</mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+        <mat-form-field appearance="outline">
+          <mat-icon matPrefix>add_circle_outlined</mat-icon>
+          <input
+            matInput
+            [placeholder]="additions ? 'Additions' : 'Loading Additions...'"
+            [matAutocomplete]="auto"
+            formControlName="additionEntry"
+          />
+          <mat-icon *ngIf="additions; else loadingAdditions" matSuffix>
+            search
+          </mat-icon>
+          <ng-template #loadingAdditions>
+            <mat-spinner matSuffix class="loading-additions"></mat-spinner>
+          </ng-template>
+          <mat-autocomplete
+            #auto="matAutocomplete"
+            (optionSelected)="onSelectAddition($event)"
           >
-            <span>{{ addition.name }}</span> |
-            <small>Price: {{ addition.price }}</small>
-          </mat-option>
-        </mat-autocomplete>
-      </mat-form-field>
-      <br />
-      <i>More to be added soon...</i>
-    </form>
-    <div>
-      {{ productForm.value | json }}<br />
-      {{ productForm.valid }}
+            <mat-option
+              *ngFor="let addition of filteredAdditions | async"
+              [value]="addition.id"
+            >
+              <span>{{ addition.name }}</span> |
+              <small>Price: {{ addition.price }}</small>
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+        <mat-chip-set
+          class="mat-mdc-chip-set-stacked selected-additions"
+          formArrayName="additions"
+        >
+          <mat-chip
+            *ngFor="let addition of selectedAdditions.controls; let i = index"
+            (removed)="onRemoveAddition(i)"
+          >
+            {{ addition.value }}
+            <button matChipRemove>
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip>
+        </mat-chip-set>
+
+        <button mat-raised-button type="submit" [disabled]="!productForm.valid">Add to Cart</button>
+      </form>
     </div>
   </div>
 </div>
