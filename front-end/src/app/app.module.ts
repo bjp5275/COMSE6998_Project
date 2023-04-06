@@ -6,8 +6,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
-import { CustomizeProductComponent } from './customize-product/customize-product.component';
-import { ProductListComponent } from './product-list/product-list.component';
+import { CustomizeProductComponent } from './components/customize-product/customize-product.component';
+import { ProductListComponent } from './components/product-list/product-list.component';
 
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';

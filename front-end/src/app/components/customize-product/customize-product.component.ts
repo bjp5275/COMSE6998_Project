@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { Observable, delay, first, map, startWith } from 'rxjs';
-import { ProductAddition } from '../model/models';
-import { ProductsService } from '../shared/products.service';
+import { ProductAddition } from '../../model/models';
+import { ProductsService } from '../../shared/products.service';
 
 @Component({
   selector: 'app-customize-product',
