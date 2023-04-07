@@ -12,7 +12,7 @@
     <div class="inner-product-details">
       <form [formGroup]="productForm" (ngSubmit)="onSubmit(productForm.value)">
         <div class="toggle-group-holder">
-          <label for="coffeeType">Coffee Type:</label>
+          <label for="coffeeType">Coffee Type:</label><br />
           <mat-button-toggle-group formControlName="coffeeType">
             <mat-button-toggle
               *ngFor="let coffeeType of product.allowedCoffeeTypes"
@@ -25,7 +25,7 @@
           class="toggle-group-holder"
           *ngIf="product.allowedMilkTypes?.length"
         >
-          <label for="coffeeType">Milk Type:</label>
+          <label for="coffeeType">Milk Type:</label><br />
           <mat-button-toggle-group formControlName="milkType">
             <mat-button-toggle
               *ngFor="let milkType of product.allowedMilkTypes"

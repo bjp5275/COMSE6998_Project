@@ -6,7 +6,12 @@ import { Equals } from './utility';
   providedIn: 'root',
 })
 export class CartService {
-  cartItems: OrderItem[] = [];
+  cartItems: OrderItem[] = [
+    {
+      productId: 'espresso',
+      coffeeType: 'REGULAR',
+    },
+  ];
 
   public getProducts(): OrderItem[] {
     return this.cartItems;

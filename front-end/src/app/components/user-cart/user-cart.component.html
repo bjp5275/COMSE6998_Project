@@ -17,8 +17,16 @@
             <mat-card-subtitle>${{ product.basePrice }}.00</mat-card-subtitle>
           </mat-card-header>
           <img mat-card-image [src]="product.imageUrl" />
-          <mat-card-content *ngIf="product.additions?.length">
-            {{ product.additions!.length | i18nPlural : additionsMapping }}
+          <mat-card-content>
+            <div>
+              Coffee: {{ convertCoffeeTypeToString(product.coffeeType) }}
+            </div>
+            <div *ngIf="product.milkType">
+              Milk: {{ convertMilkTypeToString(product.milkType) }}
+            </div>
+            <div *ngIf="product.additions?.length">
+              {{ product.additions!.length | i18nPlural : additionsMapping }}
+            </div>
           </mat-card-content>
           <mat-card-actions>
             <button

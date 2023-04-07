@@ -19,12 +19,14 @@
     .inner-product-details {
       width: min-content;
       margin: auto;
+      text-align: center;
 
       div.toggle-group-holder {
         margin-bottom: 0.5em;
 
         label {
           padding-right: 0.5em;
+          white-space: nowrap;
         }
       }
 
@@ -40,6 +42,7 @@
 
       mat-chip-set.selected-additions {
         width: min-content;
+        margin: auto;
       }
     }
   }

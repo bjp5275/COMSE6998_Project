@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { Observable, map, shareReplay, tap } from 'rxjs';
-import { OrderItem, Product } from 'src/app/model/models';
+import { OrderItem, Product, convertCoffeeTypeToString, convertMilkTypeToString } from 'src/app/model/models';
 import { CartService } from 'src/app/shared/cart.service';
 import { ProductsService } from 'src/app/shared/products.service';
 
@@ -11,6 +11,8 @@ import { ProductsService } from 'src/app/shared/products.service';
   styleUrls: ['./user-cart.component.scss'],
 })
 export class UserCartComponent {
+  readonly convertCoffeeTypeToString = convertCoffeeTypeToString;
+  readonly convertMilkTypeToString = convertMilkTypeToString;
   readonly additionsMapping: { [k: string]: string } = {
     '=0': '0 additions',
     '=1': '1 addition',
@@ -52,7 +54,7 @@ export class UserCartComponent {
     return products.map((product) => {
       const value = {
         ...productLookup?.get(product.productId!),
-        additions: product.additions,
+        ...product,
       };
       return value;
     });
