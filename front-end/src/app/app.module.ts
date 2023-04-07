@@ -8,8 +8,10 @@ import { AppComponent } from './app.component';
 
 import { CustomizeProductComponent } from './components/customize-product/customize-product.component';
 import { ProductListComponent } from './components/product-list/product-list.component';
+import { UserCartComponent } from './components/user-cart/user-cart.component';
 
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
@@ -20,10 +22,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { UserCartComponent } from './components/user-cart/user-cart.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @NgModule({
-  declarations: [AppComponent, ProductListComponent, CustomizeProductComponent, UserCartComponent],
+  declarations: [
+    AppComponent,
+    ProductListComponent,
+    CustomizeProductComponent,
+    UserCartComponent,
+  ],
   imports: [
     BrowserAnimationsModule,
     BrowserModule,
@@ -32,6 +39,7 @@ import { UserCartComponent } from './components/user-cart/user-cart.component';
     AppRoutingModule,
 
     MatAutocompleteModule,
+    MatBadgeModule,
     MatButtonModule,
     MatButtonToggleModule,
     MatCardModule,
@@ -42,6 +50,7 @@ import { UserCartComponent } from './components/user-cart/user-cart.component';
     MatInputModule,
     MatProgressSpinnerModule,
     MatToolbarModule,
+    MatTooltipModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

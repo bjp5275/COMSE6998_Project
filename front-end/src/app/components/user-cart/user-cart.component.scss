@@ -8,10 +8,22 @@
   .cart {
     overflow: auto;
 
+    .loading-cart {
+      height: 100%;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     .product-card {
       mat-card-actions {
         justify-content: flex-end;
         gap: 0.5em;
+      }
+
+      mat-card-content {
+        text-align: right;
       }
     }
   }
@@ -24,5 +36,19 @@
       width: min-content;
       margin: auto;
     }
+  }
+}
+
+.empty-cart-container {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  .text {
+    margin-bottom: 0.5em;
+    font-style: italic;
   }
 }

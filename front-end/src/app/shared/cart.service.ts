@@ -1,36 +1,12 @@
 import { Injectable } from '@angular/core';
-import { CoffeeType, MilkType, OrderItem } from 'src/app/model/models';
+import { OrderItem } from 'src/app/model/models';
+import { Equals } from './utility';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CartService {
-  cartItems: OrderItem[] = [
-    {
-      productId: 'cafe-americano',
-      coffeeType: CoffeeType.REGULAR,
-      milkType: MilkType.REGULAR,
-      additions: [
-        {
-          id: 'caramel-syrup',
-          name: 'Caramel Syrup',
-          price: 0.5,
-          enabled: true,
-        },
-        {
-          id: 'chocolate-syrup',
-          name: 'Chocolate Syrup',
-          price: 0.25,
-          enabled: true,
-        },
-      ],
-    },
-    {
-      productId: 'cappuccino',
-      coffeeType: CoffeeType.DECAF,
-      milkType: MilkType.OAT,
-    },
-  ];
+  cartItems: OrderItem[] = [];
 
   public getProducts(): OrderItem[] {
     return this.cartItems;
@@ -40,9 +16,26 @@ export class CartService {
     this.cartItems.push(item);
   }
 
+  public updateItem(oldItem: OrderItem, newItem: OrderItem) {
+    Object.keys(oldItem);
+
+    const index = this.cartItems.findIndex((item) =>
+      Equals.shallow(item, oldItem)
+    );
+    if (index < 0) {
+      throw new Error("ERROR: Couldn't find item to update!");
+    }
+
+    this.cartItems[index] = newItem;
+  }
+
   public removeItem(index: number) {
-    if (0 <= index  && index < this.cartItems.length) {
+    if (0 <= index && index < this.cartItems.length) {
       this.cartItems.splice(index, 1);
     }
+  }
+
+  public size(): number {
+    return this.cartItems.length;
   }
 }

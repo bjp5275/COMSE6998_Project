@@ -2,13 +2,10 @@
   <div class="product">
     <mat-card class="product-card">
       <mat-card-header>
-        <mat-card-title>Mocha</mat-card-title>
-        <mat-card-subtitle>$5.00</mat-card-subtitle>
+        <mat-card-title>{{ product.name }}</mat-card-title>
+        <mat-card-subtitle>${{ product.basePrice }}.00</mat-card-subtitle>
       </mat-card-header>
-      <img
-        mat-card-image
-        src="https://globalassets.starbucks.com/assets/915736da018842e788147f7eab73db73.jpg?impolicy=1by1_tight_288"
-      />
+      <img mat-card-image [src]="product.imageUrl" />
     </mat-card>
   </div>
   <div class="product-details">
@@ -17,27 +14,41 @@
         <div class="toggle-group-holder">
           <label for="coffeeType">Coffee Type:</label>
           <mat-button-toggle-group formControlName="coffeeType">
-            <mat-button-toggle value="regular">Regular</mat-button-toggle>
-            <mat-button-toggle value="decaf">Decaf</mat-button-toggle>
+            <mat-button-toggle
+              *ngFor="let coffeeType of product.allowedCoffeeTypes"
+              [value]="coffeeType"
+              >{{ convertCoffeeTypeToString(coffeeType) }}</mat-button-toggle
+            >
           </mat-button-toggle-group>
         </div>
-        <div class="toggle-group-holder">
+        <div
+          class="toggle-group-holder"
+          *ngIf="product.allowedMilkTypes?.length"
+        >
           <label for="coffeeType">Milk Type:</label>
           <mat-button-toggle-group formControlName="milkType">
-            <mat-button-toggle value="regular">Regular</mat-button-toggle>
-            <mat-button-toggle value="almond">Almond</mat-button-toggle>
-            <mat-button-toggle value="oat">Oat</mat-button-toggle>
+            <mat-button-toggle
+              *ngFor="let milkType of product.allowedMilkTypes"
+              [value]="milkType"
+              >{{ convertMilkTypeToString(milkType) }}</mat-button-toggle
+            >
           </mat-button-toggle-group>
         </div>
-        <mat-form-field appearance="outline">
+        <mat-form-field
+          class="no-padding"
+          appearance="outline"
+          *ngIf="allowedAdditions?.length"
+        >
           <mat-icon matPrefix>add_circle_outlined</mat-icon>
           <input
             matInput
-            [placeholder]="additions ? 'Additions' : 'Loading Additions...'"
+            [placeholder]="
+              allowedAdditions ? 'Additions' : 'Loading Additions...'
+            "
             [matAutocomplete]="auto"
             formControlName="additionEntry"
           />
-          <mat-icon *ngIf="additions; else loadingAdditions" matSuffix>
+          <mat-icon *ngIf="allowedAdditions; else loadingAdditions" matSuffix>
             search
           </mat-icon>
           <ng-template #loadingAdditions>
@@ -64,14 +75,17 @@
             *ngFor="let addition of selectedAdditions.controls; let i = index"
             (removed)="onRemoveAddition(i)"
           >
-            {{ addition.value }}
+            {{ getAdditionName(addition.value!) }}
             <button matChipRemove>
               <mat-icon>cancel</mat-icon>
             </button>
           </mat-chip>
         </mat-chip-set>
 
-        <button mat-raised-button type="submit" [disabled]="!productForm.valid">Add to Cart</button>
+        <br />
+        <button mat-raised-button type="submit" [disabled]="!productForm.valid">
+          {{ isProductUpdate ? "Update Cart" : "Add to Cart" }}
+        </button>
       </form>
     </div>
   </div>

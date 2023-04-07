@@ -2,6 +2,7 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Product } from 'src/app/model/models';
+import { CartService } from 'src/app/shared/cart.service';
 import { ProductsService } from 'src/app/shared/products.service';
 
 @Component({
@@ -15,7 +16,8 @@ export class ProductListComponent implements OnInit {
 
   constructor(
     breakpointObserver: BreakpointObserver,
-    private productsService: ProductsService
+    private productsService: ProductsService,
+    private cartService: CartService
   ) {
     breakpointObserver
       .observe([
@@ -42,5 +44,9 @@ export class ProductListComponent implements OnInit {
 
   ngOnInit(): void {
     this.products$ = this.productsService.getProducts();
+  }
+
+  addToCart(product: Product) {
+    this.cartService.addItem(this.productsService.convertToOrderItem(product));
   }
 }

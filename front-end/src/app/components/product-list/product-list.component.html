@@ -1,4 +1,8 @@
-<mat-grid-list *ngIf="products$ | async as products" [cols]="columns" rowHeight="450px">
+<mat-grid-list
+  *ngIf="products$ | async as products"
+  [cols]="columns"
+  rowHeight="450px"
+>
   <mat-grid-tile *ngFor="let product of products">
     <mat-card class="product-card">
       <mat-card-header>
@@ -7,8 +11,14 @@
       </mat-card-header>
       <img mat-card-image [src]="product.imageUrl" />
       <mat-card-actions>
-        <button mat-raised-button>Customize</button>
-        <button mat-raised-button color="primary">Add to Cart</button>
+        <button
+          mat-raised-button
+          routerLink="/customize-product"
+          [state]="{ product: product }"
+        >
+          Customize
+        </button>
+        <button mat-raised-button color="primary" (click)="addToCart(product)">Add to Cart</button>
       </mat-card-actions>
     </mat-card>
   </mat-grid-tile>

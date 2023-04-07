@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { first, map } from 'rxjs';
+import { Observable, map, shareReplay, tap } from 'rxjs';
 import { OrderItem, Product } from 'src/app/model/models';
 import { CartService } from 'src/app/shared/cart.service';
 import { ProductsService } from 'src/app/shared/products.service';
@@ -11,14 +11,21 @@ import { ProductsService } from 'src/app/shared/products.service';
   styleUrls: ['./user-cart.component.scss'],
 })
 export class UserCartComponent {
-  productLookup?: Map<string, Product>;
+  readonly additionsMapping: { [k: string]: string } = {
+    '=0': '0 additions',
+    '=1': '1 addition',
+    other: '# additions',
+  };
+
+  productMap$: Observable<Map<string, Product>>;
+  loadingProductMap = true;
   orderForm = this.fb.group({
     deliveryTime: [null, Validators.required],
     deliveryLocation: [null, Validators.required],
     payment: [null, Validators.required],
   });
 
-  get products(): OrderItem[] {
+  get orderItems(): OrderItem[] {
     return this.cartService.getProducts();
   }
 
@@ -27,20 +34,21 @@ export class UserCartComponent {
     private cartService: CartService,
     productService: ProductsService
   ) {
-    productService
-      .getProducts()
-      .pipe(
-        map((products) => {
-          const productMap = new Map<string, Product>();
-          products.forEach((product) => productMap.set(product.id, product));
-          return productMap;
-        }),
-        first()
-      )
-      .subscribe((productMap) => (this.productLookup = productMap));
+    this.productMap$ = productService.getProducts().pipe(
+      map((products) => {
+        const productMap = new Map<string, Product>();
+        products.forEach((product) => productMap.set(product.id, product));
+        return productMap;
+      }),
+      tap(() => (this.loadingProductMap = false)),
+      shareReplay(1)
+    );
   }
 
-  expandOrderItems(products: OrderItem[], productLookup?: Map<string, Product>) {
+  expandOrderItems(
+    products: OrderItem[],
+    productLookup?: Map<string, Product>
+  ) {
     return products.map((product) => {
       const value = {
         ...productLookup?.get(product.productId!),
@@ -52,5 +60,9 @@ export class UserCartComponent {
 
   onSubmit(form = this.orderForm.value) {
     console.log('Submitted form', form);
+  }
+
+  removeFromCart(index: number) {
+    this.cartService.removeItem(index);
   }
 }

@@ -1,8 +1,15 @@
-<div class="container">
+<div class="container" *ngIf="orderItems.length; else emptyCart">
   <div class="cart">
-    <mat-grid-list cols="1" rowHeight="450px">
+    <mat-grid-list
+      cols="1"
+      rowHeight="450px"
+      *ngIf="productMap$ | async as productMap; else loadingProducts"
+    >
       <mat-grid-tile
-        *ngFor="let product of expandOrderItems(products, productLookup)"
+        *ngFor="
+          let product of expandOrderItems(orderItems, productMap);
+          let index = index
+        "
       >
         <mat-card class="product-card">
           <mat-card-header>
@@ -10,9 +17,24 @@
             <mat-card-subtitle>${{ product.basePrice }}.00</mat-card-subtitle>
           </mat-card-header>
           <img mat-card-image [src]="product.imageUrl" />
+          <mat-card-content *ngIf="product.additions?.length">
+            {{ product.additions!.length | i18nPlural : additionsMapping }}
+          </mat-card-content>
           <mat-card-actions>
-            <button mat-raised-button>Customize</button>
-            <button mat-raised-button color="warn">Remove</button>
+            <button
+              mat-raised-button
+              routerLink="/customize-product"
+              [state]="{ product: product, orderItem: orderItems[index] }"
+            >
+              Customize
+            </button>
+            <button
+              mat-raised-button
+              color="warn"
+              (click)="removeFromCart(index)"
+            >
+              Remove
+            </button>
           </mat-card-actions>
         </mat-card>
       </mat-grid-tile>
@@ -23,21 +45,51 @@
       <form [formGroup]="orderForm" (ngSubmit)="onSubmit(orderForm.value)">
         <mat-form-field appearance="outline">
           <mat-label>Delivery Time</mat-label>
-          <input matInput type="time" placeholder="Time" formControlName="deliveryTime" />
+          <input
+            matInput
+            type="time"
+            placeholder="Time"
+            formControlName="deliveryTime"
+          />
         </mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>Location</mat-label>
-          <input matInput type="text" placeholder="Location" formControlName="deliveryLocation" />
+          <input
+            matInput
+            type="text"
+            placeholder="Location"
+            formControlName="deliveryLocation"
+          />
         </mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>Payment</mat-label>
-          <input matInput type="text" placeholder="Payment" formControlName="payment" />
+          <input
+            matInput
+            type="text"
+            placeholder="Payment"
+            formControlName="payment"
+          />
         </mat-form-field>
 
-        <button mat-raised-button type="submit" [disabled]="!orderForm.valid">
+        <button
+          mat-raised-button
+          type="submit"
+          [disabled]="!orderForm.valid || loadingProductMap"
+        >
           Place Order
         </button>
       </form>
     </div>
   </div>
 </div>
+<ng-template #loadingProducts>
+  <div class="loading-cart">
+    <mat-spinner></mat-spinner>
+  </div>
+</ng-template>
+<ng-template #emptyCart>
+  <div class="empty-cart-container">
+    <span class="text">Your cart is empty</span>
+    <button mat-raised-button routerLink="/">View Products</button>
+  </div>
+</ng-template>

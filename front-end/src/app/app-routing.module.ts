@@ -5,9 +5,10 @@ import { ProductListComponent } from './components/product-list/product-list.com
 import { UserCartComponent } from './components/user-cart/user-cart.component';
 
 const routes: Routes = [
-  { path: 'product', component: ProductListComponent },
-  { path: 'product-custom', component: CustomizeProductComponent },
+  { path: 'products', component: ProductListComponent },
+  { path: 'customize-product', component: CustomizeProductComponent },
   { path: 'cart', component: UserCartComponent },
+  { path: '**', redirectTo: '/products'}
 ];
 
 @NgModule({

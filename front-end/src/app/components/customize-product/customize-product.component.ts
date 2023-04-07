@@ -1,9 +1,24 @@
+import { Location } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { Observable, delay, first, map, startWith } from 'rxjs';
-import { ProductAddition } from 'src/app/model/models';
-import { ProductsService } from 'src/app/shared/products.service';
+import { Navigation, Router } from '@angular/router';
+import { Observable, map, startWith } from 'rxjs';
+import {
+  OrderItem,
+  Product,
+  ProductAddition,
+  convertCoffeeTypeToString,
+  convertMilkTypeToString,
+  isCoffeeType,
+  isMilkTypeOrUndefined,
+} from 'src/app/model/models';
+import { CartService } from 'src/app/shared/cart.service';
+
+interface RouteState {
+  product?: Product;
+  orderItem?: OrderItem;
+}
 
 @Component({
   selector: 'app-customize-product',
@@ -11,61 +26,125 @@ import { ProductsService } from 'src/app/shared/products.service';
   styleUrls: ['./customize-product.component.scss'],
 })
 export class CustomizeProductComponent {
+  readonly convertCoffeeTypeToString = convertCoffeeTypeToString;
+  readonly convertMilkTypeToString = convertMilkTypeToString;
+  readonly routeState: RouteState;
+
+  get isProductUpdate(): boolean {
+    return !!this.routeState.orderItem;
+  }
+
+  product: Product;
   additionEntry = this.fb.control({ value: null, disabled: true });
   selectedAdditions = this.fb.array([] as string[]);
   productForm = this.fb.group({
-    coffeeType: [null, Validators.required],
-    milkType: [null, Validators.required],
+    coffeeType: ['', Validators.required],
+    milkType: ['', Validators.required],
     additionEntry: this.additionEntry,
     additions: this.selectedAdditions,
   });
 
   filteredAdditions: Observable<ProductAddition[] | null>;
-  additions: ProductAddition[] | null = null;
+  allowedAdditions: ProductAddition[] | null = null;
 
   constructor(
+    private router: Router,
+    private location: Location,
     private fb: FormBuilder,
-    private productsService: ProductsService
+    private cartService: CartService
   ) {
-    this.filteredAdditions = this.productForm
-      .get('additionEntry')!
-      .valueChanges.pipe(
-        startWith(''),
-        map((addition) => {
-          if (this.additions) {
-            return addition
-              ? this._filterAdditions(addition)
-              : this.additions.slice();
-          } else {
-            return null;
-          }
-        })
+    this.routeState = this._getRouteState(router.getCurrentNavigation());
+    if (!this.routeState.product) {
+      console.log(
+        'ERROR: No product info to customize! Navigating back to safety...'
       );
+      this.goBack();
+      throw new Error('No product info to customize!');
+    } else {
+      this.product = this.routeState.product;
+      this.allowedAdditions = this.routeState.product.allowedAdditions || [];
+      this.additionEntry.enable();
+    }
 
-    this.productsService
-      .getProductAdditions()
-      .pipe(delay(5000), first())
-      .subscribe((additions) => {
-        console.log('Available additions', additions);
-        this.additions = additions;
-        this.additionEntry.enable();
-      });
+    if (this.routeState.orderItem) {
+      this.productForm
+        .get('coffeeType')!
+        .setValue(this.routeState.orderItem.coffeeType);
+      if (this.routeState.orderItem.additions) {
+        this.routeState.orderItem.additions.forEach((addition) =>
+          this.addAddition(addition.id!)
+        );
+      }
+      if (this.routeState.orderItem.milkType) {
+        this.productForm
+          .get('milkType')!
+          .setValue(this.routeState.orderItem.milkType);
+      }
+    } else {
+      if (this.product.allowedCoffeeTypes.length == 1) {
+        this.productForm
+          .get('coffeeType')!
+          .setValue(this.product.allowedCoffeeTypes[0]);
+      }
+      if (this.product.allowedMilkTypes?.length == 1) {
+        this.productForm
+          .get('milkType')!
+          .setValue(this.product.allowedMilkTypes[0]);
+      }
+    }
+
+    if (!this.product.allowedMilkTypes?.length) {
+      this.productForm.get('milkType')!.disable();
+    }
+
+    this.filteredAdditions = this.additionEntry.valueChanges.pipe(
+      startWith(''),
+      map((addition) => {
+        if (this.allowedAdditions) {
+          return addition
+            ? this._filterAdditions(addition)
+            : this.allowedAdditions.slice();
+        } else {
+          return null;
+        }
+      })
+    );
+  }
+
+  private _getRouteState(navigation: Navigation | null): RouteState {
+    const product = navigation?.extras?.state?.['product'];
+    const orderItem = navigation?.extras?.state?.['orderItem'];
+    return {
+      product,
+      orderItem,
+    };
   }
 
   private _filterAdditions(value: string): ProductAddition[] | null {
     const filterValue = value.toLowerCase();
 
-    if (!this.additions) {
+    if (!this.allowedAdditions) {
       return null;
     }
 
-    return this.additions.filter((addition) =>
+    return this.allowedAdditions.filter((addition) =>
       addition.name.toLowerCase().includes(filterValue)
     );
   }
 
+  getAdditionName(id: string): string {
+    return (
+      this.allowedAdditions?.find((addition) => addition.id == id)?.name ||
+      'Unknown'
+    );
+  }
+
+  addAddition(id: string) {
+    this.selectedAdditions.push(this.fb.control(id));
+  }
+
   onSelectAddition(event: MatAutocompleteSelectedEvent) {
-    this.selectedAdditions.push(this.fb.control(event.option.value));
+    this.addAddition(event.option.value);
     this.additionEntry.setValue(null);
     event.option.deselect();
   }
@@ -75,6 +154,51 @@ export class CustomizeProductComponent {
   }
 
   onSubmit(form = this.productForm.value) {
-    console.log('Submitted form', form);
+    // Get coffee type
+    const coffeeType: string = form.coffeeType!;
+    if (!isCoffeeType(coffeeType)) {
+      throw Error('ERROR: Unknown coffee type');
+    }
+
+    // Get milk type
+    const milkType: string | undefined = form.milkType || undefined;
+    if (!isMilkTypeOrUndefined(milkType)) {
+      throw Error('ERROR: Unknown milk type');
+    }
+
+    // Get additions
+    let additions: ProductAddition[] | undefined;
+    if (this.selectedAdditions.value?.length) {
+      additions = [];
+      this.selectedAdditions.value.forEach((additionId) => {
+        const fullAddition = this.product.allowedAdditions!.find(
+          (a) => a.id == additionId
+        );
+        additions!.push(fullAddition!);
+      });
+    }
+
+    const newOrderItem: OrderItem = {
+      productId: this.product.id,
+      coffeeType,
+      milkType,
+      additions,
+    };
+
+    if (this.isProductUpdate) {
+      this.cartService.updateItem(this.routeState.orderItem!, newOrderItem);
+    } else {
+      this.cartService.addItem(newOrderItem);
+    }
+
+    this.goBack();
+  }
+
+  private goBack() {
+    try {
+      this.location.back();
+    } catch (error) {
+      this.router.navigateByUrl('/');
+    }
   }
 }

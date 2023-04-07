@@ -1,3 +1,13 @@
+function capitalizeFirstLetter(string: string): string {
+  if (!string || string.length == 0) {
+    return string;
+  } else if (string.length == 1) {
+    return string.toUpperCase();
+  } else {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+}
+
 /**
  * Order details
  */
@@ -124,6 +134,32 @@ export const OrderStatus = {
   PICKEDUP: 'PICKED_UP' as OrderStatus,
   DELIVERED: 'DELIVERED' as OrderStatus,
 };
+export function convertOrderStatusToString(orderStatus: OrderStatus): string {
+  switch (orderStatus) {
+    case OrderStatus.RECEIVED:
+    case OrderStatus.BREWING:
+    case OrderStatus.MADE:
+    case OrderStatus.DELIVERED:
+      return capitalizeFirstLetter(orderStatus);
+    case OrderStatus.PICKEDUP:
+      return 'Picked Up';
+    default:
+      throw new Error(`Unknown order status: ${orderStatus}`);
+  }
+}
+export function isOrderStatusOrUndefined(
+  orderStatus?: string
+): orderStatus is OrderStatus | undefined {
+  return orderStatus === undefined || isOrderStatus(orderStatus);
+}
+export function isOrderStatus(orderStatus: string): orderStatus is OrderStatus {
+  return (
+    orderStatus === undefined ||
+    Object.values(OrderStatus).findIndex(
+      (knownType) => knownType == orderStatus
+    ) >= 0
+  );
+}
 
 /**
  * Item within an order
@@ -156,6 +192,29 @@ export const CoffeeType = {
   REGULAR: 'REGULAR' as CoffeeType,
   DECAF: 'DECAF' as CoffeeType,
 };
+export function convertCoffeeTypeToString(coffeeType: CoffeeType): string {
+  switch (coffeeType) {
+    case CoffeeType.REGULAR:
+    case CoffeeType.DECAF:
+      return capitalizeFirstLetter(coffeeType);
+    default:
+      throw new Error(`Unknown coffee type: ${coffeeType}`);
+  }
+}
+export function isCoffeeTypeOrUndefined(
+  coffeeType?: string
+): coffeeType is CoffeeType | undefined {
+  return coffeeType === undefined || isCoffeeType(coffeeType);
+}
+export function isCoffeeType(coffeeType: string): coffeeType is CoffeeType {
+  return (
+    coffeeType === undefined ||
+    Object.values(CoffeeType).findIndex(
+      (knownType) => knownType == coffeeType
+    ) >= 0
+  );
+}
+
 export type MilkType = 'REGULAR' | 'SKIM' | 'OAT' | 'ALMOND';
 export const MilkType = {
   REGULAR: 'REGULAR' as MilkType,
@@ -163,6 +222,28 @@ export const MilkType = {
   OAT: 'OAT' as MilkType,
   ALMOND: 'ALMOND' as MilkType,
 };
+export function convertMilkTypeToString(milkType: MilkType): string {
+  switch (milkType) {
+    case MilkType.REGULAR:
+    case MilkType.SKIM:
+    case MilkType.OAT:
+    case MilkType.ALMOND:
+      return capitalizeFirstLetter(milkType);
+    default:
+      throw new Error(`Unknown milk type: ${milkType}`);
+  }
+}
+export function isMilkTypeOrUndefined(
+  milkType?: string
+): milkType is MilkType | undefined {
+  return milkType === undefined || isMilkType(milkType);
+}
+export function isMilkType(milkType: string): milkType is MilkType {
+  return (
+    milkType === undefined ||
+    Object.values(MilkType).findIndex((knownType) => knownType == milkType) >= 0
+  );
+}
 
 /**
  * Rating for an item within an order

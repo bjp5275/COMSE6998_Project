@@ -3,10 +3,16 @@
     <button mat-icon-button>
       <mat-icon>menu</mat-icon>
     </button>
-    <span>Coffee Delivery Service</span>
+    <a class="text-link" routerLink="/">Coffee Delivery Service</a>
     <span class="toolbar-spacer"></span>
-    <button mat-icon-button>
-      <mat-icon>shopping_cart</mat-icon>
+    <button mat-icon-button routerLink="/cart">
+      <mat-icon
+        [matBadge]="cartSize"
+        [matBadgeHidden]="cartEmpty"
+        matBadgeColor="accent"
+      >
+        shopping_cart
+      </mat-icon>
     </button>
     <button mat-icon-button>
       <mat-icon>account_circle</mat-icon>
