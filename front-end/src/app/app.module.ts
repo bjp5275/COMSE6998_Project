@@ -20,9 +20,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { UserCartComponent } from './components/user-cart/user-cart.component';
 
 @NgModule({
-  declarations: [AppComponent, ProductListComponent, CustomizeProductComponent],
+  declarations: [AppComponent, ProductListComponent, CustomizeProductComponent, UserCartComponent],
   imports: [
     BrowserAnimationsModule,
     BrowserModule,

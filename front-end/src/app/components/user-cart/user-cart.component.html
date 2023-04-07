@@ -1,0 +1,43 @@
+<div class="container">
+  <div class="cart">
+    <mat-grid-list cols="1" rowHeight="450px">
+      <mat-grid-tile
+        *ngFor="let product of expandOrderItems(products, productLookup)"
+      >
+        <mat-card class="product-card">
+          <mat-card-header>
+            <mat-card-title>{{ product.name }}</mat-card-title>
+            <mat-card-subtitle>${{ product.basePrice }}.00</mat-card-subtitle>
+          </mat-card-header>
+          <img mat-card-image [src]="product.imageUrl" />
+          <mat-card-actions>
+            <button mat-raised-button>Customize</button>
+            <button mat-raised-button color="warn">Remove</button>
+          </mat-card-actions>
+        </mat-card>
+      </mat-grid-tile>
+    </mat-grid-list>
+  </div>
+  <div class="order-details">
+    <div class="inner-order-details">
+      <form [formGroup]="orderForm" (ngSubmit)="onSubmit(orderForm.value)">
+        <mat-form-field appearance="outline">
+          <mat-label>Delivery Time</mat-label>
+          <input matInput type="time" placeholder="Time" formControlName="deliveryTime" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Location</mat-label>
+          <input matInput type="text" placeholder="Location" formControlName="deliveryLocation" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Payment</mat-label>
+          <input matInput type="text" placeholder="Payment" formControlName="payment" />
+        </mat-form-field>
+
+        <button mat-raised-button type="submit" [disabled]="!orderForm.valid">
+          Place Order
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

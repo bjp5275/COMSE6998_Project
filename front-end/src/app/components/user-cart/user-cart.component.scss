@@ -1,0 +1,28 @@
+.container {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+
+  .cart {
+    overflow: auto;
+
+    .product-card {
+      mat-card-actions {
+        justify-content: flex-end;
+        gap: 0.5em;
+      }
+    }
+  }
+
+  .order-details {
+    padding: 1em 0;
+    align-self: center;
+
+    .inner-order-details {
+      width: min-content;
+      margin: auto;
+    }
+  }
+}

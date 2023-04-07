@@ -2,7 +2,7 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Product } from 'src/app/model/models';
-import { ProductsService } from '../../shared/products.service';
+import { ProductsService } from 'src/app/shared/products.service';
 
 @Component({
   selector: 'app-product-list',

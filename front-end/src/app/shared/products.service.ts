@@ -75,7 +75,7 @@ export class ProductsService {
       },
       {
         id: 'cappuccino',
-        name: 'cappuccino',
+        name: 'Cappuccino',
         basePrice: 5,
         imageUrl:
           'https://globalassets.starbucks.com/assets/5c515339667943ce84dc56effdf5fc1b.jpg?impolicy=1by1_tight_288',
@@ -85,7 +85,7 @@ export class ProductsService {
       },
       {
         id: 'espresso',
-        name: 'espresso',
+        name: 'Espresso',
         basePrice: 5,
         imageUrl:
           'https://globalassets.starbucks.com/assets/ec519dd5642c41629194192cce582135.jpg?impolicy=1by1_tight_288',
