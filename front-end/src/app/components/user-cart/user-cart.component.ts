@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatOption } from '@angular/material/core';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Observable, finalize, first, map, shareReplay, tap } from 'rxjs';
 import {
   Location,
@@ -72,6 +73,7 @@ export class UserCartComponent {
     private cartService: CartService,
     private userService: UserService,
     private dialog: MatDialog,
+    private snackBar: MatSnackBar,
     productService: ProductsService
   ) {
     this.productMap$ = productService.getProducts().pipe(
@@ -134,6 +136,10 @@ export class UserCartComponent {
                   this.deliveryLocationControl.setValue(newLocation);
                 } else {
                   console.log('ERROR: Failed to save new location');
+                  this.snackBar.open(
+                    'Failed to save new location. Please try again.',
+                    'Close'
+                  );
                 }
               });
           } else {
@@ -168,6 +174,10 @@ export class UserCartComponent {
                   this.paymentMethodControl.setValue(newPaymentMethod);
                 } else {
                   console.log('ERROR: Failed to save new payment method');
+                  this.snackBar.open(
+                    'Failed to save new payment method. Please try again.',
+                    'Close'
+                  );
                 }
               });
           } else {
