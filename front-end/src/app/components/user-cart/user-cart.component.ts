@@ -6,6 +6,7 @@ import { Observable, finalize, first, map, shareReplay, tap } from 'rxjs';
 import {
   Location,
   OrderItem,
+  PaymentInformation,
   Product,
   convertCoffeeTypeToString,
   convertMilkTypeToString,
@@ -16,6 +17,7 @@ import { ProductsService } from 'src/app/shared/products.service';
 import { UserService } from 'src/app/shared/user.service';
 import { CustomValidators } from 'src/app/shared/utility';
 import { CreateLocationDialog } from '../dialogs/create-location-dialog/create-location-dialog.component';
+import { CreatePaymentMethodDialog } from '../dialogs/create-payment-method-dialog/create-payment-method-dialog.component';
 
 @Component({
   selector: 'app-user-cart',
@@ -34,10 +36,16 @@ export class UserCartComponent {
 
   productMap$: Observable<Map<string, Product>>;
   savedLocations$: Observable<Location[]>;
+  savedPaymentMethods$: Observable<PaymentInformation[]>;
   loadingProductMap = true;
   savingLocation = false;
+  savingPaymentMethod = false;
   deliveryLocationControl = this.fb.control(
     null as Location | null,
+    Validators.required
+  );
+  paymentMethodControl = this.fb.control(
+    null as PaymentInformation | null,
     Validators.required
   );
   orderForm = this.fb.group({
@@ -52,7 +60,7 @@ export class UserCartComponent {
       ],
     ],
     deliveryLocation: this.deliveryLocationControl,
-    payment: [null, Validators.required],
+    payment: this.paymentMethodControl,
   });
 
   get orderItems(): OrderItem[] {
@@ -77,6 +85,7 @@ export class UserCartComponent {
     );
 
     this.savedLocations$ = userService.getSavedLocations();
+    this.savedPaymentMethods$ = userService.getSavedPaymentMethods();
   }
 
   expandOrderItems(
@@ -129,6 +138,40 @@ export class UserCartComponent {
               });
           } else {
             this.deliveryLocationControl.enable();
+          }
+        });
+    }
+  }
+
+  onSelectCreatePaymentMethod(option: MatOption) {
+    if (option.selected) {
+      this.paymentMethodControl.reset();
+      this.paymentMethodControl.setErrors(null);
+      this.paymentMethodControl.disable();
+      this.dialog
+        .open(CreatePaymentMethodDialog)
+        .afterClosed()
+        .subscribe((newPaymentMethod) => {
+          if (newPaymentMethod) {
+            this.savingPaymentMethod = true;
+            this.userService
+              .addSavedPaymentMethods(newPaymentMethod)
+              .pipe(
+                first(),
+                finalize(() => {
+                  this.paymentMethodControl.enable();
+                  this.savingPaymentMethod = false;
+                })
+              )
+              .subscribe((res) => {
+                if (res) {
+                  this.paymentMethodControl.setValue(newPaymentMethod);
+                } else {
+                  console.log('ERROR: Failed to save new payment method');
+                }
+              });
+          } else {
+            this.paymentMethodControl.enable();
           }
         });
     }

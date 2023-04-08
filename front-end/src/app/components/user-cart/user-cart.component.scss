@@ -38,7 +38,8 @@
         width: 100%;
       }
 
-      mat-spinner.saving-location {
+      mat-spinner.saving-location,
+      mat-spinner.saving-payment-method {
         width: 24px !important;
         height: 24px !important;
         margin: 0 3px;

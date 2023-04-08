@@ -1,6 +1,6 @@
 <h2 mat-dialog-title>Create New Location</h2>
 <mat-dialog-content>
-  <form [formGroup]="locationForm">
+  <form [formGroup]="locationForm" (ngSubmit)="submitForm()">
     <mat-form-field appearance="outline">
       <mat-label>Name</mat-label>
       <input matInput type="text" formControlName="name" />
@@ -26,13 +26,15 @@
       <mat-label>Zip Code</mat-label>
       <input matInput type="text" formControlName="zip" />
     </mat-form-field>
+    <button type="submit" hidden [disabled]="!locationForm.valid">Submit</button>
   </form>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
   <button mat-button mat-dialog-close cdkFocusInitial>Cancel</button>
   <button
+    #saveButton
     mat-button
-    [mat-dialog-close]="locationForm.value"
+    (click)="submitForm()"
     [disabled]="!locationForm.valid"
   >
     Save

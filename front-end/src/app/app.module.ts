@@ -13,6 +13,7 @@ import { UserCartComponent } from './components/user-cart/user-cart.component';
 import { LocationPipe } from './shared/location.pipe';
 
 import { CreateLocationDialog } from './components/dialogs/create-location-dialog/create-location-dialog.component';
+import { CreatePaymentMethodDialog } from './components/dialogs/create-payment-method-dialog/create-payment-method-dialog.component';
 
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -39,6 +40,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     LocationPipe,
 
     CreateLocationDialog,
+    CreatePaymentMethodDialog,
   ],
   imports: [
     BrowserAnimationsModule,

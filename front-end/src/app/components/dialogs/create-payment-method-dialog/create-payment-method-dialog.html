@@ -1,0 +1,41 @@
+<h2 mat-dialog-title>Create New Location</h2>
+<mat-dialog-content>
+  <form [formGroup]="paymentInformationForm" (ngSubmit)="submitForm()">
+    <mat-form-field appearance="outline">
+      <mat-label>Name on Card</mat-label>
+      <input matInput type="text" formControlName="nameOnCard" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Card Number</mat-label>
+      <input
+        matInput
+        class="non-step-number"
+        type="number"
+        formControlName="cardNumber"
+      />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="no-padding">
+      <mat-label>CVV</mat-label>
+      <input
+        matInput
+        class="non-step-number"
+        type="number"
+        formControlName="cvv"
+      />
+    </mat-form-field>
+    <button type="submit" hidden [disabled]="!paymentInformationForm.valid">
+      Submit
+    </button>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close cdkFocusInitial>Cancel</button>
+  <button
+    #saveButton
+    mat-button
+    (click)="submitForm()"
+    [disabled]="!paymentInformationForm.valid"
+  >
+    Save
+  </button>
+</mat-dialog-actions>
