@@ -3,8 +3,10 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { MatOption } from '@angular/material/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { Observable, finalize, first, map, shareReplay, tap } from 'rxjs';
 import {
+  CreateOrder,
   Location,
   OrderItem,
   PaymentInformation,
@@ -14,9 +16,10 @@ import {
 } from 'src/app/model/models';
 import { CartService } from 'src/app/shared/cart.service';
 import { MINIMUM_ORDER_FUTURE_TIME } from 'src/app/shared/constants';
+import { OrderService } from 'src/app/shared/order.service';
 import { ProductsService } from 'src/app/shared/products.service';
 import { UserService } from 'src/app/shared/user.service';
-import { CustomValidators } from 'src/app/shared/utility';
+import { CustomValidators, DateUtility } from 'src/app/shared/utility';
 import { CreateLocationDialog } from '../dialogs/create-location-dialog/create-location-dialog.component';
 import { CreatePaymentMethodDialog } from '../dialogs/create-payment-method-dialog/create-payment-method-dialog.component';
 
@@ -41,6 +44,8 @@ export class UserCartComponent {
   loadingProductMap = true;
   savingLocation = false;
   savingPaymentMethod = false;
+  submittingOrder = false;
+
   deliveryLocationControl = this.fb.control(
     null as Location | null,
     Validators.required
@@ -51,7 +56,7 @@ export class UserCartComponent {
   );
   orderForm = this.fb.group({
     deliveryTime: [
-      null,
+      null as string | null,
       [
         Validators.required,
         CustomValidators.futureTime(
@@ -72,8 +77,10 @@ export class UserCartComponent {
     private fb: FormBuilder,
     private cartService: CartService,
     private userService: UserService,
+    private orderService: OrderService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
+    private router: Router,
     productService: ProductsService
   ) {
     this.productMap$ = productService.getProducts().pipe(
@@ -101,10 +108,6 @@ export class UserCartComponent {
       };
       return value;
     });
-  }
-
-  onSubmit(form = this.orderForm.value) {
-    console.log('Submitted form', form);
   }
 
   removeFromCart(index: number) {
@@ -185,5 +188,39 @@ export class UserCartComponent {
           }
         });
     }
+  }
+
+  onSubmit(form = this.orderForm.value) {
+    const orderItems = [...this.cartService.getProducts()];
+    const orderDetails: CreateOrder = {
+      deliveryTime: DateUtility.fromInputStringValue(form.deliveryTime)!,
+      deliveryLocation: form.deliveryLocation!,
+      payment: form.payment!,
+      items: orderItems,
+    };
+
+    this.submittingOrder = true;
+    this.orderService
+      .submitOrder(orderDetails)
+      .pipe(
+        first(),
+        finalize(() => (this.submittingOrder = false))
+      )
+      .subscribe({
+        next: (order) => {
+          console.log('Created order', order);
+          this.router.navigate(['/order'], {
+            queryParams: { id: order.id! },
+            state: { order: order },
+          });
+        },
+        error: (err) => {
+          console.log('ERROR: Failed to submit order', err);
+          this.snackBar.open(
+            'Failed to submit order. Please try again.',
+            'Close'
+          );
+        },
+      });
   }
 }

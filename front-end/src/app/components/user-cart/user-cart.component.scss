@@ -25,13 +25,15 @@
   }
 
   .order-details {
-    padding: 1em 0;
+    height: 100%;
+    overflow: auto;
     align-self: center;
 
     .inner-order-details {
       width: min-content;
       min-width: 20em;
       margin: auto;
+      padding-top: 1em;
       text-align: center;
 
       mat-form-field {
@@ -43,6 +45,10 @@
         width: 24px !important;
         height: 24px !important;
         margin: 0 3px;
+      }
+
+      mat-progress-bar.submitting-order {
+        margin-bottom: 1em;
       }
     }
   }

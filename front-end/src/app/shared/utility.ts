@@ -90,22 +90,33 @@ export class Equals {
   }
 }
 
-export class CustomValidators {
+export class DateUtility {
   static TIME_INPUT_FORMAT = /^([01][0-9]|2[0-3]):([0-5][0-9])$/;
 
+  static fromInputStringValue(timeInputValue: string | null | undefined): Date | null {
+    const extractedTime = this.TIME_INPUT_FORMAT.exec(timeInputValue || '');
+    if (!extractedTime || extractedTime.length != 3) {
+      return null;
+    }
+
+    const hours = +extractedTime[1];
+    const minutes = +extractedTime[2];
+    const dateValue = new Date();
+    dateValue.setHours(hours, minutes, 0, 0);
+    return dateValue;
+  }
+}
+
+export class CustomValidators {
   static futureTime(offsetHours?: number, offsetMinutes?: number): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
-      const extractedTime = this.TIME_INPUT_FORMAT.exec(control.value);
-      if (!extractedTime || extractedTime.length != 3) {
+      const controlTime = DateUtility.fromInputStringValue(control.value);
+      if (!controlTime) {
         return {
           invalidTimeFormat: { value: control.value, expectedFormat: 'hh:mm' },
         } as ValidationErrors;
       }
 
-      const hours = +extractedTime[1];
-      const minutes = +extractedTime[2];
-      const controlTime = new Date();
-      controlTime.setHours(hours, minutes, 0, 0);
       let minimumTime = new Date();
       if (offsetHours || offsetMinutes) {
         const newHours = minimumTime.getHours() + (offsetHours || 0);

@@ -7,6 +7,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
 import { CustomizeProductComponent } from './components/customize-product/customize-product.component';
+import { OrderDetailsComponent } from './components/order-details/order-details.component';
 import { ProductListComponent } from './components/product-list/product-list.component';
 import { UserCartComponent } from './components/user-cart/user-cart.component';
 
@@ -26,6 +27,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
@@ -42,6 +44,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
     CreateLocationDialog,
     CreatePaymentMethodDialog,
+    OrderDetailsComponent,
   ],
   imports: [
     BrowserAnimationsModule,
@@ -61,6 +64,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatGridListModule,
     MatIconModule,
     MatInputModule,
+    MatProgressBarModule,
     MatProgressSpinnerModule,
     MatSelectModule,
     MatSnackBarModule,

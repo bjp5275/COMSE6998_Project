@@ -128,10 +128,16 @@
         <button
           mat-raised-button
           type="submit"
-          [disabled]="!orderForm.valid || loadingProductMap"
+          [disabled]="!orderForm.valid || loadingProductMap || submittingOrder"
+          [hidden]="submittingOrder"
         >
           Place Order
         </button>
+        <mat-progress-bar
+          mode="indeterminate"
+          class="submitting-order"
+          *ngIf="submittingOrder"
+        ></mat-progress-bar>
       </form>
     </div>
   </div>
