@@ -59,15 +59,41 @@
             placeholder="Time"
             formControlName="deliveryTime"
           />
+          <mat-error
+            *ngIf="orderForm.get('deliveryTime')!.hasError('futureTime')"
+            >{{ FUTURE_TIME_ERROR }}</mat-error
+          >
         </mat-form-field>
         <mat-form-field appearance="outline">
-          <mat-label>Location</mat-label>
-          <input
-            matInput
-            type="text"
-            placeholder="Location"
-            formControlName="deliveryLocation"
-          />
+          <mat-label>Delivery Location</mat-label>
+          <mat-select formControlName="deliveryLocation">
+            <mat-option>None</mat-option>
+            <mat-option
+              *ngFor="
+                let location of savedLocations$ | async;
+                let index = index
+              "
+              [value]="location"
+            >
+              {{ location.name || location.streetAddress }}
+            </mat-option>
+            <mat-option
+              (onSelectionChange)="onSelectCreateLocation($event.source)"
+            >
+              <mat-icon>add_circle_outlined</mat-icon>
+              <i>Add New Location</i>
+            </mat-option>
+          </mat-select>
+          <mat-spinner
+            matSuffix
+            *ngIf="savingLocation"
+            class="saving-location"
+          ></mat-spinner>
+          <mat-hint *ngIf="deliveryLocationControl.value || savingLocation">{{
+            savingLocation
+              ? "Saving Location..."
+              : (deliveryLocationControl.value | locationAddress)
+          }}</mat-hint>
         </mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>Payment</mat-label>

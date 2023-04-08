@@ -1,8 +1,8 @@
+import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+
 export class Equals {
   public static deep(object1: any, object2: any): boolean {
-    return this.equals(object1, object2, (val1, val2) =>
-      this.deep(val1, val2)
-    );
+    return this.equals(object1, object2, (val1, val2) => this.deep(val1, val2));
   }
 
   public static shallow(object1: any, object2: any): boolean {
@@ -87,5 +87,42 @@ export class Equals {
     } else {
       return false;
     }
+  }
+}
+
+export class CustomValidators {
+  static TIME_INPUT_FORMAT = /^([01][0-9]|2[0-3]):([0-5][0-9])$/;
+
+  static futureTime(offsetHours?: number, offsetMinutes?: number): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const extractedTime = this.TIME_INPUT_FORMAT.exec(control.value);
+      if (!extractedTime || extractedTime.length != 3) {
+        return {
+          invalidTimeFormat: { value: control.value, expectedFormat: 'hh:mm' },
+        } as ValidationErrors;
+      }
+
+      const hours = +extractedTime[1];
+      const minutes = +extractedTime[2];
+      const controlTime = new Date();
+      controlTime.setHours(hours, minutes, 0, 0);
+      let minimumTime = new Date();
+      if (offsetHours || offsetMinutes) {
+        const newHours = minimumTime.getHours() + (offsetHours || 0);
+        const newMinutes = minimumTime.getMinutes() + (offsetMinutes || 0);
+        minimumTime.setHours(newHours, newMinutes);
+      }
+
+      if (controlTime < minimumTime) {
+        return {
+          futureTime: {
+            value: control.value,
+            minimumTime: minimumTime.toLocaleTimeString(),
+          },
+        } as ValidationErrors;
+      } else {
+        return null;
+      }
+    };
   }
 }

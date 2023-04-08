@@ -30,7 +30,19 @@
 
     .inner-order-details {
       width: min-content;
+      min-width: 20em;
       margin: auto;
+      text-align: center;
+
+      mat-form-field {
+        width: 100%;
+      }
+
+      mat-spinner.saving-location {
+        width: 24px !important;
+        height: 24px !important;
+        margin: 0 3px;
+      }
     }
   }
 }

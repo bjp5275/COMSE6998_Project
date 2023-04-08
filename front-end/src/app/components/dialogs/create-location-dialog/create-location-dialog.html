@@ -1,0 +1,40 @@
+<h2 mat-dialog-title>Create New Location</h2>
+<mat-dialog-content>
+  <form [formGroup]="locationForm">
+    <mat-form-field appearance="outline">
+      <mat-label>Name</mat-label>
+      <input matInput type="text" formControlName="name" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Street Address</mat-label>
+      <input matInput type="text" formControlName="streetAddress" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>City</mat-label>
+      <input matInput type="text" formControlName="city" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>State</mat-label>
+      <mat-select formControlName="state">
+        <mat-option>None</mat-option>
+        <mat-option *ngFor="let state of states" [value]="state.abbreviation">
+          {{state.name}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="no-padding">
+      <mat-label>Zip Code</mat-label>
+      <input matInput type="text" formControlName="zip" />
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close cdkFocusInitial>Cancel</button>
+  <button
+    mat-button
+    [mat-dialog-close]="locationForm.value"
+    [disabled]="!locationForm.valid"
+  >
+    Save
+  </button>
+</mat-dialog-actions>

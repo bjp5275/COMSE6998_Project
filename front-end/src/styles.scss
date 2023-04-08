@@ -17,3 +17,13 @@ a.text-link {
 mat-form-field.no-padding > div:first-child {
   margin-bottom: -1.25em;
 }
+
+mat-form-field.small-padding > div:first-child {
+  margin-bottom: -0.5em;
+}
+
+mat-form-field div.mat-mdc-form-field-error-wrapper,
+mat-form-field div.mat-mdc-form-field-hint-wrapper {
+  position: relative;
+  top: -1.25em;
+}
