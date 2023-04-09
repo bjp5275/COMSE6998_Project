@@ -7,7 +7,7 @@
     <mat-card class="product-card">
       <mat-card-header>
         <mat-card-title>{{ product.name }}</mat-card-title>
-        <mat-card-subtitle>${{ product.basePrice }}.00</mat-card-subtitle>
+        <mat-card-subtitle>{{ product | productPrice }}</mat-card-subtitle>
       </mat-card-header>
       <img mat-card-image [src]="product.imageUrl" />
       <mat-card-actions>
@@ -18,7 +18,9 @@
         >
           Customize
         </button>
-        <button mat-raised-button color="primary" (click)="addToCart(product)">Add to Cart</button>
+        <button mat-raised-button color="primary" (click)="addToCart(product)">
+          Add to Cart
+        </button>
       </mat-card-actions>
     </mat-card>
   </mat-grid-tile>

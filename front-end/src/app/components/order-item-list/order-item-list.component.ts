@@ -21,7 +21,7 @@ export interface OrderItemAction {
   onClick: (product: Product, orderItem: OrderItem, index: number) => void;
 }
 
-interface ExpandedOrderItem {
+export interface ExpandedOrderItem {
   orderItem: OrderItem;
   product: Product;
 }

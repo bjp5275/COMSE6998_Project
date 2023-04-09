@@ -3,7 +3,7 @@
     <mat-card class="product-card">
       <mat-card-header>
         <mat-card-title>{{ product.name }}</mat-card-title>
-        <mat-card-subtitle>${{ product.basePrice }}.00</mat-card-subtitle>
+        <mat-card-subtitle>{{ product | productPrice }}</mat-card-subtitle>
       </mat-card-header>
       <img mat-card-image [src]="product.imageUrl" />
     </mat-card>
@@ -63,7 +63,7 @@
               [value]="addition.id"
             >
               <span>{{ addition.name }}</span> |
-              <small>Price: {{ addition.price }}</small>
+              <small>Price: {{ addition | additionPrice }}</small>
             </mat-option>
           </mat-autocomplete>
         </mat-form-field>

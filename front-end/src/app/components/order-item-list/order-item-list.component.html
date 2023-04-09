@@ -12,9 +12,9 @@
     <mat-card class="product-card">
       <mat-card-header>
         <mat-card-title>{{ expandOrderItem.product.name }}</mat-card-title>
-        <mat-card-subtitle
-          >${{ expandOrderItem.product.basePrice }}.00</mat-card-subtitle
-        >
+        <mat-card-subtitle>{{
+          expandOrderItem | orderItemPrice
+        }}</mat-card-subtitle>
       </mat-card-header>
       <img mat-card-xl-image [src]="expandOrderItem.product.imageUrl" />
       <mat-card-content>

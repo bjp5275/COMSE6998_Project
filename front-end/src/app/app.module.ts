@@ -12,6 +12,11 @@ import { ProductListComponent } from './components/product-list/product-list.com
 import { UserCartComponent } from './components/user-cart/user-cart.component';
 
 import { LocationPipe } from './shared/pipes/location.pipe';
+import {
+  OrderItemPricePipe,
+  ProductAdditionPricePipe,
+  ProductPricePipe,
+} from './shared/pipes/product-price.pipe';
 import { SafeUrlPipe } from './shared/pipes/safe-url.pipe';
 
 import { CreateLocationDialog } from './components/dialogs/create-location-dialog/create-location-dialog.component';
@@ -43,7 +48,10 @@ import { OrderItemListComponent } from './components/order-item-list/order-item-
     CustomizeProductComponent,
     UserCartComponent,
 
+    ProductAdditionPricePipe,
     LocationPipe,
+    OrderItemPricePipe,
+    ProductPricePipe,
     SafeUrlPipe,
 
     CreateLocationDialog,
