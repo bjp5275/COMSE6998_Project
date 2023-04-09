@@ -87,7 +87,7 @@
           class="footer"
           *ngIf="!submittingOrder; else submittingOrderSpinner"
         >
-          <mat-chip>
+          <mat-chip disableRipple>
             <mat-icon matChipAvatar>paid</mat-icon>
             <span *ngIf="totalPrice; else calculatingPrice">{{
               totalPrice | price : false

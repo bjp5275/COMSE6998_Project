@@ -74,6 +74,7 @@
           <mat-chip
             *ngFor="let addition of selectedAdditions.controls; let i = index"
             (removed)="onRemoveAddition(i)"
+            disableRipple
           >
             {{ getAdditionName(addition.value!) }}
             <button matChipRemove>
@@ -84,7 +85,7 @@
 
         <br />
         <div class="footer">
-          <mat-chip>
+          <mat-chip disableRipple>
             <mat-icon matChipAvatar>paid</mat-icon>
             {{ totalPrice | price : false }}
           </mat-chip>
