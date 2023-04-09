@@ -1,7 +1,7 @@
 <mat-grid-list
   *ngIf="products$ | async as products"
   [cols]="columns"
-  rowHeight="450px"
+  rowHeight="32em"
 >
   <mat-grid-tile *ngFor="let product of products">
     <mat-card class="product-card">

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Navigation, Router } from '@angular/router';
-import { Observable, of } from 'rxjs';
+import { Observable, delay, of } from 'rxjs';
 import { Order } from 'src/app/model/models';
 import { OrderService } from 'src/app/shared/order.service';
 
@@ -33,7 +33,7 @@ export class OrderDetailsComponent {
 
     this.routeState = this._getRouteState(router.getCurrentNavigation());
     if (this.routeState.order) {
-      this.order$ = of(this.routeState.order);
+      this.order$ = of(this.routeState.order).pipe(delay(1000));
     } else {
       this.order$ = orderService.getOrder(orderId);
     }

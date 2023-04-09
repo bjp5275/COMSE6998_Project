@@ -6,10 +6,10 @@ import { Location, PaymentInformation } from 'src/app/model/models';
 const SAVED_LOCATIONS: Location[] = [
   {
     name: 'Home',
-    streetAddress: '123 Main Street',
-    city: 'Sesame City',
-    state: 'AB',
-    zip: '12345',
+    streetAddress: '45 Rockefeller Plaza',
+    city: 'New York',
+    state: 'NY',
+    zip: '10111',
   },
   {
     streetAddress: '456 Second Avenue',

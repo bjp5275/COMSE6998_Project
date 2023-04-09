@@ -1,52 +1,9 @@
-<div class="container" *ngIf="orderItems.length; else emptyCart">
+<div class="container" *ngIf="cartHasItems(); else emptyCart">
   <div class="cart">
-    <mat-grid-list
-      cols="1"
-      rowHeight="450px"
-      *ngIf="productMap$ | async as productMap; else loadingProducts"
-    >
-      <mat-grid-tile
-        *ngFor="
-          let product of expandOrderItems(orderItems, productMap);
-          let index = index
-        "
-      >
-        <mat-card class="product-card">
-          <mat-card-header>
-            <mat-card-title>{{ product.name }}</mat-card-title>
-            <mat-card-subtitle>${{ product.basePrice }}.00</mat-card-subtitle>
-          </mat-card-header>
-          <img mat-card-image [src]="product.imageUrl" />
-          <mat-card-content>
-            <div>
-              Coffee: {{ convertCoffeeTypeToString(product.coffeeType) }}
-            </div>
-            <div *ngIf="product.milkType">
-              Milk: {{ convertMilkTypeToString(product.milkType) }}
-            </div>
-            <div *ngIf="product.additions?.length">
-              {{ product.additions!.length | i18nPlural : additionsMapping }}
-            </div>
-          </mat-card-content>
-          <mat-card-actions>
-            <button
-              mat-raised-button
-              routerLink="/customize-product"
-              [state]="{ product: product, orderItem: orderItems[index] }"
-            >
-              Customize
-            </button>
-            <button
-              mat-raised-button
-              color="warn"
-              (click)="removeFromCart(index)"
-            >
-              Remove
-            </button>
-          </mat-card-actions>
-        </mat-card>
-      </mat-grid-tile>
-    </mat-grid-list>
+    <app-order-item-list
+      [orderItems]="orderItems"
+      [actions]="ORDER_ITEM_ACTIONS"
+    ></app-order-item-list>
   </div>
   <div class="order-details">
     <div class="inner-order-details">
@@ -128,7 +85,7 @@
         <button
           mat-raised-button
           type="submit"
-          [disabled]="!orderForm.valid || loadingProductMap || submittingOrder"
+          [disabled]="!orderForm.valid || submittingOrder"
           [hidden]="submittingOrder"
         >
           Place Order
@@ -142,11 +99,6 @@
     </div>
   </div>
 </div>
-<ng-template #loadingProducts>
-  <div class="loading-cart">
-    <mat-spinner></mat-spinner>
-  </div>
-</ng-template>
 <ng-template #emptyCart>
   <div class="empty-cart-container">
     <span class="text">Your cart is empty</span>

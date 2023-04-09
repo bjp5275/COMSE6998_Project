@@ -1,2 +1,30 @@
-<div>Order ID: {{ orderId }}</div>
-<pre>{{ order$ | async | json }}</pre>
+<div class="container" *ngIf="order$ | async as order; else loadingOrder">
+  <div class="order-item-details">
+    <app-order-item-list [orderItems]="order.items"></app-order-item-list>
+  </div>
+  <div class="order-status">
+    <div class="inner-order-status">
+      <iframe
+        width="100%"
+        height="300"
+        frameborder="0"
+        scrolling="no"
+        [src]="
+          'https://maps.google.com/maps?width=100%25&amp;height=600&amp;hl=en&amp;q=' +
+            (order.deliveryLocation | locationAddress) +
+            '+()&amp;t=&amp;z=15&amp;ie=UTF8&amp;iwloc=B&amp;output=embed'
+            | safeUrl : true
+        "
+      ></iframe>
+      <div>Order ID: {{ orderId }}</div>
+      <pre>{{ order | json }}</pre>
+    </div>
+  </div>
+</div>
+<ng-template #loadingOrder>
+  <div class="loading-order">
+    <mat-spinner></mat-spinner>
+    <br />
+    <i>Loading order {{ orderId }} details...</i>
+  </div>
+</ng-template>

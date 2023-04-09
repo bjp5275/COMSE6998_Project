@@ -50,7 +50,12 @@ const PRODUCTS: Product[] = [
     imageUrl:
       'https://globalassets.starbucks.com/assets/f12bc8af498d45ed92c5d6f1dac64062.jpg?impolicy=1by1_tight_288',
     allowedCoffeeTypes: [CoffeeType.REGULAR, CoffeeType.DECAF],
-    allowedMilkTypes: [MilkType.REGULAR, MilkType.SKIM, MilkType.OAT, MilkType.ALMOND],
+    allowedMilkTypes: [
+      MilkType.REGULAR,
+      MilkType.SKIM,
+      MilkType.OAT,
+      MilkType.ALMOND,
+    ],
     allowedAdditions: ADDITIONS,
   },
   {
@@ -143,6 +148,7 @@ export class ProductsService {
     return {
       productId: product.id,
       coffeeType: product.allowedCoffeeTypes[0],
+      milkType: product.allowedMilkTypes?.[0],
     };
   }
 }

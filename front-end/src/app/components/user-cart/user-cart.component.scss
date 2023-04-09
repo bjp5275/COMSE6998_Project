@@ -7,21 +7,6 @@
 
   .cart {
     overflow: auto;
-
-    .loading-cart {
-      height: 100%;
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .product-card {
-      mat-card-actions {
-        justify-content: flex-end;
-        gap: 0.5em;
-      }
-    }
   }
 
   .order-details {

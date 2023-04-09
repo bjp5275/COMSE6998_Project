@@ -1,0 +1,20 @@
+.loading-products {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// mat-grid-tile {
+//   height: min-content !important;
+//   min-height: 450px !important;
+//   max-height: 500px !important;
+// }
+
+.product-card {
+  mat-card-actions {
+    justify-content: flex-end;
+    gap: 0.5em;
+  }
+}

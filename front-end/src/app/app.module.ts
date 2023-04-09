@@ -12,6 +12,7 @@ import { ProductListComponent } from './components/product-list/product-list.com
 import { UserCartComponent } from './components/user-cart/user-cart.component';
 
 import { LocationPipe } from './shared/location.pipe';
+import { SafeUrlPipe } from './shared/safe-url.pipe';
 
 import { CreateLocationDialog } from './components/dialogs/create-location-dialog/create-location-dialog.component';
 import { CreatePaymentMethodDialog } from './components/dialogs/create-payment-method-dialog/create-payment-method-dialog.component';
@@ -33,6 +34,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { OrderItemListComponent } from './components/order-item-list/order-item-list.component';
 
 @NgModule({
   declarations: [
@@ -40,11 +42,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     ProductListComponent,
     CustomizeProductComponent,
     UserCartComponent,
+
     LocationPipe,
+    SafeUrlPipe,
 
     CreateLocationDialog,
     CreatePaymentMethodDialog,
     OrderDetailsComponent,
+    OrderItemListComponent,
   ],
   imports: [
     BrowserAnimationsModule,

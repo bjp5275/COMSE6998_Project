@@ -4,24 +4,21 @@ import { MatOption } from '@angular/material/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { Observable, finalize, first, map, shareReplay, tap } from 'rxjs';
+import { Observable, finalize, first } from 'rxjs';
 import {
   CreateOrder,
   Location,
   OrderItem,
   PaymentInformation,
-  Product,
-  convertCoffeeTypeToString,
-  convertMilkTypeToString,
 } from 'src/app/model/models';
 import { CartService } from 'src/app/shared/cart.service';
 import { MINIMUM_ORDER_FUTURE_TIME } from 'src/app/shared/constants';
 import { OrderService } from 'src/app/shared/order.service';
-import { ProductsService } from 'src/app/shared/products.service';
 import { UserService } from 'src/app/shared/user.service';
 import { CustomValidators, DateUtility } from 'src/app/shared/utility';
 import { CreateLocationDialog } from '../dialogs/create-location-dialog/create-location-dialog.component';
 import { CreatePaymentMethodDialog } from '../dialogs/create-payment-method-dialog/create-payment-method-dialog.component';
+import { OrderItemAction } from '../order-item-list/order-item-list.component';
 
 @Component({
   selector: 'app-user-cart',
@@ -30,18 +27,24 @@ import { CreatePaymentMethodDialog } from '../dialogs/create-payment-method-dial
 })
 export class UserCartComponent {
   readonly FUTURE_TIME_ERROR = MINIMUM_ORDER_FUTURE_TIME.ERROR_TEXT;
-  readonly convertCoffeeTypeToString = convertCoffeeTypeToString;
-  readonly convertMilkTypeToString = convertMilkTypeToString;
-  readonly additionsMapping: { [k: string]: string } = {
-    '=0': '0 additions',
-    '=1': '1 addition',
-    other: '# additions',
-  };
+  readonly ORDER_ITEM_ACTIONS: OrderItemAction[] = [
+    {
+      buttonText: 'Customize',
+      onClick: (product, orderItem, _index) => {
+        this.router.navigateByUrl('/customize-product', {
+          state: { product, orderItem },
+        });
+      },
+    },
+    {
+      buttonText: 'Remove',
+      color: 'warn',
+      onClick: (_product, _orderItem, index) => this.removeFromCart(index),
+    },
+  ];
 
-  productMap$: Observable<Map<string, Product>>;
   savedLocations$: Observable<Location[]>;
   savedPaymentMethods$: Observable<PaymentInformation[]>;
-  loadingProductMap = true;
   savingLocation = false;
   savingPaymentMethod = false;
   submittingOrder = false;
@@ -70,7 +73,7 @@ export class UserCartComponent {
   });
 
   get orderItems(): OrderItem[] {
-    return this.cartService.getProducts();
+    return this.cartService.getOrderItems();
   }
 
   constructor(
@@ -80,38 +83,18 @@ export class UserCartComponent {
     private orderService: OrderService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private router: Router,
-    productService: ProductsService
+    private router: Router
   ) {
-    this.productMap$ = productService.getProducts().pipe(
-      map((products) => {
-        const productMap = new Map<string, Product>();
-        products.forEach((product) => productMap.set(product.id, product));
-        return productMap;
-      }),
-      tap(() => (this.loadingProductMap = false)),
-      shareReplay(1)
-    );
-
     this.savedLocations$ = userService.getSavedLocations();
     this.savedPaymentMethods$ = userService.getSavedPaymentMethods();
   }
 
-  expandOrderItems(
-    products: OrderItem[],
-    productLookup?: Map<string, Product>
-  ) {
-    return products.map((product) => {
-      const value = {
-        ...productLookup?.get(product.productId!),
-        ...product,
-      };
-      return value;
-    });
-  }
-
   removeFromCart(index: number) {
     this.cartService.removeItem(index);
+  }
+
+  cartHasItems(): boolean {
+    return this.cartService.size() > 0;
   }
 
   onSelectCreateLocation(option: MatOption) {
@@ -191,7 +174,7 @@ export class UserCartComponent {
   }
 
   onSubmit(form = this.orderForm.value) {
-    const orderItems = [...this.cartService.getProducts()];
+    const orderItems = [...this.cartService.getOrderItems()];
     const orderDetails: CreateOrder = {
       deliveryTime: DateUtility.fromInputStringValue(form.deliveryTime)!,
       deliveryLocation: form.deliveryLocation!,

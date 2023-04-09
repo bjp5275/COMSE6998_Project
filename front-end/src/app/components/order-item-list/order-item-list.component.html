@@ -1,0 +1,59 @@
+<mat-grid-list
+  [cols]="columns"
+  [rowHeight]="actions ? '31em' : '28em'"
+  *ngIf="productMap$ | async as productMap; else loadingProducts"
+>
+  <mat-grid-tile
+    *ngFor="
+      let expandOrderItem of expandOrderItems(orderItems, productMap);
+      let index = index
+    "
+  >
+    <mat-card class="product-card">
+      <mat-card-header>
+        <mat-card-title>{{ expandOrderItem.product.name }}</mat-card-title>
+        <mat-card-subtitle
+          >${{ expandOrderItem.product.basePrice }}.00</mat-card-subtitle
+        >
+      </mat-card-header>
+      <img mat-card-xl-image [src]="expandOrderItem.product.imageUrl" />
+      <mat-card-content>
+        <div>
+          Coffee:
+          {{ convertCoffeeTypeToString(expandOrderItem.orderItem.coffeeType) }}
+        </div>
+        <div *ngIf="expandOrderItem.orderItem.milkType">
+          Milk:
+          {{ convertMilkTypeToString(expandOrderItem.orderItem.milkType) }}
+        </div>
+        <div *ngIf="expandOrderItem.orderItem.additions?.length">
+          {{
+            expandOrderItem.orderItem.additions!.length
+              | i18nPlural : additionsMapping
+          }}
+        </div>
+      </mat-card-content>
+      <mat-card-actions *ngIf="actions">
+        <button
+          mat-raised-button
+          *ngFor="let action of actions"
+          [color]="action.color"
+          (click)="
+            action.onClick(
+              expandOrderItem.product,
+              expandOrderItem.orderItem,
+              index
+            )
+          "
+        >
+          {{ action.buttonText }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </mat-grid-tile>
+</mat-grid-list>
+<ng-template #loadingProducts>
+  <div class="loading-products">
+    <mat-spinner></mat-spinner>
+  </div>
+</ng-template>
