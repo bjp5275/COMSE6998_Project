@@ -14,6 +14,7 @@ import { UserCartComponent } from './components/user-cart/user-cart.component';
 import { LocationPipe } from './shared/pipes/location.pipe';
 import {
   OrderItemPricePipe,
+  PricePipe,
   ProductAdditionPricePipe,
   ProductPricePipe,
 } from './shared/pipes/product-price.pipe';
@@ -48,9 +49,10 @@ import { OrderItemListComponent } from './components/order-item-list/order-item-
     CustomizeProductComponent,
     UserCartComponent,
 
-    ProductAdditionPricePipe,
     LocationPipe,
     OrderItemPricePipe,
+    PricePipe,
+    ProductAdditionPricePipe,
     ProductPricePipe,
     SafeUrlPipe,
 

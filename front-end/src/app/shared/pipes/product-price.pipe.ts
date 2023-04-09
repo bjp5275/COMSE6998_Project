@@ -2,18 +2,31 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { ExpandedOrderItem } from 'src/app/components/order-item-list/order-item-list.component';
 import { Product, ProductAddition } from 'src/app/model/models';
 
-export function getTotalPrice(expandedOrderItem: ExpandedOrderItem): number {
+export function getProductTotalPrice(
+  product: Product,
+  additions?: ProductAddition[]
+): number {
   return (
-    expandedOrderItem.product.basePrice +
-    (expandedOrderItem.orderItem.additions?.reduce(
-      (sum, addition) => sum + addition.price,
-      0
-    ) || 0)
+    product.basePrice +
+    (additions?.reduce((sum, addition) => sum + addition.price, 0) || 0)
   );
 }
 
-export function formatPrice(price: number): string {
-  return `$${price.toFixed(2)}`;
+export function getExpandedOrderItemTotalPrice(
+  expandedOrderItem: ExpandedOrderItem
+): number {
+  return getProductTotalPrice(
+    expandedOrderItem.product,
+    expandedOrderItem.orderItem.additions
+  );
+}
+
+export function formatPrice(price: number, includeDollarSign = true): string {
+  if (includeDollarSign) {
+    return `$${price.toFixed(2)}`;
+  } else {
+    return price.toFixed(2);
+  }
 }
 
 @Pipe({
@@ -44,6 +57,18 @@ export class OrderItemPricePipe implements PipeTransform {
   constructor() {}
 
   transform(expandedOrderItem: ExpandedOrderItem): string {
-    return formatPrice(getTotalPrice(expandedOrderItem));
+    return formatPrice(getExpandedOrderItemTotalPrice(expandedOrderItem));
+  }
+}
+
+@Pipe({
+  name: 'price',
+  pure: true,
+})
+export class PricePipe implements PipeTransform {
+  constructor() {}
+
+  transform(price: number, includeDollarSign = true): string {
+    return formatPrice(price, includeDollarSign);
   }
 }

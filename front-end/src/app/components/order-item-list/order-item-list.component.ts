@@ -1,24 +1,38 @@
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import {
   Component,
+  EventEmitter,
   Input,
   OnChanges,
   OnInit,
+  Output,
   SimpleChanges,
 } from '@angular/core';
-import { Observable, map, shareReplay, tap } from 'rxjs';
+import { Observable, filter, first, map, shareReplay, tap } from 'rxjs';
 import {
   OrderItem,
   Product,
   convertCoffeeTypeToString,
   convertMilkTypeToString,
 } from 'src/app/model/models';
+import { getExpandedOrderItemTotalPrice } from 'src/app/shared/pipes/product-price.pipe';
 import { ProductsService } from 'src/app/shared/services/products.service';
 
 export interface OrderItemAction {
   buttonText: string;
   color?: string;
-  onClick: (product: Product, orderItem: OrderItem, index: number) => void;
+  /**
+   * Action to take when order item is clicked
+   * @param product order item's product
+   * @param orderItem underlying order item
+   * @param index index within input orderItems array
+   * @returns Observable that completes when action is complete to allow for async processsing. Observable value should indicate if changes were made.
+   */
+  onClick: (
+    product: Product,
+    orderItem: OrderItem,
+    index: number
+  ) => Observable<boolean>;
 }
 
 export interface ExpandedOrderItem {
@@ -42,10 +56,12 @@ export class OrderItemListComponent implements OnInit, OnChanges {
 
   @Input() orderItems!: OrderItem[];
   @Input() actions?: OrderItemAction[];
+  @Output() totalPrice = new EventEmitter<number>();
 
   columns = 1;
   loadingProductMap = true;
   productMap$: Observable<Map<string, Product>>;
+  private productMap?: Map<string, Product>;
 
   constructor(
     productService: ProductsService,
@@ -55,8 +71,10 @@ export class OrderItemListComponent implements OnInit, OnChanges {
       map((products) => {
         const productMap = new Map<string, Product>();
         products.forEach((product) => productMap.set(product.id, product));
+        this.productMap = productMap;
         return productMap;
       }),
+      first(),
       tap(() => (this.loadingProductMap = false)),
       shareReplay(1)
     );
@@ -82,6 +100,8 @@ export class OrderItemListComponent implements OnInit, OnChanges {
     if (!this.orderItems) {
       throw new TypeError("'orderItems' is required");
     }
+
+    this.productMap$.subscribe(() => this.recalculateTotalPrice());
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -104,5 +124,32 @@ export class OrderItemListComponent implements OnInit, OnChanges {
       };
       return value;
     });
+  }
+
+  onClick(
+    action: OrderItemAction,
+    expandedOrderItem: ExpandedOrderItem,
+    index: number
+  ) {
+    action
+      .onClick(expandedOrderItem.product, expandedOrderItem.orderItem, index)
+      .pipe(
+        first(),
+        filter((changesMade) => changesMade)
+      )
+      .subscribe(() => this.recalculateTotalPrice());
+  }
+
+  recalculateTotalPrice() {
+    if (!this.productMap) {
+      throw new Error('ERROR: No product map defined yet');
+    }
+
+    const totalPrice = this.expandOrderItems(
+      this.orderItems,
+      this.productMap
+    ).reduce((sum, item) => sum + getExpandedOrderItemTotalPrice(item), 0);
+
+    this.totalPrice.emit(totalPrice);
   }
 }

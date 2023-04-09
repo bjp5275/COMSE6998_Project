@@ -3,6 +3,7 @@
     <app-order-item-list
       [orderItems]="orderItems"
       [actions]="ORDER_ITEM_ACTIONS"
+      (totalPrice)="totalPrice = $event"
     ></app-order-item-list>
   </div>
   <div class="order-details">
@@ -82,19 +83,34 @@
           </mat-hint>
         </mat-form-field>
 
-        <button
-          mat-raised-button
-          type="submit"
-          [disabled]="!orderForm.valid || submittingOrder"
-          [hidden]="submittingOrder"
+        <div
+          class="footer"
+          *ngIf="!submittingOrder; else submittingOrderSpinner"
         >
-          Place Order
-        </button>
-        <mat-progress-bar
-          mode="indeterminate"
-          class="submitting-order"
-          *ngIf="submittingOrder"
-        ></mat-progress-bar>
+          <mat-chip>
+            <mat-icon matChipAvatar>paid</mat-icon>
+            <span *ngIf="totalPrice; else calculatingPrice">{{
+              totalPrice | price : false
+            }}</span>
+            <ng-template #calculatingPrice>
+              <mat-spinner diameter="20"></mat-spinner>
+            </ng-template>
+          </mat-chip>
+          <button
+            mat-raised-button
+            type="submit"
+            [disabled]="!orderForm.valid || submittingOrder"
+          >
+            Place Order
+          </button>
+        </div>
+        <ng-template #submittingOrderSpinner>
+          <mat-progress-bar
+            mode="indeterminate"
+            class="submitting-order"
+            *ngIf="submittingOrder"
+          ></mat-progress-bar>
+        </ng-template>
       </form>
     </div>
   </div>

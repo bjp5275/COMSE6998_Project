@@ -5,30 +5,32 @@
 >
   <mat-grid-tile
     *ngFor="
-      let expandOrderItem of expandOrderItems(orderItems, productMap);
+      let expandedOrderItem of expandOrderItems(orderItems, productMap);
       let index = index
     "
   >
     <mat-card class="product-card">
       <mat-card-header>
-        <mat-card-title>{{ expandOrderItem.product.name }}</mat-card-title>
+        <mat-card-title>{{ expandedOrderItem.product.name }}</mat-card-title>
         <mat-card-subtitle>{{
-          expandOrderItem | orderItemPrice
+          expandedOrderItem | orderItemPrice
         }}</mat-card-subtitle>
       </mat-card-header>
-      <img mat-card-xl-image [src]="expandOrderItem.product.imageUrl" />
+      <img mat-card-xl-image [src]="expandedOrderItem.product.imageUrl" />
       <mat-card-content>
         <div>
           Coffee:
-          {{ convertCoffeeTypeToString(expandOrderItem.orderItem.coffeeType) }}
-        </div>
-        <div *ngIf="expandOrderItem.orderItem.milkType">
-          Milk:
-          {{ convertMilkTypeToString(expandOrderItem.orderItem.milkType) }}
-        </div>
-        <div *ngIf="expandOrderItem.orderItem.additions?.length">
           {{
-            expandOrderItem.orderItem.additions!.length
+            convertCoffeeTypeToString(expandedOrderItem.orderItem.coffeeType)
+          }}
+        </div>
+        <div *ngIf="expandedOrderItem.orderItem.milkType">
+          Milk:
+          {{ convertMilkTypeToString(expandedOrderItem.orderItem.milkType) }}
+        </div>
+        <div *ngIf="expandedOrderItem.orderItem.additions?.length">
+          {{
+            expandedOrderItem.orderItem.additions!.length
               | i18nPlural : additionsMapping
           }}
         </div>
@@ -38,13 +40,7 @@
           mat-raised-button
           *ngFor="let action of actions"
           [color]="action.color"
-          (click)="
-            action.onClick(
-              expandOrderItem.product,
-              expandOrderItem.orderItem,
-              index
-            )
-          "
+          (click)="onClick(action, expandedOrderItem, index)"
         >
           {{ action.buttonText }}
         </button>

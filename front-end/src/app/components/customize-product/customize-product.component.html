@@ -83,9 +83,19 @@
         </mat-chip-set>
 
         <br />
-        <button mat-raised-button type="submit" [disabled]="!productForm.valid">
-          {{ isProductUpdate ? "Update Cart" : "Add to Cart" }}
-        </button>
+        <div class="footer">
+          <mat-chip>
+            <mat-icon matChipAvatar>paid</mat-icon>
+            {{ totalPrice | price : false }}
+          </mat-chip>
+          <button
+            mat-raised-button
+            type="submit"
+            [disabled]="!productForm.valid"
+          >
+            {{ isProductUpdate ? "Update Cart" : "Add to Cart" }}
+          </button>
+        </div>
       </form>
     </div>
   </div>
