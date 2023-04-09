@@ -87,7 +87,7 @@
         <div class="footer">
           <mat-chip disableRipple>
             <mat-icon matChipAvatar>paid</mat-icon>
-            {{ totalPrice | price : false }}
+            {{ product | productPrice : getSelectedAdditions() : false }}
           </mat-chip>
           <button
             mat-raised-button

@@ -174,6 +174,10 @@ export interface OrderItem {
    */
   productId: string;
   /**
+   * Product base price
+   */
+  basePrice: number;
+  /**
    * The type of coffee used in a drink
    */
   coffeeType: CoffeeType;

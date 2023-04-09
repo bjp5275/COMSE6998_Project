@@ -1,24 +1,19 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { ExpandedOrderItem } from 'src/app/components/order-item-list/order-item-list.component';
-import { Product, ProductAddition } from 'src/app/model/models';
+import { OrderItem, Product, ProductAddition } from 'src/app/model/models';
+
+export function getProductAdditionsCost(additions?: ProductAddition[]): number {
+  return additions?.reduce((sum, addition) => sum + addition.price, 0) || 0;
+}
 
 export function getProductTotalPrice(
   product: Product,
   additions?: ProductAddition[]
 ): number {
-  return (
-    product.basePrice +
-    (additions?.reduce((sum, addition) => sum + addition.price, 0) || 0)
-  );
+  return product.basePrice + getProductAdditionsCost(additions);
 }
 
-export function getExpandedOrderItemTotalPrice(
-  expandedOrderItem: ExpandedOrderItem
-): number {
-  return getProductTotalPrice(
-    expandedOrderItem.product,
-    expandedOrderItem.orderItem.additions
-  );
+export function getOrderItemTotalPrice(orderItem: OrderItem): number {
+  return orderItem.basePrice + getProductAdditionsCost(orderItem.additions);
 }
 
 export function formatPrice(price: number, includeDollarSign = true): string {
@@ -44,8 +39,12 @@ export class ProductAdditionPricePipe implements PipeTransform {
   pure: true,
 })
 export class ProductPricePipe implements PipeTransform {
-  transform(product: Product): string {
-    return formatPrice(product.basePrice);
+  transform(
+    product: Product,
+    additions?: ProductAddition[],
+    includeDollarSign = true
+  ): string {
+    return formatPrice(getProductTotalPrice(product, additions));
   }
 }
 
@@ -56,8 +55,24 @@ export class ProductPricePipe implements PipeTransform {
 export class OrderItemPricePipe implements PipeTransform {
   constructor() {}
 
-  transform(expandedOrderItem: ExpandedOrderItem): string {
-    return formatPrice(getExpandedOrderItemTotalPrice(expandedOrderItem));
+  transform(orderItem: OrderItem): string {
+    return formatPrice(getOrderItemTotalPrice(orderItem));
+  }
+}
+
+@Pipe({
+  name: 'orderItemsPrice',
+  pure: false,
+})
+export class OrderItemsPricePipe implements PipeTransform {
+  constructor() {}
+
+  transform(orderItems: OrderItem[], includeDollarSign = false): string {
+    const totalPrice = orderItems?.reduce(
+      (sum, item) => sum + getOrderItemTotalPrice(item),
+      0
+    );
+    return formatPrice(totalPrice, includeDollarSign);
   }
 }
 

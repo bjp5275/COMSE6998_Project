@@ -3,7 +3,6 @@
     <app-order-item-list
       [orderItems]="orderItems"
       [actions]="ORDER_ITEM_ACTIONS"
-      (totalPrice)="totalPrice = $event"
     ></app-order-item-list>
   </div>
   <div class="order-details">
@@ -89,12 +88,7 @@
         >
           <mat-chip disableRipple>
             <mat-icon matChipAvatar>paid</mat-icon>
-            <span *ngIf="totalPrice; else calculatingPrice">{{
-              totalPrice | price : false
-            }}</span>
-            <ng-template #calculatingPrice>
-              <mat-spinner diameter="20"></mat-spinner>
-            </ng-template>
+            <span>{{ orderItems | orderItemsPrice : false }}</span>
           </mat-chip>
           <button
             mat-raised-button

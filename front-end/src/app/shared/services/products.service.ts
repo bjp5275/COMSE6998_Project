@@ -147,6 +147,7 @@ export class ProductsService {
   public convertToOrderItem(product: Product): OrderItem {
     return {
       productId: product.id,
+      basePrice: product.basePrice,
       coffeeType: product.allowedCoffeeTypes[0],
       milkType: product.allowedMilkTypes?.[0],
     };

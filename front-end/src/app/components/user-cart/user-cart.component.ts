@@ -4,7 +4,7 @@ import { MatOption } from '@angular/material/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { Observable, finalize, first, of } from 'rxjs';
+import { Observable, finalize, first } from 'rxjs';
 import {
   CreateOrder,
   Location,
@@ -34,7 +34,6 @@ export class UserCartComponent {
         this.router.navigateByUrl('/customize-product', {
           state: { product, orderItem },
         });
-        return of(false);
       },
     },
     {
@@ -42,7 +41,6 @@ export class UserCartComponent {
       color: 'warn',
       onClick: (_product, _orderItem, index) => {
         this.removeFromCart(index);
-        return of(true);
       },
     },
   ];
@@ -52,7 +50,6 @@ export class UserCartComponent {
   savingLocation = false;
   savingPaymentMethod = false;
   submittingOrder = false;
-  totalPrice?: number;
 
   deliveryLocationControl = this.fb.control(
     null as Location | null,

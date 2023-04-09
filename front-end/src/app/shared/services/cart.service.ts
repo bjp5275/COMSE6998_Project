@@ -8,47 +8,53 @@ import { Equals } from '../utility';
 export class CartService {
   cartItems: OrderItem[] = [
     {
-      "productId": "espresso",
-      "coffeeType": "REGULAR"
+      productId: 'espresso',
+      basePrice: 5,
+      coffeeType: 'REGULAR',
     },
     {
-      "productId": "cafe-americano",
-      "coffeeType": "REGULAR",
-      "milkType": "REGULAR"
+      productId: 'cafe-americano',
+      basePrice: 5,
+      coffeeType: 'REGULAR',
+      milkType: 'REGULAR',
     },
     {
-      "productId": "cafe-americano",
-      "coffeeType": "REGULAR",
-      "milkType": "OAT",
-      "additions": [
+      productId: 'cafe-americano',
+      basePrice: 5,
+      coffeeType: 'REGULAR',
+      milkType: 'OAT',
+      additions: [
         {
-          "id": "pumpkin-spice-syrup",
-          "name": "Pumpkin Spice Syrup",
-          "price": 0.75,
-          "enabled": false
-        }
-      ]
+          id: 'pumpkin-spice-syrup',
+          name: 'Pumpkin Spice Syrup',
+          price: 0.75,
+          enabled: false,
+        },
+      ],
     },
     {
-      "productId": "caramel-macchiato",
-      "coffeeType": "REGULAR"
+      productId: 'caramel-macchiato',
+      basePrice: 5,
+      coffeeType: 'REGULAR',
     },
     {
-      "productId": "caramel-macchiato",
-      "coffeeType": "REGULAR",
-      "additions": [
+      productId: 'caramel-macchiato',
+      basePrice: 5,
+      coffeeType: 'REGULAR',
+      additions: [
         {
-          "id": "pumpkin-spice-syrup",
-          "name": "Pumpkin Spice Syrup",
-          "price": 0.75,
-          "enabled": false
-        }
-      ]
+          id: 'pumpkin-spice-syrup',
+          name: 'Pumpkin Spice Syrup',
+          price: 0.75,
+          enabled: false,
+        },
+      ],
     },
     {
-      "productId": "espresso",
-      "coffeeType": "REGULAR"
-    }
+      productId: 'espresso',
+      basePrice: 5,
+      coffeeType: 'REGULAR',
+    },
   ];
 
   public getOrderItems(): OrderItem[] {

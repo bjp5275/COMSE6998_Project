@@ -13,7 +13,6 @@ import {
   isCoffeeType,
   isMilkTypeOrUndefined,
 } from 'src/app/model/models';
-import { getProductTotalPrice } from 'src/app/shared/pipes/product-price.pipe';
 import { CartService } from 'src/app/shared/services/cart.service';
 
 interface RouteState {
@@ -36,7 +35,6 @@ export class CustomizeProductComponent {
   }
 
   product: Product;
-  totalPrice = -1;
   additionEntry = this.fb.control({ value: null, disabled: true });
   selectedAdditions = this.fb.array([] as string[]);
   productForm = this.fb.group({
@@ -66,7 +64,6 @@ export class CustomizeProductComponent {
       this.product = this.routeState.product;
       this.allowedAdditions = this.routeState.product.allowedAdditions || [];
       this.additionEntry.enable();
-      this.recalculateTotalPrice();
     }
 
     if (this.routeState.orderItem) {
@@ -144,7 +141,6 @@ export class CustomizeProductComponent {
 
   addAddition(id: string) {
     this.selectedAdditions.push(this.fb.control(id));
-    this.recalculateTotalPrice();
   }
 
   onSelectAddition(event: MatAutocompleteSelectedEvent) {
@@ -155,14 +151,6 @@ export class CustomizeProductComponent {
 
   onRemoveAddition(index: number) {
     this.selectedAdditions.removeAt(index);
-    this.recalculateTotalPrice();
-  }
-
-  recalculateTotalPrice() {
-    this.totalPrice = getProductTotalPrice(
-      this.product,
-      this.getSelectedAdditions()
-    );
   }
 
   getSelectedAdditions(): ProductAddition[] | undefined {
@@ -198,6 +186,7 @@ export class CustomizeProductComponent {
 
     const newOrderItem: OrderItem = {
       productId: this.product.id,
+      basePrice: this.product.basePrice,
       coffeeType,
       milkType,
       additions,

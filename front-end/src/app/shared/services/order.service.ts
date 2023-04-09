@@ -18,7 +18,7 @@ const ORDER: Order = {
       coffeeType: CoffeeType.REGULAR,
       milkType: MilkType.ALMOND,
       productId: 'cafe-americano',
-
+      basePrice: 5,
       additions: [
         {
           id: 'pumpkin-spice-syrup',
