@@ -5,8 +5,8 @@ import { PaymentInformation } from 'src/app/model/models';
 
 @Component({
   selector: 'create-payment-method-dialog',
-  templateUrl: './create-payment-method-dialog.html',
-  styleUrls: ['./create-payment-method-dialog.scss'],
+  templateUrl: './create-payment-method-dialog.component.html',
+  styleUrls: ['./create-payment-method-dialog.component.scss'],
 })
 export class CreatePaymentMethodDialog {
   paymentInformationForm = this.fb.group({

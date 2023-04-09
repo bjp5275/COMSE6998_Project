@@ -13,7 +13,7 @@ import {
   convertCoffeeTypeToString,
   convertMilkTypeToString,
 } from 'src/app/model/models';
-import { ProductsService } from 'src/app/shared/products.service';
+import { ProductsService } from 'src/app/shared/services/products.service';
 
 export interface OrderItemAction {
   buttonText: string;

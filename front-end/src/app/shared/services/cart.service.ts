@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { OrderItem } from 'src/app/model/models';
-import { Equals } from './utility';
+import { Equals } from '../utility';
 
 @Injectable({
   providedIn: 'root',

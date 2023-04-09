@@ -11,10 +11,10 @@ import {
   OrderItem,
   PaymentInformation,
 } from 'src/app/model/models';
-import { CartService } from 'src/app/shared/cart.service';
+import { CartService } from 'src/app/shared/services/cart.service';
 import { MINIMUM_ORDER_FUTURE_TIME } from 'src/app/shared/constants';
-import { OrderService } from 'src/app/shared/order.service';
-import { UserService } from 'src/app/shared/user.service';
+import { OrderService } from 'src/app/shared/services/order.service';
+import { UserService } from 'src/app/shared/services/user.service';
 import { CustomValidators, DateUtility } from 'src/app/shared/utility';
 import { CreateLocationDialog } from '../dialogs/create-location-dialog/create-location-dialog.component';
 import { CreatePaymentMethodDialog } from '../dialogs/create-payment-method-dialog/create-payment-method-dialog.component';

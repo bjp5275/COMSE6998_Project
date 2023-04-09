@@ -13,7 +13,7 @@ import {
   isCoffeeType,
   isMilkTypeOrUndefined,
 } from 'src/app/model/models';
-import { CartService } from 'src/app/shared/cart.service';
+import { CartService } from 'src/app/shared/services/cart.service';
 
 interface RouteState {
   product?: Product;

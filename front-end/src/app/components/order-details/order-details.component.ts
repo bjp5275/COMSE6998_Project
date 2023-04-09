@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { ActivatedRoute, Navigation, Router } from '@angular/router';
 import { Observable, delay, of } from 'rxjs';
 import { Order } from 'src/app/model/models';
-import { OrderService } from 'src/app/shared/order.service';
+import { OrderService } from 'src/app/shared/services/order.service';
 
 interface RouteState {
   order?: Order;

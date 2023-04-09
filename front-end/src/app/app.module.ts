@@ -11,8 +11,8 @@ import { OrderDetailsComponent } from './components/order-details/order-details.
 import { ProductListComponent } from './components/product-list/product-list.component';
 import { UserCartComponent } from './components/user-cart/user-cart.component';
 
-import { LocationPipe } from './shared/location.pipe';
-import { SafeUrlPipe } from './shared/safe-url.pipe';
+import { LocationPipe } from './shared/pipes/location.pipe';
+import { SafeUrlPipe } from './shared/pipes/safe-url.pipe';
 
 import { CreateLocationDialog } from './components/dialogs/create-location-dialog/create-location-dialog.component';
 import { CreatePaymentMethodDialog } from './components/dialogs/create-payment-method-dialog/create-payment-method-dialog.component';

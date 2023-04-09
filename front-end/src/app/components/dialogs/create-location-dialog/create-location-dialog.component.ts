@@ -6,8 +6,8 @@ import { STATES } from 'src/app/shared/constants';
 
 @Component({
   selector: 'create-location-dialog',
-  templateUrl: './create-location-dialog.html',
-  styleUrls: ['./create-location-dialog.scss'],
+  templateUrl: './create-location-dialog.component.html',
+  styleUrls: ['./create-location-dialog.component.scss'],
 })
 export class CreateLocationDialog {
   readonly states = STATES;
