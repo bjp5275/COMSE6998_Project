@@ -28,6 +28,7 @@ const ORDER: Order = {
       ],
     },
   ],
+  orderStatus: OrderStatus.RECEIVED,
   deliveryTime: new Date(),
   payment: {
     nameOnCard: 'Joe Smith',

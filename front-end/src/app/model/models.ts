@@ -131,7 +131,7 @@ export const OrderStatus = {
   RECEIVED: 'RECEIVED' as OrderStatus,
   BREWING: 'BREWING' as OrderStatus,
   MADE: 'MADE' as OrderStatus,
-  PICKEDUP: 'PICKED_UP' as OrderStatus,
+  PICKED_UP: 'PICKED_UP' as OrderStatus,
   DELIVERED: 'DELIVERED' as OrderStatus,
 };
 export function convertOrderStatusToString(orderStatus: OrderStatus): string {
@@ -141,7 +141,7 @@ export function convertOrderStatusToString(orderStatus: OrderStatus): string {
     case OrderStatus.MADE:
     case OrderStatus.DELIVERED:
       return capitalizeFirstLetter(orderStatus);
-    case OrderStatus.PICKEDUP:
+    case OrderStatus.PICKED_UP:
       return 'Picked Up';
     default:
       throw new Error(`Unknown order status: ${orderStatus}`);

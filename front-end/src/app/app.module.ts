@@ -12,6 +12,7 @@ import { ProductListComponent } from './components/product-list/product-list.com
 import { UserCartComponent } from './components/user-cart/user-cart.component';
 
 import { LocationPipe } from './shared/pipes/location.pipe';
+import { OrderStatusPercentagePipe } from './shared/pipes/order-status-percentage.pipe';
 import {
   OrderItemPricePipe,
   OrderItemsPricePipe,
@@ -53,6 +54,7 @@ import { OrderItemListComponent } from './components/order-item-list/order-item-
     LocationPipe,
     OrderItemPricePipe,
     OrderItemsPricePipe,
+    OrderStatusPercentagePipe,
     PricePipe,
     ProductAdditionPricePipe,
     ProductPricePipe,

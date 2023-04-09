@@ -4,6 +4,19 @@
   </div>
   <div class="order-status">
     <div class="inner-order-status">
+      <mat-progress-bar
+        class="order-progress"
+        mode="determinate"
+        [value]="(order.orderStatus | orderStatusPercentage) || 5"
+      ></mat-progress-bar>
+      <div class="order-progress-states">
+        <span>Received</span>
+        <span>Brewing</span>
+        <span>Made</span>
+        <span>Picked Up</span>
+        <span>Delivered</span>
+      </div>
+      <br />
       <iframe
         width="100%"
         height="300"
