@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Navigation, Router } from '@angular/router';
-import { Observable, delay, of } from 'rxjs';
-import { Order } from 'src/app/model/models';
+import { Observable, delay, first, of } from 'rxjs';
+import { FavoriteOrder, Order } from 'src/app/model/models';
 import { OrderService } from 'src/app/shared/services/order.service';
+import { UserService } from 'src/app/shared/services/user.service';
 
 interface RouteState {
   order?: Order;
@@ -17,10 +19,13 @@ export class OrderDetailsComponent {
   routeState: RouteState;
   orderId: string;
   order$: Observable<Order>;
+  isFavorite = false;
 
   constructor(
-    private router: Router,
-    private orderService: OrderService,
+    private userService: UserService,
+    private snackBar: MatSnackBar,
+    orderService: OrderService,
+    router: Router,
     activatedRoute: ActivatedRoute
   ) {
     const orderId = activatedRoute.snapshot.queryParamMap.get('id');
@@ -42,5 +47,27 @@ export class OrderDetailsComponent {
   private _getRouteState(navigation: Navigation | null): RouteState {
     const order = navigation?.extras?.state?.['order'];
     return { order };
+  }
+
+  saveAsFavorite(order: Order) {
+    const favoriteOrder: FavoriteOrder = {
+      name: order.id!,
+      items: order.items,
+    };
+    this.isFavorite = true;
+    this.userService
+      .addFavoriteOrder(favoriteOrder)
+      .pipe(first())
+      .subscribe({
+        next: (id) => {
+          console.log('Saved favorite', id);
+          this.snackBar.open('Saved as favorite', 'OK', { duration: 1000 });
+        },
+        error: (err) => {
+          this.isFavorite = false;
+          console.log('ERROR: Failed to save favorite', err);
+          this.snackBar.open('Failed to save favorite', 'OK');
+        },
+      });
   }
 }

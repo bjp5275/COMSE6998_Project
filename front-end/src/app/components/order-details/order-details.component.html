@@ -29,8 +29,39 @@
             | safeUrl : true
         "
       ></iframe>
-      <div>Order ID: {{ orderId }}</div>
-      <pre>{{ order | json }}</pre>
+      <br />
+      <mat-chip-set class="order-detail-chips">
+        <mat-chip disableRipple>
+          <mat-icon matChipAvatar>schedule</mat-icon>
+          <span>{{ order.deliveryTime | date : "shortTime" }}</span>
+        </mat-chip>
+        <mat-chip disableRipple>
+          <mat-icon matChipAvatar>place</mat-icon>
+          <span>{{
+            order.deliveryLocation.name || order.deliveryLocation.streetAddress
+          }}</span>
+        </mat-chip>
+        <mat-chip disableRipple>
+          <mat-icon matChipAvatar>credit_card</mat-icon>
+          <span>{{ order.payment.cardNumber.slice(-4) }}</span>
+        </mat-chip>
+        <mat-chip disableRipple>
+          <mat-icon matChipAvatar>paid</mat-icon>
+          <span>{{ order.items | orderItemsPrice : false }}</span>
+        </mat-chip>
+      </mat-chip-set>
+      <br />
+      <div class="centered-buttons">
+        <button
+          mat-raised-button
+          color="primary"
+          [disabled]="isFavorite"
+          (click)="saveAsFavorite(order)"
+        >
+          <mat-icon>favorite_border</mat-icon>
+          Save Order as Favorite
+        </button>
+      </div>
     </div>
   </div>
 </div>

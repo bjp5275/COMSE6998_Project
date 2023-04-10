@@ -1,7 +1,11 @@
 import { Injectable } from '@angular/core';
-import { Observable, delay, of } from 'rxjs';
+import { Observable, delay, of, throwError } from 'rxjs';
 
-import { Location, PaymentInformation } from 'src/app/model/models';
+import {
+  FavoriteOrder,
+  Location,
+  PaymentInformation,
+} from 'src/app/model/models';
 
 const SAVED_LOCATIONS: Location[] = [
   {
@@ -27,12 +31,15 @@ const PAYMENT_METHODS: PaymentInformation[] = [
   },
 ];
 
+const FAVORITE_ORDERS: FavoriteOrder[] = [];
+
 @Injectable({
   providedIn: 'root',
 })
 export class UserService {
   locations: Location[] = [...SAVED_LOCATIONS];
   paymentMethods: PaymentInformation[] = [...PAYMENT_METHODS];
+  favoriteOrders: FavoriteOrder[] = [...FAVORITE_ORDERS];
 
   constructor() {}
 
@@ -53,6 +60,40 @@ export class UserService {
     paymentMethod: PaymentInformation
   ): Observable<boolean> {
     this.paymentMethods.push(paymentMethod);
+    return of(true).pipe(delay(500));
+  }
+
+  public getFavoriteOrders(): Observable<FavoriteOrder[]> {
+    return of(this.favoriteOrders);
+  }
+
+  public addFavoriteOrder(order: FavoriteOrder): Observable<string> {
+    const id = new Date().getTime().toString();
+    this.favoriteOrders.push({
+      id,
+      name: order.name,
+      items: order.items,
+    });
+
+    return of(id).pipe(delay(500));
+  }
+
+  public updateFavoriteOrder(
+    id: string,
+    updatedOrder: FavoriteOrder
+  ): Observable<boolean> {
+    const order = this.favoriteOrders.find((order) => order.id == id);
+    if (!order) {
+      return throwError(() => new Error('Favorite not found'));
+    }
+
+    if (updatedOrder.name) {
+      order.name = updatedOrder.name;
+    }
+    if (updatedOrder.items) {
+      order.items = updatedOrder.items;
+    }
+
     return of(true).pipe(delay(500));
   }
 }

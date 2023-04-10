@@ -7,6 +7,7 @@
 
   .order-item-details {
     overflow: auto;
+    padding-bottom: 1em;
   }
 
   .order-status {
@@ -30,6 +31,18 @@
         flex-direction: row;
         flex-wrap: nowrap;
         justify-content: space-between;
+      }
+
+      .order-detail-chips {
+        width: fit-content;
+        margin: 0 auto;
+      }
+
+      .centered-buttons {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
       }
     }
   }
