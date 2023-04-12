@@ -8,6 +8,8 @@ import { AppComponent } from './app.component';
 
 import { CustomizeProductComponent } from './components/customize-product/customize-product.component';
 import { OrderDetailsComponent } from './components/order-details/order-details.component';
+import { OrderHistoryComponent } from './components/order-history/order-history.component';
+import { OrderListComponent } from './components/order-list/order-list.component';
 import { ProductListComponent } from './components/product-list/product-list.component';
 import { UserCartComponent } from './components/user-cart/user-cart.component';
 
@@ -36,6 +38,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
@@ -64,6 +67,8 @@ import { OrderItemListComponent } from './components/order-item-list/order-item-
     CreatePaymentMethodDialog,
     OrderDetailsComponent,
     OrderItemListComponent,
+    OrderListComponent,
+    OrderHistoryComponent,
   ],
   imports: [
     BrowserAnimationsModule,
@@ -83,6 +88,7 @@ import { OrderItemListComponent } from './components/order-item-list/order-item-
     MatGridListModule,
     MatIconModule,
     MatInputModule,
+    MatListModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
     MatSelectModule,

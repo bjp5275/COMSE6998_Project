@@ -29,8 +29,11 @@ export function formatPrice(price: number, includeDollarSign = true): string {
   pure: true,
 })
 export class ProductAdditionPricePipe implements PipeTransform {
-  transform(productAddition: ProductAddition): string {
-    return formatPrice(productAddition.price);
+  transform(
+    productAddition: ProductAddition,
+    includeDollarSign = false
+  ): string {
+    return formatPrice(productAddition.price, includeDollarSign);
   }
 }
 
@@ -42,9 +45,12 @@ export class ProductPricePipe implements PipeTransform {
   transform(
     product: Product,
     additions?: ProductAddition[],
-    includeDollarSign = true
+    includeDollarSign = false
   ): string {
-    return formatPrice(getProductTotalPrice(product, additions));
+    return formatPrice(
+      getProductTotalPrice(product, additions),
+      includeDollarSign
+    );
   }
 }
 
@@ -55,8 +61,8 @@ export class ProductPricePipe implements PipeTransform {
 export class OrderItemPricePipe implements PipeTransform {
   constructor() {}
 
-  transform(orderItem: OrderItem): string {
-    return formatPrice(getOrderItemTotalPrice(orderItem));
+  transform(orderItem: OrderItem, includeDollarSign = false): string {
+    return formatPrice(getOrderItemTotalPrice(orderItem), includeDollarSign);
   }
 }
 

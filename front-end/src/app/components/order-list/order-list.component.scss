@@ -1,0 +1,36 @@
+.loading-products {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container {
+  height: 100%;
+  overflow: auto;
+  align-self: center;
+
+  .inner-container {
+    width: calc(100% - 2em);
+    min-width: 25em;
+    max-width: 40em;
+    padding: 1em 0;
+    margin: auto;
+
+    .order-card {
+      margin: 1em 0;
+
+      .order-item {
+        span[matListItemLine] {
+          text-indent: 1em;
+        }
+      }
+
+      mat-card-actions {
+        justify-content: flex-end;
+        gap: 0.5em;
+      }
+    }
+  }
+}

@@ -1,0 +1,67 @@
+<div
+  class="container"
+  *ngIf="productMap$ | async as productMap; else loadingProducts"
+>
+  <div class="inner-container">
+    <mat-card
+      class="order-card"
+      *ngFor="let order of orders; let index = index"
+    >
+      <mat-card-header>
+        <mat-card-title>{{ order.name }}</mat-card-title>
+        <mat-card-subtitle *ngIf="order.subtitle">{{
+          order.subtitle
+        }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-list>
+          <mat-list-item
+            class="order-item"
+            *ngFor="
+              let expandedOrderItem of expandOrderItems(order.items, productMap)
+            "
+          >
+            <span matListItemTitle>{{ expandedOrderItem.product.name }}</span>
+            <span matListItemLine
+              >Coffee:
+              {{
+                convertCoffeeTypeToString(
+                  expandedOrderItem.orderItem.coffeeType
+                )
+              }}</span
+            >
+            <span matListItemLine *ngIf="expandedOrderItem.orderItem.milkType"
+              >Milk:
+              {{
+                convertMilkTypeToString(expandedOrderItem.orderItem.milkType)
+              }}</span
+            >
+            <span
+              matListItemLine
+              *ngFor="let addition of expandedOrderItem.orderItem.additions"
+              >{{ addition.name }}</span
+            >
+          </mat-list-item>
+        </mat-list>
+        <div class="price mat-subtitle-1">
+          Total: ${{ order.items | orderItemsPrice }}
+        </div>
+      </mat-card-content>
+      <mat-card-actions *ngIf="actions">
+        <button
+          mat-raised-button
+          *ngFor="let action of actions"
+          [color]="action.color"
+          (click)="onClick(action, order, index)"
+        >
+          {{ action.buttonText }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>
+<ng-template #loadingProducts>
+  <div class="loading-products">
+    <mat-spinner></mat-spinner>
+  </div>
+</ng-template>
