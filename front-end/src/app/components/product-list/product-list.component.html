@@ -1,9 +1,9 @@
 <mat-grid-list
   *ngIf="products$ | async as products"
   [cols]="columns"
-  rowHeight="32em"
+  [rowHeight]="actions ? '32em' : '28em'"
 >
-  <mat-grid-tile *ngFor="let product of products">
+  <mat-grid-tile *ngFor="let product of products; let index = index">
     <mat-card class="product-card">
       <mat-card-header>
         <mat-card-title>{{ product.name }}</mat-card-title>
@@ -12,16 +12,14 @@
         }}</mat-card-subtitle>
       </mat-card-header>
       <img mat-card-image [src]="product.imageUrl" />
-      <mat-card-actions>
+      <mat-card-actions *ngIf="actions">
         <button
           mat-raised-button
-          routerLink="/customize-product"
-          [state]="{ product: product }"
+          *ngFor="let action of actions"
+          [color]="action.color"
+          (click)="onClick(action, product, index)"
         >
-          Customize
-        </button>
-        <button mat-raised-button color="primary" (click)="addToCart(product)">
-          Add to Cart
+          {{ action.buttonText }}
         </button>
       </mat-card-actions>
     </mat-card>

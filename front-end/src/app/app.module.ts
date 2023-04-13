@@ -6,7 +6,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
+import { CustomerProductsComponent } from './components/customer-products/customer-products.component';
 import { CustomizeProductComponent } from './components/customize-product/customize-product.component';
+import { FavoritesComponent } from './components/favorites/favorites.component';
 import { OrderDetailsComponent } from './components/order-details/order-details.component';
 import { OrderHistoryComponent } from './components/order-history/order-history.component';
 import { OrderItemListComponent } from './components/order-item-list/order-item-list.component';
@@ -48,11 +50,11 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { FavoritesComponent } from './components/favorites/favorites.component';
 
 @NgModule({
   declarations: [
     AppComponent,
+    CustomerProductsComponent,
     CustomizeProductComponent,
     FavoritesComponent,
     OrderDetailsComponent,

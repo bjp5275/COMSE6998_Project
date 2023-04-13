@@ -1,24 +1,37 @@
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
 import { Observable } from 'rxjs';
 import { Product } from 'src/app/model/models';
-import { CartService } from 'src/app/shared/services/cart.service';
-import { ProductsService } from 'src/app/shared/services/products.service';
+
+export interface ProductAction {
+  buttonText: string;
+  color?: string;
+  /**
+   * Action to take when product is clicked
+   * @param product the product
+   * @param index index within input array
+   */
+  onClick: (product: Product, index: number) => void;
+}
 
 @Component({
   selector: 'app-product-list',
   templateUrl: './product-list.component.html',
   styleUrls: ['./product-list.component.scss'],
 })
-export class ProductListComponent implements OnInit {
-  products$?: Observable<Product[]>;
+export class ProductListComponent implements OnInit, OnChanges {
   columns = 2;
 
-  constructor(
-    breakpointObserver: BreakpointObserver,
-    private productsService: ProductsService,
-    private cartService: CartService
-  ) {
+  @Input() products$!: Observable<Product[]>;
+  @Input() actions?: ProductAction[];
+
+  constructor(breakpointObserver: BreakpointObserver) {
     breakpointObserver
       .observe([
         Breakpoints.XSmall,
@@ -43,10 +56,21 @@ export class ProductListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.products$ = this.productsService.getProducts();
+    if (!this.products$) {
+      throw new TypeError("'products$' is required");
+    }
   }
 
-  addToCart(product: Product) {
-    this.cartService.addItem(this.productsService.convertToOrderItem(product));
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['products$']) {
+      this.products$ = changes['products$'].currentValue;
+    }
+    if (changes['actions']) {
+      this.actions = changes['actions'].currentValue;
+    }
+  }
+
+  onClick(action: ProductAction, product: Product, index: number) {
+    action.onClick(product, index);
   }
 }
