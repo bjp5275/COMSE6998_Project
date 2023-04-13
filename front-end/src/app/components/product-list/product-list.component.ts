@@ -18,6 +18,12 @@ export interface ProductAction {
    * @param index index within input array
    */
   onClick: (product: Product, index: number) => void;
+  /**
+   * Optional function to determine whether to hide button (using ngIf directive)
+   * @param product the product
+   * @param index index within input array
+   */
+  onlyIf?: (product: Product, index: number) => boolean;
 }
 
 @Component({

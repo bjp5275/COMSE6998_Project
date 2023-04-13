@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { AdminProductsComponent } from './components/admin-products/admin-products.component';
 import { CustomerProductsComponent } from './components/customer-products/customer-products.component';
 import { CustomizeProductComponent } from './components/customize-product/customize-product.component';
 import { FavoritesComponent } from './components/favorites/favorites.component';
@@ -14,6 +15,7 @@ const routes: Routes = [
   { path: 'order', component: OrderDetailsComponent },
   { path: 'history', component: OrderHistoryComponent },
   { path: 'favorites', component: FavoritesComponent },
+  { path: 'admin/products', component: AdminProductsComponent },
   { path: '**', redirectTo: '/products' },
 ];
 

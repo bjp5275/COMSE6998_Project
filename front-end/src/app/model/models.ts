@@ -312,6 +312,7 @@ export interface Product {
    * Unique ID for the product
    */
   readonly id: string;
+  enabled: boolean;
   name: string;
   /**
    * Price for the product without any additions

@@ -13,14 +13,16 @@
       </mat-card-header>
       <img mat-card-image [src]="product.imageUrl" />
       <mat-card-actions *ngIf="actions">
-        <button
-          mat-raised-button
-          *ngFor="let action of actions"
-          [color]="action.color"
-          (click)="onClick(action, product, index)"
-        >
-          {{ action.buttonText }}
-        </button>
+        <ng-container *ngFor="let action of actions">
+          <button
+            mat-raised-button
+            *ngIf="!action.onlyIf || action.onlyIf(product, index)"
+            [color]="action.color"
+            (click)="onClick(action, product, index)"
+          >
+            {{ action.buttonText }}
+          </button>
+        </ng-container>
       </mat-card-actions>
     </mat-card>
   </mat-grid-tile>

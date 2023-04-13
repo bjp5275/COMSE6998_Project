@@ -54,7 +54,7 @@ export class OrderListComponent<T> implements OnInit, OnChanges {
   productMap$: Observable<Map<string, Product>>;
 
   constructor(productService: ProductsService) {
-    this.productMap$ = productService.getProducts().pipe(
+    this.productMap$ = productService.getProducts(true).pipe(
       map((products) => {
         const productMap = new Map<string, Product>();
         products.forEach((product) => productMap.set(product.id, product));

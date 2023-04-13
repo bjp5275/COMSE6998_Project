@@ -9,7 +9,7 @@ type MenuType = 'MENU' | 'ADMIN';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
-  showMenu?: MenuType = 'MENU';
+  showMenu?: MenuType = 'ADMIN';
 
   get cartSize() {
     return this.cartService.size();

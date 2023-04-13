@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, delay, of, throwError } from 'rxjs';
 
 import {
   CoffeeType,
@@ -45,6 +45,7 @@ const ADDITIONS: ProductAddition[] = [
 const PRODUCTS: Product[] = [
   {
     id: 'cafe-americano',
+    enabled: true,
     name: 'Cafe Americano',
     basePrice: 5,
     imageUrl:
@@ -60,6 +61,7 @@ const PRODUCTS: Product[] = [
   },
   {
     id: 'cappuccino',
+    enabled: true,
     name: 'Cappuccino',
     basePrice: 5,
     imageUrl:
@@ -70,6 +72,7 @@ const PRODUCTS: Product[] = [
   },
   {
     id: 'espresso',
+    enabled: true,
     name: 'Espresso',
     basePrice: 5,
     imageUrl:
@@ -78,6 +81,7 @@ const PRODUCTS: Product[] = [
   },
   {
     id: 'caramel-macchiato',
+    enabled: true,
     name: 'Caramel Macchiato',
     basePrice: 5,
     imageUrl:
@@ -88,6 +92,7 @@ const PRODUCTS: Product[] = [
   },
   {
     id: 'mocha',
+    enabled: true,
     name: 'Mocha',
     basePrice: 5,
     imageUrl:
@@ -102,7 +107,13 @@ const PRODUCTS: Product[] = [
   providedIn: 'root',
 })
 export class ProductsService {
-  constructor() {}
+  products = new Map<string, Product>();
+  additions = new Map<string, ProductAddition>();
+
+  constructor() {
+    PRODUCTS.forEach((product) => this.products.set(product.id, product));
+    ADDITIONS.forEach((addition) => this.additions.set(addition.id!, addition));
+  }
 
   /**
    * Get all product additions in the system
@@ -112,7 +123,7 @@ export class ProductsService {
   public getProductAdditions(
     includeDisabled?: boolean
   ): Observable<ProductAddition[]> {
-    return of(ADDITIONS);
+    return of([...this.additions.values()]);
   }
 
   /**
@@ -121,7 +132,11 @@ export class ProductsService {
    * @param includeDisabled Whether to include disabled products in the returned list
    */
   public getProducts(includeDisabled?: boolean): Observable<Product[]> {
-    return of(PRODUCTS);
+    return of(
+      [...this.products.values()].filter(
+        (product) => product.enabled || includeDisabled
+      )
+    );
   }
 
   /**
@@ -130,7 +145,22 @@ export class ProductsService {
    * @param product product definition
    */
   public upsertProduct(product: Product): Observable<Product> {
-    return throwError(() => new Error('undefined'));
+    let id: string;
+    if (!product.id) {
+      id = new Date().getMilliseconds().toString();
+      console.log('Creating new product', product);
+      this.products.set(id, { ...product, id });
+    } else {
+      id = product.id;
+      const oldProduct = this.products.get(id);
+      if (!oldProduct) {
+        return throwError(() => new Error('Product not found'));
+      }
+      console.log('Updating existing product', product);
+      this.products.set(id, { ...product });
+    }
+
+    return of(this.products.get(id)!).pipe(delay(500));
   }
 
   /**

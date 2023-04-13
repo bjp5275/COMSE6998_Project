@@ -6,6 +6,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
+import { AdminProductsComponent } from './components/admin-products/admin-products.component';
 import { CustomerProductsComponent } from './components/customer-products/customer-products.component';
 import { CustomizeProductComponent } from './components/customize-product/customize-product.component';
 import { FavoritesComponent } from './components/favorites/favorites.component';
@@ -53,6 +54,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 @NgModule({
   declarations: [
+    AdminProductsComponent,
     AppComponent,
     CustomerProductsComponent,
     CustomizeProductComponent,
