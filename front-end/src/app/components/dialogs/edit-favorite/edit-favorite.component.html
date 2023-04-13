@@ -1,0 +1,23 @@
+<h2 mat-dialog-title>Edit Favorite</h2>
+<mat-dialog-content>
+  <form [formGroup]="favoriteForm" (ngSubmit)="submitForm()">
+    <mat-form-field appearance="outline">
+      <mat-label>Name</mat-label>
+      <input matInput type="text" formControlName="name" />
+    </mat-form-field>
+    <button type="submit" hidden [disabled]="!favoriteForm.valid">
+      Submit
+    </button>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close cdkFocusInitial>Cancel</button>
+  <button
+    #saveButton
+    mat-button
+    (click)="submitForm()"
+    [disabled]="!favoriteForm.valid"
+  >
+    Save
+  </button>
+</mat-dialog-actions>

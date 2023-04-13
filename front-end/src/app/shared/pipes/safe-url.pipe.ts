@@ -13,7 +13,6 @@ export class SafeUrlPipe implements PipeTransform {
       url = url.replaceAll(' ', '%20');
     }
 
-    console.log(url);
     return this.domSanitizer.bypassSecurityTrustResourceUrl(url);
   }
 }

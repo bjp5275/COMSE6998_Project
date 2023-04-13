@@ -9,6 +9,7 @@ import { AppComponent } from './app.component';
 import { CustomizeProductComponent } from './components/customize-product/customize-product.component';
 import { OrderDetailsComponent } from './components/order-details/order-details.component';
 import { OrderHistoryComponent } from './components/order-history/order-history.component';
+import { OrderItemListComponent } from './components/order-item-list/order-item-list.component';
 import { OrderListComponent } from './components/order-list/order-list.component';
 import { ProductListComponent } from './components/product-list/product-list.component';
 import { UserCartComponent } from './components/user-cart/user-cart.component';
@@ -26,6 +27,7 @@ import { SafeUrlPipe } from './shared/pipes/safe-url.pipe';
 
 import { CreateLocationDialog } from './components/dialogs/create-location-dialog/create-location-dialog.component';
 import { CreatePaymentMethodDialog } from './components/dialogs/create-payment-method-dialog/create-payment-method-dialog.component';
+import { EditFavoriteDialog } from './components/dialogs/edit-favorite/edit-favorite.component';
 
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -45,13 +47,18 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { OrderItemListComponent } from './components/order-item-list/order-item-list.component';
+import { FavoritesComponent } from './components/favorites/favorites.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    ProductListComponent,
     CustomizeProductComponent,
+    FavoritesComponent,
+    OrderDetailsComponent,
+    OrderHistoryComponent,
+    OrderItemListComponent,
+    OrderListComponent,
+    ProductListComponent,
     UserCartComponent,
 
     LocationPipe,
@@ -65,10 +72,7 @@ import { OrderItemListComponent } from './components/order-item-list/order-item-
 
     CreateLocationDialog,
     CreatePaymentMethodDialog,
-    OrderDetailsComponent,
-    OrderItemListComponent,
-    OrderListComponent,
-    OrderHistoryComponent,
+    EditFavoriteDialog,
   ],
   imports: [
     BrowserAnimationsModule,

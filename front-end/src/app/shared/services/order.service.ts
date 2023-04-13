@@ -63,7 +63,7 @@ const ORDER_SECONDARY: Order = {
       id: '0',
       coffeeType: CoffeeType.DECAF,
       milkType: MilkType.OAT,
-      productId: 'cappuccino',
+      productId: 'mocha',
       basePrice: 5,
       additions: [
         {

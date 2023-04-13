@@ -3,6 +3,7 @@
   *ngIf="productMap$ | async as productMap; else loadingProducts"
 >
   <div class="inner-container">
+    <div class="no-orders" *ngIf="!orders?.length">No orders found!</div>
     <mat-card
       class="order-card"
       *ngFor="let order of orders; let index = index"
