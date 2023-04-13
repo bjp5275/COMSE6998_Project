@@ -12,7 +12,7 @@ const routes: Routes = [
   { path: 'customize-product', component: CustomizeProductComponent },
   { path: 'cart', component: UserCartComponent },
   { path: 'order', component: OrderDetailsComponent },
-  { path: 'order-history', component: OrderHistoryComponent },
+  { path: 'history', component: OrderHistoryComponent },
   { path: 'favorites', component: FavoritesComponent },
   { path: '**', redirectTo: '/products' },
 ];

@@ -1,6 +1,6 @@
 <div class="page-container">
   <mat-toolbar color="primary" class="toolbar">
-    <button mat-icon-button>
+    <button *ngIf="showMenu" mat-icon-button (click)="mainMenu.toggle()">
       <mat-icon>menu</mat-icon>
     </button>
     <a class="text-link" routerLink="/">Coffee Delivery Service</a>
@@ -14,12 +14,49 @@
         shopping_cart
       </mat-icon>
     </button>
-    <button mat-icon-button>
+    <button mat-icon-button (click)="secondaryMenu.toggle()">
       <mat-icon>account_circle</mat-icon>
     </button>
   </mat-toolbar>
 
-  <div class="content">
-    <router-outlet></router-outlet>
-  </div>
+  <mat-drawer-container hasBackdrop="true">
+    <mat-drawer #mainMenu class="menu" mode="over" position="start">
+      Menu
+    </mat-drawer>
+    <mat-drawer #secondaryMenu class="menu" mode="over" position="end">
+      Welcome back!
+      <mat-nav-list>
+        <mat-list-item
+          routerLinkActive
+          routerLink="/favorites"
+          #favoriteRla="routerLinkActive"
+          [activated]="favoriteRla.isActive"
+          (click)="secondaryMenu.close()"
+        >
+          <mat-icon matListItemIcon>favorite</mat-icon>
+          <a matListItemTitle class="text-link">Favorites</a>
+        </mat-list-item>
+        <mat-list-item
+          routerLinkActive
+          routerLink="/history"
+          #historyRla="routerLinkActive"
+          [activated]="historyRla.isActive"
+          (click)="secondaryMenu.close()"
+        >
+          <mat-icon matListItemIcon>history</mat-icon>
+          <a matListItemTitle class="text-link">Order History</a>
+        </mat-list-item>
+      </mat-nav-list>
+
+      <div class="centered">
+        <button mat-raised-button color="primary" (click)="logout()">
+          Log Out
+        </button>
+      </div>
+    </mat-drawer>
+
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-drawer-container>
 </div>
