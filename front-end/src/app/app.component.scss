@@ -17,9 +17,15 @@
 }
 
 .menu {
-  width: 15em;
+  width: 20em;
 
   .centered {
     text-align: center;
+  }
+
+  div.title {
+    width: 100%;
+    text-align: center;
+    margin: 0;
   }
 }
