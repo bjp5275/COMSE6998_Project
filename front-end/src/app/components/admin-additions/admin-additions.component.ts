@@ -1,9 +1,18 @@
 import { Component } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { BehaviorSubject, Observable, finalize, first, switchMap } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  concat,
+  finalize,
+  first,
+  of,
+  switchMap,
+} from 'rxjs';
 import { ProductAddition } from 'src/app/model/models';
 import { ProductsService } from 'src/app/shared/services/products.service';
+import { CustomValidators } from 'src/app/shared/utility';
 
 @Component({
   selector: 'app-admin-additions',
@@ -12,19 +21,16 @@ import { ProductsService } from 'src/app/shared/services/products.service';
 })
 export class AdminAdditionsComponent {
   additionForm = this.fb.group({
+    id: '',
     name: ['', Validators.required],
     price: [
-      '',
-      [
-        Validators.required,
-        Validators.min(0),
-        Validators.pattern(/^[0-9]+\.[0-9]{1,2}$/),
-      ],
+      null as number | null,
+      [Validators.required, CustomValidators.price(0, true)],
     ],
     enabled: [true, Validators.required],
   });
 
-  additions$: Observable<ProductAddition[]>;
+  additions$: Observable<ProductAddition[] | null>;
   submittingChange = false;
   private pullAdditions$ = new BehaviorSubject(null);
 
@@ -34,7 +40,9 @@ export class AdminAdditionsComponent {
     private fb: FormBuilder
   ) {
     this.additions$ = this.pullAdditions$.pipe(
-      switchMap(() => productsService.getProductAdditions(true))
+      switchMap(() =>
+        concat(of(null), productsService.getProductAdditions(true))
+      )
     );
   }
 
@@ -51,6 +59,7 @@ export class AdminAdditionsComponent {
   onSubmitAddition(additionForm = this.additionForm.value) {
     if (this.additionForm.valid) {
       const addition: ProductAddition = {
+        id: additionForm.id || undefined,
         name: additionForm.name!,
         price: +additionForm.price!,
         enabled: additionForm.enabled || undefined,
@@ -58,6 +67,17 @@ export class AdminAdditionsComponent {
 
       this.saveAddition(addition);
     }
+  }
+
+  editAddition(addition: ProductAddition) {
+    this.additionForm.setValue({
+      id: addition.id!,
+      name: addition.name,
+      price: addition.price,
+      enabled: addition.enabled || true,
+    });
+
+    document?.getElementById('addition-form')?.scrollIntoView(false);
   }
 
   private saveAddition(addition: ProductAddition) {

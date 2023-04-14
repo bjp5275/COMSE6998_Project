@@ -127,7 +127,7 @@ export class ProductsService {
       [...this.additions.values()].filter(
         (addition) => addition.enabled || includeDisabled
       )
-    );
+    ).pipe(delay(5000));
   }
 
   /**
@@ -164,18 +164,33 @@ export class ProductsService {
       this.products.set(id, { ...product });
     }
 
-    return of(this.products.get(id)!).pipe(delay(500));
+    return of(this.products.get(id)!).pipe(delay(1000));
   }
 
   /**
    * Add or update a product addition in the system
    * User context used to enforce admin access to the system
-   * @param productAddition product addition definition
+   * @param addition product addition definition
    */
   public upsertProductAddition(
-    productAddition: ProductAddition
+    addition: ProductAddition
   ): Observable<ProductAddition> {
-    return throwError(() => new Error('undefined'));
+    let id: string;
+    if (!addition.id) {
+      id = new Date().getMilliseconds().toString();
+      console.log('Creating new product addition', addition);
+      this.additions.set(id, { ...addition, id });
+    } else {
+      id = addition.id;
+      const oldAddition = this.additions.get(id);
+      if (!oldAddition) {
+        return throwError(() => new Error('Product addition not found'));
+      }
+      console.log('Updating existing product addition', addition);
+      this.additions.set(id, { ...addition });
+    }
+
+    return of(this.additions.get(id)!).pipe(delay(1000));
   }
 
   public convertToOrderItem(product: Product): OrderItem {

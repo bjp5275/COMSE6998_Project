@@ -93,7 +93,9 @@ export class Equals {
 export class DateUtility {
   static TIME_INPUT_FORMAT = /^([01][0-9]|2[0-3]):([0-5][0-9])$/;
 
-  static fromInputStringValue(timeInputValue: string | null | undefined): Date | null {
+  static fromInputStringValue(
+    timeInputValue: string | null | undefined
+  ): Date | null {
     const extractedTime = this.TIME_INPUT_FORMAT.exec(timeInputValue || '');
     if (!extractedTime || extractedTime.length != 3) {
       return null;
@@ -134,6 +136,43 @@ export class CustomValidators {
       } else {
         return null;
       }
+    };
+  }
+
+  static price(minimum: number, allowCents: boolean): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (control.pristine) {
+        return null;
+      } else if (!Number.isFinite(control.value)) {
+        return {
+          invalidPrice: {
+            value: control.value,
+            notANumber: 'Must be a number',
+          },
+        } as ValidationErrors;
+      }
+
+      const value: number = control.value;
+      if (value < minimum) {
+        return {
+          invalidPrice: {
+            value: control.value,
+            minimumValue: minimum,
+          },
+        } as ValidationErrors;
+      }
+
+      const cents = value - Math.trunc(value);
+      if (cents != 0 && !allowCents) {
+        return {
+          invalidPrice: {
+            value: control.value,
+            noCents: 'Must not include cents',
+          },
+        } as ValidationErrors;
+      }
+
+      return null;
     };
   }
 }

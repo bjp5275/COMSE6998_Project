@@ -1,9 +1,9 @@
-.new-addition {
+#addition-form {
   width: fit-content;
   text-align: center;
 
-  margin: auto;
   padding: 1em;
+  margin: 1em auto;
   border: 1px solid black;
   border-radius: 1em;
 
@@ -14,4 +14,21 @@
   mat-form-field {
     margin-right: 1em;
   }
+
+  .buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 1em;
+  }
+}
+
+.existing-additions {
+  width: fit-content;
+  margin: 1em auto;
+}
+
+mat-progress-bar.loading-additions {
+  max-width: 15em;
+  margin: 0 auto;
 }

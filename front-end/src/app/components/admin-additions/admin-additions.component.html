@@ -1,9 +1,13 @@
-<div class="new-addition" color="primary">
-  <h2>New Addition</h2>
+<div id="addition-form">
+  <ng-container [ngSwitch]="!!idInput.value">
+    <h2 *ngSwitchCase="false">New Addition</h2>
+    <h2 *ngSwitchCase="true">Edit Addition</h2>
+  </ng-container>
   <form
     [formGroup]="additionForm"
     (ngSubmit)="onSubmitAddition(additionForm.value)"
   >
+    <input #idInput type="hidden" formControlName="id" />
     <mat-form-field appearance="outline">
       <mat-label>Name</mat-label>
       <input matInput type="text" formControlName="name" />
@@ -26,14 +30,18 @@
       >{{ toggle.checked ? "Enabled" : "Disabled" }}</mat-slide-toggle
     >
     <br />
-    <button
-      *ngIf="!submittingChange; else waitingForChange"
-      mat-raised-button
-      type="submit"
-      [disabled]="!additionForm.valid || submittingChange"
-    >
-      Save
-    </button>
+    <div *ngIf="!submittingChange; else waitingForChange" class="buttons">
+      <button
+        mat-raised-button
+        type="submit"
+        [disabled]="!additionForm.valid || submittingChange"
+      >
+        Save
+      </button>
+      <button mat-raised-button [disabled]="submittingChange" type="reset">
+        Clear
+      </button>
+    </div>
     <ng-template #waitingForChange>
       <mat-progress-bar
         mode="indeterminate"
@@ -42,3 +50,31 @@
     </ng-template>
   </form>
 </div>
+<div class="existing-additions">
+  <div class="mat-headline-5 centered underlined">Existing Additions</div>
+  <ng-container *ngIf="additions$ | async as additions; else loadingAdditions">
+    <ng-container *ngIf="!submittingChange; else loadingAdditions">
+      <mat-list>
+        <mat-list-item *ngFor="let addition of additions">
+          <span matListItemIcon>
+            <mat-icon [color]="addition.enabled ? 'primary' : 'accent'">{{
+              addition.enabled ? "check_circle" : "highlight_off"
+            }}</mat-icon>
+          </span>
+          <span matListItemTitle>{{ addition.name }}</span>
+          <span matListItemLine>{{ addition | additionPrice : true }}</span>
+          <button
+            mat-icon-button
+            matListItemMeta
+            (click)="editAddition(addition)"
+          >
+            <mat-icon color="primary">edit</mat-icon>
+          </button>
+        </mat-list-item>
+      </mat-list>
+    </ng-container>
+  </ng-container>
+</div>
+<ng-template #loadingAdditions>
+  <mat-progress-bar mode="query" class="loading-additions"></mat-progress-bar>
+</ng-template>
