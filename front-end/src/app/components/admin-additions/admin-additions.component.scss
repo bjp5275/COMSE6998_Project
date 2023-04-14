@@ -1,0 +1,17 @@
+.new-addition {
+  width: fit-content;
+  text-align: center;
+
+  margin: auto;
+  padding: 1em;
+  border: 1px solid black;
+  border-radius: 1em;
+
+  h2 {
+    text-align: left;
+  }
+
+  mat-form-field {
+    margin-right: 1em;
+  }
+}

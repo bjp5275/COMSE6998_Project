@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, Observable, first, switchMap } from 'rxjs';
 import { Product } from 'src/app/model/models';
 import { ProductsService } from 'src/app/shared/services/products.service';
 import { ProductAction } from '../product-list/product-list.component';
@@ -38,23 +39,34 @@ export class AdminProductsComponent {
 
   constructor(
     private productsService: ProductsService,
-    private router: Router
+    private router: Router,
+    private snackBar: MatSnackBar
   ) {
     this.products$ = this.pullProducts$.pipe(
-      switchMap(() => productsService.getProducts(true)),
-      tap((products) => console.log('Pulled data', products))
+      switchMap(() => productsService.getProducts(true))
     );
   }
 
   enableProduct(product: Product) {
     product.enabled = true;
-    this.productsService.upsertProduct(product);
-    this.pullProducts$.next(null);
+    this.saveProduct(product);
   }
 
   disableProduct(product: Product) {
     product.enabled = false;
-    this.productsService.upsertProduct(product);
-    this.pullProducts$.next(null);
+    this.saveProduct(product);
+  }
+
+  private saveProduct(product: Product) {
+    this.productsService
+      .upsertProduct(product)
+      .pipe(first())
+      .subscribe((product) => {
+        if (product) {
+          this.pullProducts$.next(null);
+        } else {
+          this.snackBar.open('Failed to save product. Please try again', 'OK');
+        }
+      });
   }
 }

@@ -6,6 +6,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
+import { AdminAdditionsComponent } from './components/admin-additions/admin-additions.component';
 import { AdminProductsComponent } from './components/admin-products/admin-products.component';
 import { CustomerProductsComponent } from './components/customer-products/customer-products.component';
 import { CustomizeProductComponent } from './components/customize-product/customize-product.component';
@@ -48,12 +49,14 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @NgModule({
   declarations: [
+    AdminAdditionsComponent,
     AdminProductsComponent,
     AppComponent,
     CustomerProductsComponent,
@@ -102,6 +105,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatProgressSpinnerModule,
     MatSelectModule,
     MatSidenavModule,
+    MatSlideToggleModule,
     MatSnackBarModule,
     MatToolbarModule,
     MatTooltipModule,

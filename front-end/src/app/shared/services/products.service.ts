@@ -123,7 +123,11 @@ export class ProductsService {
   public getProductAdditions(
     includeDisabled?: boolean
   ): Observable<ProductAddition[]> {
-    return of([...this.additions.values()]);
+    return of(
+      [...this.additions.values()].filter(
+        (addition) => addition.enabled || includeDisabled
+      )
+    );
   }
 
   /**
