@@ -47,16 +47,12 @@ export class AdminProductsComponent {
   }
 
   enableProduct(product: Product) {
-    // TODO
-    console.log('Enable');
     product.enabled = true;
     this.productsService.upsertProduct(product);
     this.pullProducts$.next(null);
   }
 
   disableProduct(product: Product) {
-    // TODO
-    console.log('Disable');
     product.enabled = false;
     this.productsService.upsertProduct(product);
     this.pullProducts$.next(null);
