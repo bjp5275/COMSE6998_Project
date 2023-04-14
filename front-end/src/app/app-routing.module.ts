@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AdminAdditionsComponent } from './components/admin-additions/admin-additions.component';
+import { AdminCustomizeProductComponent } from './components/admin-customize-product/admin-customize-product.component';
 import { AdminProductsComponent } from './components/admin-products/admin-products.component';
 import { CustomerProductsComponent } from './components/customer-products/customer-products.component';
 import { CustomizeProductComponent } from './components/customize-product/customize-product.component';
@@ -11,13 +12,14 @@ import { UserCartComponent } from './components/user-cart/user-cart.component';
 
 const routes: Routes = [
   { path: 'products', component: CustomerProductsComponent },
-  { path: 'customize-product', component: CustomizeProductComponent },
+  { path: 'product', component: CustomizeProductComponent },
   { path: 'cart', component: UserCartComponent },
   { path: 'order', component: OrderDetailsComponent },
   { path: 'history', component: OrderHistoryComponent },
   { path: 'favorites', component: FavoritesComponent },
   { path: 'admin/additions', component: AdminAdditionsComponent },
   { path: 'admin/products', component: AdminProductsComponent },
+  { path: 'admin/product', component: AdminCustomizeProductComponent },
   { path: '**', redirectTo: '/products' },
 ];
 

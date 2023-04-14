@@ -7,6 +7,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
 import { AdminAdditionsComponent } from './components/admin-additions/admin-additions.component';
+import { AdminCustomizeProductComponent } from './components/admin-customize-product/admin-customize-product.component';
 import { AdminProductsComponent } from './components/admin-products/admin-products.component';
 import { CustomerProductsComponent } from './components/customer-products/customer-products.component';
 import { CustomizeProductComponent } from './components/customize-product/customize-product.component';
@@ -57,6 +58,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 @NgModule({
   declarations: [
     AdminAdditionsComponent,
+    AdminCustomizeProductComponent,
     AdminProductsComponent,
     AppComponent,
     CustomerProductsComponent,

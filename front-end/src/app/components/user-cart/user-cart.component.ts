@@ -31,7 +31,7 @@ export class UserCartComponent {
     {
       buttonText: 'Customize',
       onClick: (product, orderItem, _index) => {
-        this.router.navigateByUrl('/customize-product', {
+        this.router.navigateByUrl('/product', {
           state: { product, orderItem },
         });
       },

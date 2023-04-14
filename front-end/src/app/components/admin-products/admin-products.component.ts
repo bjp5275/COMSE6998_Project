@@ -28,7 +28,7 @@ export class AdminProductsComponent {
       buttonText: 'Customize',
       color: 'primary',
       onClick: (product, _index) =>
-        this.router.navigateByUrl('/admin/customize-product', {
+        this.router.navigateByUrl('/admin/product', {
           state: { product },
         }),
     },

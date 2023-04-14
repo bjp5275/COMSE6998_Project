@@ -1,0 +1,130 @@
+<form class="container" [formGroup]="productForm" (ngSubmit)="onSubmit()">
+  <ng-container [ngSwitch]="isProductUpdate">
+    <div class="title" *ngSwitchCase="true">Edit Product</div>
+    <div class="title" *ngSwitchCase="false">Create Product</div>
+  </ng-container>
+  <div class="product">
+    <mat-form-field appearance="outline">
+      <mat-label>Name</mat-label>
+      <input matInput type="text" formControlName="name" />
+    </mat-form-field>
+    <ng-container *ngIf="imageUrl">
+      <mat-card class="product-card">
+        <img mat-card-image [src]="imageUrl" />
+      </mat-card>
+      <br />
+    </ng-container>
+    <mat-form-field appearance="outline">
+      <mat-label>Image URL</mat-label>
+      <input matInput type="text" formControlName="imageUrl" />
+    </mat-form-field>
+  </div>
+  <div class="product-details">
+    <div class="inner-product-details">
+      <mat-form-field appearance="outline">
+        <mat-label>Base Price</mat-label>
+        <span matTextPrefix>$&nbsp;</span>
+        <input
+          matInput
+          type="number"
+          formControlName="basePrice"
+          step="0.01"
+          min="0"
+        />
+      </mat-form-field>
+      <div class="toggle-group-holder">
+        <label for="allowedCoffeeTypes">Allowed Coffee Types:</label><br />
+        <mat-button-toggle-group multiple formControlName="allowedCoffeeTypes">
+          <mat-button-toggle
+            *ngFor="let coffeeType of ALL_COFFEE_TYPES"
+            [value]="coffeeType"
+            #coffeeToggle
+          >
+            <mat-icon *ngIf="coffeeToggle.checked" color="primary">
+              check
+            </mat-icon>
+            {{ convertCoffeeTypeToString(coffeeType) }}
+          </mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+      <div class="toggle-group-holder">
+        <label for="allowedMilkTypes">Allowed Milk Types:</label><br />
+        <mat-button-toggle-group multiple formControlName="allowedMilkTypes">
+          <mat-button-toggle
+            *ngFor="let milkType of ALL_MILK_TYPES"
+            [value]="milkType"
+            #milkToggle
+          >
+            <mat-icon *ngIf="milkToggle.checked" color="primary">
+              check
+            </mat-icon>
+            {{ convertMilkTypeToString(milkType) }}
+          </mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+      <mat-form-field class="no-padding" appearance="outline">
+        <mat-icon matPrefix>add_circle_outlined</mat-icon>
+        <input
+          matInput
+          [placeholder]="
+            allowedAdditions ? 'Additions' : 'Loading Additions...'
+          "
+          [matAutocomplete]="auto"
+          formControlName="additionEntry"
+        />
+        <mat-icon *ngIf="allowedAdditions; else loadingAdditions" matSuffix>
+          search
+        </mat-icon>
+        <ng-template #loadingAdditions>
+          <mat-spinner matSuffix class="loading-additions"></mat-spinner>
+        </ng-template>
+        <mat-autocomplete
+          #auto="matAutocomplete"
+          (optionSelected)="onSelectAddition($event)"
+        >
+          <mat-option
+            *ngFor="let addition of filteredAdditions | async"
+            [value]="addition.id"
+          >
+            <span>{{ addition.name }}</span> |
+            <small>Price: {{ addition | additionPrice }}</small>
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+      <mat-chip-set
+        class="mat-mdc-chip-set-stacked selected-additions"
+        formArrayName="additions"
+        *ngIf="allowedAdditions"
+      >
+        <mat-chip
+          *ngFor="let addition of selectedAdditions.controls; let i = index"
+          (removed)="onRemoveAddition(i)"
+          disableRipple
+        >
+          {{ getAdditionName(addition.value!) }}
+          <button matChipRemove>
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      </mat-chip-set>
+
+      <br />
+      <div class="footer">
+        <button
+          *ngIf="!savingProduct; else savingProductSpinner"
+          mat-raised-button
+          type="submit"
+          [disabled]="!productForm.valid"
+        >
+          {{ isProductUpdate ? "Update" : "Create" }}
+        </button>
+      </div>
+    </div>
+  </div>
+</form>
+<ng-template #savingProductSpinner>
+  <mat-progress-bar
+    mode="indeterminate"
+    class="saving-product"
+  ></mat-progress-bar>
+</ng-template>
