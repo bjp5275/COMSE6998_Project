@@ -15,6 +15,13 @@ def serialize_to_dynamo_object(obj):
         for key, value in obj.items()
     }
 
+def getQueryParameter(event, name, defaultValue):
+    if 'queryStringParameters' in event:
+        parameters = event['queryStringParameters']
+        if parameters is not None and name in parameters:
+            return parameters[name]
+    return defaultValue
+
 def build_response(code, body):
     formatted_body = body
     if type(body) != str:

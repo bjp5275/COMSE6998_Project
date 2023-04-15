@@ -2,7 +2,7 @@ import os
 import json
 import uuid
 import boto3
-from project_utility import build_response, deserialize_dynamo_object, serialize_to_dynamo_object
+from project_utility import getQueryParameter, build_response, deserialize_dynamo_object, serialize_to_dynamo_object
 
 # Dynamo Tables
 PRODUCTS_TABLE = os.environ['PRODUCTS_TABLE']
@@ -37,11 +37,7 @@ def get_additions(event, context):
     }
 
     # Check include_disabled flag
-    parameters = event['queryStringParameters']
-    if INCLUDE_DISABLED_FLAG not in parameters:
-        include_disabled = False
-    else:
-        include_disabled = parameters[INCLUDE_DISABLED_FLAG].lower() == 'true'
+    include_disabled = getQueryParameter(event, INCLUDE_DISABLED_FLAG, 'false').lower() == 'true'
     
     # Filter out disabled items
     if not include_disabled:
