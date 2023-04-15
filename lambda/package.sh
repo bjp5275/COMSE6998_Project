@@ -53,7 +53,7 @@ else
 fi
 
 echo "Zipping lambda function..."
-zip deployment.zip ../project_utility.py
+zip -j deployment.zip ../project_utility.py
 zip deployment.zip lambda_function.py
 cd ..
 
