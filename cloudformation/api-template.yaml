@@ -1,0 +1,163 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Coffee Delivery API Infrastructure"
+Parameters:
+  PhotosBucket:
+    Type: String
+    Description: "The S3 bucket where image resources should be stored"
+    AllowedPattern: ^[-a-z0-9]+$
+    ConstraintDescription: "Malformed input - Parameter must only use lowercase letters, numbers, and dashes"
+  ResourcesBucket:
+    Type: String
+    Description: "The S3 bucket where deploy resources exist"
+    AllowedPattern: ^[-a-z0-9]+$
+    Default: "bjp2158-deploy-resources"
+    ConstraintDescription: "Malformed input - Parameter must only use lowercase letters, numbers, and dashes"
+  ApiGatewayYamlS3ObjectKey:
+    Type: String
+    Description: "The S3 object key for the API Gateway YAML file"
+  StageName:
+    Type: String
+    Description: "The name to use for the deployed API stage"
+    AllowedPattern: ^[-a-z0-9]+$
+    Default: "v1"
+    ConstraintDescription: "Malformed input - Parameter must only use lowercase letters, numbers, and dashes"
+  ResourceSuffix:
+    Type: String
+    Description: "The suffix for created resources' names"
+    AllowedPattern: ^[-a-z0-9]+$
+    ConstraintDescription: "Malformed input - Parameter must only use lowercase letters, numbers, and dashes"
+
+Resources:
+  # API Execution Roles
+  ApiS3ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: "coffee-delivery-api-s3-execution-role"
+      Description: "Role for API Gateway to upload to S3 bucket"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+                - s3.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/"
+      Policies:
+        - PolicyName: "coffee-delivery-api-s3-execution-policy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: s3:PutObject*
+                Resource: !Sub "arn:aws:s3:::${PhotosBucket}/*"
+
+  ApiLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: "coffee-delivery-api-lambda-execution-role"
+      Description: "Role for API Gateway to execute lambda functions"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+                - lambda.amazonaws.com
+                - s3.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      Policies:
+        - PolicyName: "coffee-delivery-api-lambda-execution-policy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: logs:*
+                Resource: "arn:aws:logs:*:*:*"
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:coffee-delivery-*-${ResourceSuffix}
+
+  # API Resources
+  RestApi:
+    Type: AWS::ApiGateway::RestApi
+    DependsOn: ApiS3ExecutionRole
+    Properties:
+      ApiKeySourceType: "HEADER"
+      BinaryMediaTypes:
+        - image/jpg
+        - image/jpeg
+        - image/png
+      Body:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: !Sub s3://${ResourcesBucket}/${ApiGatewayYamlS3ObjectKey}
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      FailOnWarnings: true
+      Name: !Join
+        - "-"
+        - - "coffee-delivery-api"
+          - !Select
+            - 0
+            - !Split
+              - "-"
+              - !Select
+                - 2
+                - !Split
+                  - "/"
+                  - !Ref "AWS::StackId"
+  RestApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      DeploymentId: !Ref RestApiDeployment
+      RestApiId: !Ref RestApi
+      StageName: !Ref StageName
+  RestApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref RestApi
+
+  # API Key Resources
+  ApiKey:
+    Type: "AWS::ApiGateway::ApiKey"
+    DependsOn: RestApiStage
+    Properties:
+      Enabled: true
+  ApiUsagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    DependsOn: RestApiStage
+    Properties:
+      ApiStages:
+        - ApiId: !Ref RestApi
+          Stage: !Ref StageName
+      Description: String
+      Quota:
+        Limit: 1000
+        Period: DAY
+      Throttle:
+        BurstLimit: 5
+        RateLimit: 10
+  UsagePlanApiKey:
+    Type: AWS::ApiGateway::UsagePlanKey
+    Properties:
+      KeyId: !Ref ApiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref ApiUsagePlan
+
+Outputs:
+  # URL
+  ApiUrl:
+    Description: "URL for the API"
+    Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}"
+
+  # API Key
+  ApiKeyId:
+    Description: "ID of the API key granting access to the API"
+    Value: !Ref ApiKey

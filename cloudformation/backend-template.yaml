@@ -1,0 +1,121 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Coffee Delivery Service Backend Infrastructure"
+Parameters:
+  ResourcesBucket:
+    Type: String
+    Description: "The S3 bucket where deploy resources exist"
+    AllowedPattern: ^[-a-z0-9]+$
+    Default: "bjp2158-deploy-resources"
+    ConstraintDescription: "Malformed input - Parameter must only use lowercase letters, numbers, and dashes"
+  FunctionS3ObjectKeySuffix:
+    Type: String
+    Description: "The suffix on S3 object keys for Lambda functions"
+  ResourceSuffix:
+    Type: String
+    Description: "The suffix for created resources' names"
+    AllowedPattern: ^[-a-z0-9]+$
+    ConstraintDescription: "Malformed input - Parameter must only use lowercase letters, numbers, and dashes"
+
+Resources:
+  # DynamoDB Tables
+  ProductTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      BillingMode: PROVISIONED
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      TableName: "products"
+      Tags:
+        - Key: Purpose
+          Value: "Contains products and product additions"
+
+  OrderTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: customer-id
+          AttributeType: S
+        - AttributeName: id
+          AttributeType: S
+      BillingMode: PROVISIONED
+      KeySchema:
+        - AttributeName: customer-id
+          KeyType: HASH
+        - AttributeName: id
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      TableName: "orders"
+      Tags:
+        - Key: Purpose
+          Value: "Contains customers' order details"
+
+  # IAM Roles
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: "Role for all Lambda functions in this stack"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      Policies:
+        - PolicyName: "dynamo-crud-access"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:PutItem
+                  - dynamodb:Scan
+                  - dynamodb:Query
+                  - dynamodb:UpdateItem
+                  - dynamodb:BatchWriteItem
+                  - dynamodb:BatchGetItem
+                  - dynamodb:DescribeTable
+                  - dynamodb:ConditionCheckItem
+                Resource:
+                  - !GetAtt ProductTable.Arn
+                  - !GetAtt OrderTable.Arn
+
+  # Lambda functions
+  ProductsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Architectures:
+        - "x86_64"
+      Code:
+        S3Bucket: !Ref ResourcesBucket
+        S3Key: !Sub "coffee-delivery/products-${FunctionS3ObjectKeySuffix}.zip"
+      Environment:
+        Variables:
+          STACK_ID: !Ref "AWS::StackId"
+      FunctionName: !Sub "coffee-delivery-products-${ResourceSuffix}"
+      Handler: "lambda_function.lambda_handler"
+      MemorySize: 128
+      PackageType: "Zip"
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: "python3.9"
+      Timeout: 15
+
+Outputs:
+  # Lambda Outputs
+  ProductsFunctionArn:
+    Description: "ARN for products Lambda"
+    Value: !GetAtt ProductsFunction.Arn

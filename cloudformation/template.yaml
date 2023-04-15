@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Coffee Delivery Service Infrastructure"
+Parameters:
+  ResourcesBucket:
+    Type: String
+    Description: "The S3 bucket where Lambda function code zips and API Gateway YAML exist"
+    AllowedPattern: ^[-a-z0-9]+$
+    Default: "bjp2158-deploy-resources"
+    ConstraintDescription: "Malformed input - Parameter must only use lowercase letters, numbers, and dashes"
+  BackendStackS3Key:
+    Type: String
+    Description: "The S3 object key for the backend stack YAML file"
+    Default: "coffee-delivery/backend-template.yaml"
+  FunctionS3ObjectKeySuffix:
+    Type: String
+    Description: "The suffix on S3 object keys for Lambda functions"
+  ApiStackS3Key:
+    Type: String
+    Description: "The S3 object key for the API stack YAML file"
+    Default: "coffee-delivery/api-template.yaml"
+  PhotosBucket:
+    Type: String
+    Description: "The S3 bucket where image resources should be stored"
+    Default: "coffee-delivery-photos"
+  ApiGatewayYamlS3ObjectKey:
+    Type: String
+    Description: "The S3 object key for the API Gateway YAML file"
+    Default: "coffee-delivery/api-swagger.yaml"
+  StageName:
+    Type: String
+    Description: "The name to use for the deployed API stage"
+    Default: "v1"
+
+Resources:
+  BackendStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://s3.amazonaws.com/${ResourcesBucket}/${BackendStackS3Key}"
+      Parameters:
+        ResourcesBucket: !Ref ResourcesBucket
+        FunctionS3ObjectKeySuffix: !Ref FunctionS3ObjectKeySuffix
+        ResourceSuffix: !Select
+          - 0
+          - !Split
+            - "-"
+            - !Select
+              - 2
+              - !Split
+                - "/"
+                - !Ref "AWS::StackId"
+
+  ApiStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: BackendStack
+    Properties:
+      TemplateURL: !Sub "https://s3.amazonaws.com/${ResourcesBucket}/${ApiStackS3Key}"
+      Parameters:
+        PhotosBucket: !Ref PhotosBucket
+        ResourcesBucket: !Ref ResourcesBucket
+        ApiGatewayYamlS3ObjectKey: !Ref ApiGatewayYamlS3ObjectKey
+        StageName: !Ref StageName
+        ResourceSuffix: !Select
+          - 0
+          - !Split
+            - "-"
+            - !Select
+              - 2
+              - !Split
+                - "/"
+                - !Ref "AWS::StackId"
+
+Outputs:
+  # Child Stacks
+  BackendStackId:
+    Description: "ID of backend stack"
+    Value: !Ref BackendStack
+  ApiStackId:
+    Description: "ID of API stack"
+    Value: !Ref ApiStack
