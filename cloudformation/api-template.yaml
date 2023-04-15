@@ -77,10 +77,10 @@ Resources:
             Statement:
               - Effect: Allow
                 Action: logs:*
-                Resource: "arn:aws:logs:*:*:*"
+                Resource: arn:aws:logs:*:*:*
               - Effect: Allow
                 Action: lambda:InvokeFunction
-                Resource: arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:coffee-delivery-*-${ResourceSuffix}
+                Resource: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:coffee-delivery-*-${ResourceSuffix}"
 
   # API Resources
   RestApi:
