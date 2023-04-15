@@ -53,7 +53,7 @@ def toEnumList(listValue, validValues):
             if normalized is not None:
                 validValues.append(normalized)
             else:
-                invalidValues.append(coffeeType)
+                invalidValues.append(value)
         return validValues, invalidValues
 
 COFFEE_TYPES = ['REGULAR', 'DECAF']
