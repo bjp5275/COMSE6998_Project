@@ -36,25 +36,28 @@ fi
 
 echo "Packaging ${DIRECTORY}..."
 cd $DIRECTORY
+BASENAME=`basename $(pwd)`
+GIT_HASH=`git rev-parse --short HEAD`
+PACKAGE_NAME="${BASENAME}-${GIT_HASH}.zip"
 
 if [ $CLEAN_FIRST == "true" ]; then
     echo "Cleaning directory..."
-    rm -rf package/ deployment.zip
+    rm -rf package/ ${BASENAME}-*.zip
 fi
 
 if [ -f "requirements.txt" ]; then
     echo "Installing requirements..."
     pip install --target ./package --requirement requirements.txt
     cd package
-    zip -r ../deployment.zip .
+    zip -r ../${PACKAGE_NAME} .
     cd ..
 else
     echo "No requirements to install"
 fi
 
 echo "Zipping lambda function..."
-zip -j deployment.zip ../project_utility.py
-zip deployment.zip lambda_function.py
+zip -j ${PACKAGE_NAME} ../project_utility.py
+zip ${PACKAGE_NAME} lambda_function.py
 cd ..
 
 echo "Packaging complete!"
