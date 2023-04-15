@@ -4,7 +4,16 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Navigation, Router } from '@angular/router';
-import { Observable, finalize, first, map, merge, startWith } from 'rxjs';
+import {
+  Observable,
+  catchError,
+  finalize,
+  first,
+  map,
+  merge,
+  of,
+  startWith,
+} from 'rxjs';
 import {
   CoffeeType,
   MilkType,
@@ -14,7 +23,7 @@ import {
   convertMilkTypeToString,
 } from 'src/app/model/models';
 import { ProductsService } from 'src/app/shared/services/products.service';
-import { CustomValidators } from 'src/app/shared/utility';
+import { CustomValidators, HttpError } from 'src/app/shared/utility';
 
 interface RouteState {
   product?: Product;
@@ -101,6 +110,13 @@ export class AdminCustomizeProductComponent implements OnInit {
       .getProductAdditions(true)
       .pipe(
         first(),
+        catchError((err: HttpError) => {
+          this.snackBar.open(
+            `Failed to load product additions: ${err.errorMessage}`,
+            'Dismiss'
+          );
+          return of([] as ProductAddition[]);
+        }),
         finalize(() => this.additionEntry.enable())
       )
       .subscribe((additions) => (this.allowedAdditions = additions));
@@ -198,6 +214,7 @@ export class AdminCustomizeProductComponent implements OnInit {
     this.productService
       .upsertProduct(productValue)
       .pipe(
+        catchError(() => of(null)),
         first(),
         finalize(() => (this.savingProduct = false))
       )

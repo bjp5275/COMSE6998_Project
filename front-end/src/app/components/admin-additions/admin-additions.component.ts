@@ -4,6 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
   Observable,
+  catchError,
   concat,
   finalize,
   first,
@@ -12,7 +13,7 @@ import {
 } from 'rxjs';
 import { ProductAddition } from 'src/app/model/models';
 import { ProductsService } from 'src/app/shared/services/products.service';
-import { CustomValidators } from 'src/app/shared/utility';
+import { CustomValidators, HttpError } from 'src/app/shared/utility';
 
 @Component({
   selector: 'app-admin-additions',
@@ -41,7 +42,18 @@ export class AdminAdditionsComponent {
   ) {
     this.additions$ = this.pullAdditions$.pipe(
       switchMap(() =>
-        concat(of(null), productsService.getProductAdditions(true))
+        concat(
+          of(null),
+          productsService.getProductAdditions(true).pipe(
+            catchError((err: HttpError) => {
+              this.snackBar.open(
+                `Failed to load product additions: ${err.errorMessage}`,
+                'Dismiss'
+              );
+              return of([] as ProductAddition[]);
+            })
+          )
+        )
       )
     );
   }
@@ -85,6 +97,7 @@ export class AdminAdditionsComponent {
     this.productsService
       .upsertProductAddition(addition)
       .pipe(
+        catchError(() => of(null)),
         first(),
         finalize(() => (this.submittingChange = false))
       )

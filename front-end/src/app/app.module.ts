@@ -1,3 +1,4 @@
+import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
@@ -87,6 +88,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   imports: [
     BrowserAnimationsModule,
     BrowserModule,
+    HttpClientModule,
     ReactiveFormsModule,
 
     AppRoutingModule,

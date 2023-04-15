@@ -1,5 +1,6 @@
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, delay, of, throwError } from 'rxjs';
+import { Observable, catchError, map, retry, tap } from 'rxjs';
 
 import {
   CoffeeType,
@@ -8,6 +9,10 @@ import {
   Product,
   ProductAddition,
 } from 'src/app/model/models';
+import { environment } from 'src/environments/environment';
+import { HttpUtils } from '../utility';
+
+const INCLUDE_DISABLED_PARAMETER = 'includeDisabled';
 
 const ADDITIONS: ProductAddition[] = [
   {
@@ -110,9 +115,58 @@ export class ProductsService {
   products = new Map<string, Product>();
   additions = new Map<string, ProductAddition>();
 
-  constructor() {
+  constructor(private http: HttpClient) {
     PRODUCTS.forEach((product) => this.products.set(product.id, product));
     ADDITIONS.forEach((addition) => this.additions.set(addition.id!, addition));
+  }
+
+  private cleanProductFromService(product: Product): Product {
+    if (product) {
+      if (product.basePrice) {
+        product.basePrice = HttpUtils.convertDecimalFromString(
+          product.basePrice
+        )!;
+      }
+      if (product.allowedAdditions) {
+        product.allowedAdditions = product.allowedAdditions.map((addition) =>
+          this.cleanProductAdditionFromService(addition)
+        );
+      }
+    }
+
+    return product;
+  }
+
+  private cleanProductsFromService(products: Product[]): Product[] {
+    if (products) {
+      products = products.map((product) =>
+        this.cleanProductFromService(product)
+      );
+    }
+
+    return products;
+  }
+
+  private cleanProductAdditionFromService(
+    addition: ProductAddition
+  ): ProductAddition {
+    if (addition && addition.price) {
+      addition.price = HttpUtils.convertDecimalFromString(addition.price)!;
+    }
+
+    return addition;
+  }
+
+  private cleanProductAdditionsFromService(
+    additions: ProductAddition[]
+  ): ProductAddition[] {
+    if (additions) {
+      additions = additions.map((addition) =>
+        this.cleanProductAdditionFromService(addition)
+      );
+    }
+
+    return additions;
   }
 
   /**
@@ -121,13 +175,21 @@ export class ProductsService {
    * @param includeDisabled Whether to include disabled product additions in the returned list
    */
   public getProductAdditions(
-    includeDisabled?: boolean
+    includeDisabled: boolean = false
   ): Observable<ProductAddition[]> {
-    return of(
-      [...this.additions.values()].filter(
-        (addition) => addition.enabled || includeDisabled
-      )
-    ).pipe(delay(5000));
+    const url = `${environment.backendUrl}/products/additions`;
+    const params = new HttpParams().set(
+      INCLUDE_DISABLED_PARAMETER,
+      includeDisabled
+    );
+    const headers = HttpUtils.getBaseHeaders();
+
+    return this.http.get<ProductAddition[]>(url, { headers, params }).pipe(
+      map((rawData) => this.cleanProductAdditionsFromService(rawData)),
+      tap((data) => console.log('Retrieved product additions', data)),
+      retry(HttpUtils.RETRY_ATTEMPTS),
+      catchError((error) => HttpUtils.handleError(error))
+    );
   }
 
   /**
@@ -135,11 +197,19 @@ export class ProductsService {
    *
    * @param includeDisabled Whether to include disabled products in the returned list
    */
-  public getProducts(includeDisabled?: boolean): Observable<Product[]> {
-    return of(
-      [...this.products.values()].filter(
-        (product) => product.enabled || includeDisabled
-      )
+  public getProducts(includeDisabled: boolean = false): Observable<Product[]> {
+    const url = `${environment.backendUrl}/products`;
+    const params = new HttpParams().set(
+      INCLUDE_DISABLED_PARAMETER,
+      includeDisabled
+    );
+    const headers = HttpUtils.getBaseHeaders();
+
+    return this.http.get<Product[]>(url, { headers, params }).pipe(
+      map((rawData) => this.cleanProductsFromService(rawData)),
+      tap((data) => console.log('Retrieved products', data)),
+      retry(HttpUtils.RETRY_ATTEMPTS),
+      catchError((error) => HttpUtils.handleError(error))
     );
   }
 
@@ -149,22 +219,15 @@ export class ProductsService {
    * @param product product definition
    */
   public upsertProduct(product: Product): Observable<Product> {
-    let id: string;
-    if (!product.id) {
-      id = new Date().getMilliseconds().toString();
-      console.log('Creating new product', product);
-      this.products.set(id, { ...product, id });
-    } else {
-      id = product.id;
-      const oldProduct = this.products.get(id);
-      if (!oldProduct) {
-        return throwError(() => new Error('Product not found'));
-      }
-      console.log('Updating existing product', product);
-      this.products.set(id, { ...product });
-    }
+    const url = `${environment.backendUrl}/products`;
+    const headers = HttpUtils.getBaseHeaders();
 
-    return of(this.products.get(id)!).pipe(delay(1000));
+    return this.http.post<Product>(url, product, { headers }).pipe(
+      map((rawData) => this.cleanProductFromService(rawData)),
+      tap((data) => console.log('Upserted product', data)),
+      retry(HttpUtils.RETRY_ATTEMPTS),
+      catchError((error) => HttpUtils.handleError(error))
+    );
   }
 
   /**
@@ -175,22 +238,15 @@ export class ProductsService {
   public upsertProductAddition(
     addition: ProductAddition
   ): Observable<ProductAddition> {
-    let id: string;
-    if (!addition.id) {
-      id = new Date().getMilliseconds().toString();
-      console.log('Creating new product addition', addition);
-      this.additions.set(id, { ...addition, id });
-    } else {
-      id = addition.id;
-      const oldAddition = this.additions.get(id);
-      if (!oldAddition) {
-        return throwError(() => new Error('Product addition not found'));
-      }
-      console.log('Updating existing product addition', addition);
-      this.additions.set(id, { ...addition });
-    }
+    const url = `${environment.backendUrl}/products/additions`;
+    const headers = HttpUtils.getBaseHeaders();
 
-    return of(this.additions.get(id)!).pipe(delay(1000));
+    return this.http.post<ProductAddition>(url, addition, { headers }).pipe(
+      map((rawData) => this.cleanProductAdditionFromService(rawData)),
+      tap((data) => console.log('Upserted product addition', data)),
+      retry(HttpUtils.RETRY_ATTEMPTS),
+      catchError((error) => HttpUtils.handleError(error))
+    );
   }
 
   public convertToOrderItem(product: Product): OrderItem {

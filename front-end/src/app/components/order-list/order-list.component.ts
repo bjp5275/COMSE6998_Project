@@ -5,7 +5,8 @@ import {
   OnInit,
   SimpleChanges,
 } from '@angular/core';
-import { Observable, first, map, shareReplay, tap } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Observable, catchError, first, map, of, shareReplay, tap } from 'rxjs';
 import {
   OrderItem,
   Product,
@@ -13,6 +14,7 @@ import {
   convertMilkTypeToString,
 } from 'src/app/model/models';
 import { ProductsService } from 'src/app/shared/services/products.service';
+import { HttpError } from 'src/app/shared/utility';
 
 export interface OrderAction<T> {
   buttonText: string;
@@ -53,8 +55,15 @@ export class OrderListComponent<T> implements OnInit, OnChanges {
   loadingProductMap = true;
   productMap$: Observable<Map<string, Product>>;
 
-  constructor(productService: ProductsService) {
+  constructor(productService: ProductsService, snackBar: MatSnackBar) {
     this.productMap$ = productService.getProducts(true).pipe(
+      catchError((err: HttpError) => {
+        snackBar.open(
+          `Failed to load products: ${err.errorMessage}`,
+          'Dismiss'
+        );
+        return of([] as Product[]);
+      }),
       map((products) => {
         const productMap = new Map<string, Product>();
         products.forEach((product) => productMap.set(product.id, product));

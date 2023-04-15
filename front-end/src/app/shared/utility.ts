@@ -1,4 +1,64 @@
+import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import { Observable, throwError } from 'rxjs';
+import { environment } from 'src/environments/environment';
+
+export interface HttpError {
+  errorCode: number;
+  errorMessage: string;
+}
+
+export class HttpUtils {
+  static AUTHORIZATION_HEADER = 'X-Api-Key';
+  static RETRY_ATTEMPTS = 2;
+
+  public static getBaseHeaders(): HttpHeaders {
+    return new HttpHeaders().set(
+      HttpUtils.AUTHORIZATION_HEADER,
+      environment.apiKey
+    );
+  }
+
+  public static handleError(error: Error): Observable<never> {
+    var errorResponse: HttpError;
+    console.log('Handling error', error);
+
+    if (error instanceof HttpErrorResponse) {
+      errorResponse = {
+        errorCode: error.status,
+        errorMessage:
+          error.message ||
+          error.error ||
+          error.statusText ||
+          `Error ${error.status}`,
+      };
+    } else if (error instanceof Error) {
+      errorResponse = {
+        errorCode: 0,
+        errorMessage: error.message || error.name || 'Error',
+      };
+    } else {
+      errorResponse = {
+        errorCode: -1,
+        errorMessage: 'Unknown',
+      };
+    }
+
+    // return an observable with a user-facing error message
+    console.log('Resolved error: ', errorResponse);
+    return throwError(() => errorResponse);
+  }
+
+  public static convertDecimalFromString(
+    decimalString: string | number
+  ): number | undefined {
+    if (!decimalString) {
+      return undefined;
+    } else {
+      return Number(decimalString);
+    }
+  }
+}
 
 export class Equals {
   public static deep(object1: any, object2: any): boolean {

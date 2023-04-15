@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, catchError, of } from 'rxjs';
 import { Product } from 'src/app/model/models';
 import { CartService } from 'src/app/shared/services/cart.service';
 import { ProductsService } from 'src/app/shared/services/products.service';
+import { HttpError } from 'src/app/shared/utility';
 import { ProductAction } from '../product-list/product-list.component';
 
 @Component({
@@ -30,9 +32,18 @@ export class CustomerProductsComponent {
   constructor(
     private productsService: ProductsService,
     private cartService: CartService,
-    private router: Router
+    private router: Router,
+    snackBar: MatSnackBar
   ) {
-    this.products$ = productsService.getProducts();
+    this.products$ = productsService.getProducts().pipe(
+      catchError((err: HttpError) => {
+        snackBar.open(
+          `Failed to load products: ${err.errorMessage}`,
+          'Dismiss'
+        );
+        return of([] as Product[]);
+      })
+    );
   }
 
   addToCart(product: Product) {

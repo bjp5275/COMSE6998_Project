@@ -1,9 +1,17 @@
 import { Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, first, switchMap } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  catchError,
+  first,
+  of,
+  switchMap,
+} from 'rxjs';
 import { Product } from 'src/app/model/models';
 import { ProductsService } from 'src/app/shared/services/products.service';
+import { HttpError } from 'src/app/shared/utility';
 import { ProductAction } from '../product-list/product-list.component';
 
 @Component({
@@ -43,7 +51,17 @@ export class AdminProductsComponent {
     private snackBar: MatSnackBar
   ) {
     this.products$ = this.pullProducts$.pipe(
-      switchMap(() => productsService.getProducts(true))
+      switchMap(() =>
+        productsService.getProducts(true).pipe(
+          catchError((err: HttpError) => {
+            this.snackBar.open(
+              `Failed to load products: ${err.errorMessage}`,
+              'Dismiss'
+            );
+            return of([] as Product[]);
+          })
+        )
+      )
     );
   }
 
@@ -60,7 +78,10 @@ export class AdminProductsComponent {
   private saveProduct(product: Product) {
     this.productsService
       .upsertProduct(product)
-      .pipe(first())
+      .pipe(
+        catchError(() => of(null)),
+        first()
+      )
       .subscribe((product) => {
         if (product) {
           this.pullProducts$.next(null);
