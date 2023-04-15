@@ -15,8 +15,10 @@ paths:
     put:
       operationId: "uploadPhoto"
       requestBody:
+        required: true
         content:
           image/jpg:
+            schema:
               $ref: "#/components/schemas/RawImage"
           image/png:
             schema:
@@ -24,7 +26,6 @@ paths:
           image/jpeg:
             schema:
               $ref: "#/components/schemas/RawImage"
-        required: true
       responses:
         "500":
           description: "500 response"
