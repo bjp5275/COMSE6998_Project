@@ -2,7 +2,8 @@ import os
 import json
 import uuid
 import boto3
-from project_utility import getQueryParameter, build_response, deserialize_dynamo_object, serialize_to_dynamo_object
+from decimal import Decimal
+from project_utility import getQueryParameter, build_response, deserialize_dynamo_object, serialize_to_dynamo_object, validatePrice
 
 # Dynamo Tables
 PRODUCTS_TABLE = os.environ['PRODUCTS_TABLE']
@@ -86,8 +87,10 @@ def create_addition(addition):
         return False, None, 'Addition must have a name'
     
     if 'price' in addition:
-        price = float(addition['price'])
-        if price <= 0:
+        price = validatePrice(addition['price'])
+        if price is None:
+            return False, None, 'Invalid price'
+        elif price <= 0:
             return False, None, 'Price must be non-negative'
         validated_addition['price'] = price
     else:
@@ -107,7 +110,7 @@ def upsert_addition(event, context):
     if 'body' not in event or event['body'] is None:
         return build_response(400, 'Must specify a request body')
 
-    input_addition = json.loads(event['body'])
+    input_addition = json.loads(event['body'], parse_float=Decimal)
     success, addition, data = create_addition(input_addition)
 
     if success:

@@ -1,5 +1,13 @@
 import json
+from decimal import Decimal, InvalidOperation
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
+
+def decimal_encoder(d):
+    if isinstance(d, Decimal):
+        return str(d)
+    else:
+        type_name = d.__class__.__name__
+        raise TypeError(f"Object of type {type_name} is not serializable")
 
 def deserialize_dynamo_object(dynamo_obj):
     deserializer = TypeDeserializer()
@@ -25,7 +33,7 @@ def getQueryParameter(event, name, defaultValue):
 def build_response(code, body):
     formatted_body = body
     if type(body) != str:
-        formatted_body = json.dumps(body)
+        formatted_body = json.dumps(body, default=decimal_encoder)
     
     return {
         'statusCode': code,
@@ -34,6 +42,18 @@ def build_response(code, body):
             "Access-Control-Allow-Origin": "*"
         }
     }
+
+def validatePrice(value):
+    if value is not None:
+        try:
+            decimalValue = Decimal(value)
+            # Ensure there is at most 2 decimal places
+            if decimalValue.as_tuple().exponent >= -2:
+                return decimalValue
+        except InvalidOperation:
+            pass
+    
+    return None
 
 def toEnumString(value, validValues):
     if value is not None:

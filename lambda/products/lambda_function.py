@@ -2,7 +2,8 @@ import os
 import json
 import uuid
 import boto3
-from project_utility import getQueryParameter, build_response, deserialize_dynamo_object, serialize_to_dynamo_object, toCoffeeTypeList, toMilkTypeList, COFFEE_TYPES, MILK_TYPES
+from decimal import Decimal
+from project_utility import getQueryParameter, build_response, deserialize_dynamo_object, serialize_to_dynamo_object, toCoffeeTypeList, toMilkTypeList, COFFEE_TYPES, MILK_TYPES, validatePrice
 
 # Dynamo Tables
 PRODUCTS_TABLE = os.environ['PRODUCTS_TABLE']
@@ -136,8 +137,10 @@ def create_product(product):
         return False, None, 'Product must have a name'
     
     if 'basePrice' in product:
-        basePrice = float(product['basePrice'])
-        if basePrice <= 0:
+        basePrice = validatePrice(product['basePrice'])
+        if basePrice is None:
+            return False, None, 'Invalid base price'
+        elif basePrice <= 0:
             return False, None, 'Base price must be non-negative'
         validated_product['basePrice'] = basePrice
     else:
@@ -196,7 +199,7 @@ def upsert_product(event, context):
     if 'body' not in event or event['body'] is None:
         return build_response(400, 'Must specify a request body')
     
-    input_product = json.loads(event['body'])
+    input_product = json.loads(event['body'], parse_float=Decimal)
     success, product, data = create_product(input_product)
 
     if success:
