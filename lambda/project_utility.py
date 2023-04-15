@@ -42,14 +42,14 @@ def toEnumString(value, validValues):
             return normalizedValue
     return None
 
-def toEnumList(listValue, validValues):
+def toEnumList(listValue, validEnumValues):
     if listValue is None or len(listValue) == 0:
         return [], []
     else:
         validValues = []
         invalidValues = []
         for value in listValue:
-            normalized = toEnumString(value, validValues)
+            normalized = toEnumString(value, validEnumValues)
             if normalized is not None:
                 validValues.append(normalized)
             else:

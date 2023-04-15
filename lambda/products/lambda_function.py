@@ -2,7 +2,7 @@ import os
 import json
 import uuid
 import boto3
-from project_utility import getQueryParameter, build_response, deserialize_dynamo_object, serialize_to_dynamo_object, toCoffeeTypeList, toMilkTypeList
+from project_utility import getQueryParameter, build_response, deserialize_dynamo_object, serialize_to_dynamo_object, toCoffeeTypeList, toMilkTypeList, COFFEE_TYPES, MILK_TYPES
 
 # Dynamo Tables
 PRODUCTS_TABLE = os.environ['PRODUCTS_TABLE']
@@ -151,7 +151,7 @@ def create_product(product):
     if 'allowedCoffeeTypes' in product:
         coffeeTypes, invalidValues = toCoffeeTypeList(product['allowedCoffeeTypes'])
         if len(invalidValues) > 0:
-            return False, None, f"Invalid coffee type: {','.join(invalidValues)}"
+            return False, None, f"Invalid coffee type(s): {', '.join(invalidValues)}. Known Types: {', '.join(COFFEE_TYPES)}"
         elif len(coffeeTypes) == 0:
             return False, None, 'Product must have at least one allowed coffee type'
         else:
@@ -162,7 +162,7 @@ def create_product(product):
     if 'allowedMilkTypes' in product:
         milkTypes, invalidValues = toMilkTypeList(product['allowedMilkTypes'])
         if len(invalidValues) > 0:
-            return False, None, f"Invalid milk type: {','.join(invalidValues)}"
+            return False, None, f"Invalid milk type(s): {', '.join(invalidValues)}. Known Types: {', '.join(MILK_TYPES)}"
         elif len(milkTypes) > 0:
             validated_product['allowedMilkTypes'] = milkTypes
 
@@ -217,4 +217,5 @@ def lambda_handler(event, context):
     else:
         response = build_response(500, f"Unknown method: {httpMethod}")
     
+    print("Response", response)
     return response

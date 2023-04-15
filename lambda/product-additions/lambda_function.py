@@ -128,4 +128,5 @@ def lambda_handler(event, context):
     else:
         response = build_response(500, f"Unknown method: {httpMethod}")
     
+    print("Response", response)
     return response
