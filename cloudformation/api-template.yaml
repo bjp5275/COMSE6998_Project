@@ -85,7 +85,9 @@ Resources:
   # API Resources
   RestApi:
     Type: AWS::ApiGateway::RestApi
-    DependsOn: ApiS3ExecutionRole
+    DependsOn: 
+      - ApiLambdaExecutionRole
+      - ApiS3ExecutionRole
     Properties:
       ApiKeySourceType: "HEADER"
       BinaryMediaTypes:
