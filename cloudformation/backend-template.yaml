@@ -73,6 +73,8 @@ Resources:
             Action:
               - sts:AssumeRole
       Path: "/"
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
       Policies:
         - PolicyName: "dynamo-crud-access"
           PolicyDocument:
