@@ -26,11 +26,14 @@ def build_object_from_dynamo_response(items):
 
 def get_products(event, context):
     # Base filter expression and values
-    filterExpression = '_type = :type'
+    filterExpression = '#TYPE = :type'
     filterExpressionValues = {
         ':type': {
             'S': PRODUCT_TYPE,
         },
+    }
+    expressionNames={
+        '#TYPE': '_type'
     }
 
     # Check include_disabled flag
@@ -42,7 +45,7 @@ def get_products(event, context):
     
     # Filter out disabled items
     if not include_disabled:
-        filterExpression = f"({filterExpression}) AND enabled = :enabled",
+        filterExpression = f"({filterExpression}) AND enabled = :enabled"
         filterExpressionValues[':enabled'] = {
             'BOOL': True,
         }
@@ -52,6 +55,7 @@ def get_products(event, context):
     response = dynamo.scan(
         TableName=PRODUCTS_TABLE,
         FilterExpression=filterExpression,
+        ExpressionAttributeNames=expressionNames,
         ExpressionAttributeValues=filterExpressionValues,
     )
     products = response['Items']
@@ -89,7 +93,10 @@ def get_additions(addition_ids):
     else:
         response = dynamo.scan(
             TableName=PRODUCTS_TABLE,
-            FilterExpression='_type = :type',
+            FilterExpression='#TYPE = :type',
+            ExpressionAttributeNames={
+                '#TYPE': '_type'
+            },
             ExpressionAttributeValues={
                 ':type': {
                     'S': ADDITION_TYPE,
