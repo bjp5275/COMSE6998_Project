@@ -51,9 +51,11 @@ paths:
       security:
       - api_key: []
       x-amazon-apigateway-integration:
-        credentials: !GetAtt ApiS3ExecutionRole.Arn
+        credentials:
+          Fn::GetAtt: [ ApiS3ExecutionRole, Arn ]
         httpMethod: "PUT"
-        uri: !Sub "arn:aws:apigateway:${AWS::Region}:s3:path/${PhotosBucket}/{objectKey}"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:s3:path/${PhotosBucket}/{objectKey}
         responses:
           default:
             statusCode: "200"
@@ -519,8 +521,10 @@ paths:
       - api_key: []
       x-amazon-apigateway-integration:
         httpMethod: "POST"
-        credentials: !GetAtt ApiLambdaExecutionRole.Arn
-        uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:coffee-delivery-products-${ResourceSuffix}/invocations"
+        credentials:
+          Fn::GetAtt: [ ApiLambdaExecutionRole, Arn ]
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:coffee-delivery-products-${ResourceSuffix}/invocations
         responses:
           default:
             statusCode: "200"
