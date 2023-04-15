@@ -1,5 +1,5 @@
 <mat-grid-list
-  *ngIf="products$ | async as products"
+  *ngIf="products$ | async as products; else loadingProducts"
   [cols]="columns"
   [rowHeight]="actions ? '32em' : '28em'"
 >
@@ -27,3 +27,8 @@
     </mat-card>
   </mat-grid-tile>
 </mat-grid-list>
+<ng-template #loadingProducts>
+  <div class="loading-products">
+    <mat-spinner></mat-spinner>
+  </div>
+</ng-template>
