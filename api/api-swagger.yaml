@@ -17,17 +17,13 @@ paths:
       requestBody:
         content:
           image/jpg:
-            schema:
-              type: string
-              format: binary
+              $ref: "#/components/schemas/RawImage"
           image/png:
             schema:
-              type: string
-              format: binary
+              $ref: "#/components/schemas/RawImage"
           image/jpeg:
             schema:
-              type: string
-              format: binary
+              $ref: "#/components/schemas/RawImage"
         required: true
       responses:
         "500":
@@ -1789,6 +1785,9 @@ components:
           type: "boolean"
           description: "Whether the shop provides its own delivery"
       description: "New shop settings"
+    RawImage:
+      type: "string"
+      format: "binary"
   securitySchemes:
     api_key:
       type: "apiKey"
