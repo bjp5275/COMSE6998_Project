@@ -56,7 +56,7 @@ Resources:
       TableName: "orders"
       Tags:
         - Key: Purpose
-          Value: "Contains customers' order details"
+          Value: "Contains order details indexed on customer ID"
 
   # IAM Roles
   LambdaExecutionRole:
