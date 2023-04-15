@@ -2,102 +2,11 @@ import { Injectable } from '@angular/core';
 import { Observable, delay, of, throwError } from 'rxjs';
 
 import {
-  CoffeeType,
   CreateOrder,
-  MilkType,
   Order,
   OrderRating,
   OrderStatus,
 } from 'src/app/model/models';
-
-const ORDER_DEFAULT: Order = {
-  id: 'default',
-  items: [
-    {
-      id: '0',
-      coffeeType: CoffeeType.REGULAR,
-      milkType: MilkType.ALMOND,
-      productId: 'cafe-americano',
-      basePrice: 5,
-      additions: [
-        {
-          id: 'pumpkin-spice-syrup',
-          name: 'Pumpkin Spice Syrup',
-          price: 0.75,
-        },
-      ],
-    },
-  ],
-  orderStatus: OrderStatus.RECEIVED,
-  deliveryTime: new Date(),
-  payment: {
-    nameOnCard: 'Joe Smith',
-    cardNumber: '1234987612349876',
-    cvv: '123',
-  },
-  deliveryLocation: {
-    streetAddress: '123 Main Street',
-    city: 'Sesame City',
-    state: 'GA',
-    zip: '12345',
-  },
-};
-const ORDER_SECONDARY: Order = {
-  id: 'secondary',
-  items: [
-    {
-      id: '0',
-      coffeeType: CoffeeType.REGULAR,
-      milkType: MilkType.ALMOND,
-      productId: 'cafe-americano',
-      basePrice: 5,
-      additions: [
-        {
-          id: 'pumpkin-spice-syrup',
-          name: 'Pumpkin Spice Syrup',
-          price: 0.75,
-        },
-      ],
-    },
-    {
-      id: '0',
-      coffeeType: CoffeeType.DECAF,
-      milkType: MilkType.OAT,
-      productId: 'mocha',
-      basePrice: 5,
-      additions: [
-        {
-          id: 'pumpkin-spice-syrup',
-          name: 'Pumpkin Spice Syrup',
-          price: 0.75,
-        },
-        {
-          id: 'pumpkin-spice-syrup',
-          name: 'Pumpkin Spice Syrup',
-          price: 0.75,
-        },
-        {
-          id: 'caramel-syrup',
-          name: 'Caramel Syrup',
-          price: 0.5,
-        },
-      ],
-    },
-  ],
-  orderStatus: OrderStatus.RECEIVED,
-  deliveryTime: new Date(),
-  payment: {
-    nameOnCard: 'Joe Smith',
-    cardNumber: '1234987612349876',
-    cvv: '123',
-  },
-  deliveryLocation: {
-    streetAddress: '123 Main Street',
-    city: 'Sesame City',
-    state: 'GA',
-    zip: '12345',
-  },
-};
 
 @Injectable({
   providedIn: 'root',
@@ -105,10 +14,7 @@ const ORDER_SECONDARY: Order = {
 export class OrderService {
   orders = new Map<string, Order>();
 
-  constructor() {
-    this.orders.set(ORDER_DEFAULT.id!, ORDER_DEFAULT);
-    this.orders.set(ORDER_SECONDARY.id!, ORDER_SECONDARY);
-  }
+  constructor() {}
 
   /**
    * Get an order by ID

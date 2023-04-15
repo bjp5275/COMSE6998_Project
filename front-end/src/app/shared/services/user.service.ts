@@ -2,10 +2,8 @@ import { Injectable } from '@angular/core';
 import { Observable, delay, of, throwError } from 'rxjs';
 
 import {
-  CoffeeType,
   FavoriteOrder,
   Location,
-  MilkType,
   PaymentInformation,
 } from 'src/app/model/models';
 
@@ -33,72 +31,7 @@ const PAYMENT_METHODS: PaymentInformation[] = [
   },
 ];
 
-const FAVORITE_ORDERS: FavoriteOrder[] = [
-  {
-    id: '0',
-    name: 'My Favorite',
-    items: [
-      {
-        id: '0',
-        coffeeType: CoffeeType.REGULAR,
-        milkType: MilkType.ALMOND,
-        productId: 'cafe-americano',
-        basePrice: 5,
-        additions: [
-          {
-            id: 'pumpkin-spice-syrup',
-            name: 'Pumpkin Spice Syrup',
-            price: 0.75,
-          },
-        ],
-      },
-      {
-        id: '0',
-        coffeeType: CoffeeType.DECAF,
-        milkType: MilkType.OAT,
-        productId: 'mocha',
-        basePrice: 5,
-        additions: [
-          {
-            id: 'pumpkin-spice-syrup',
-            name: 'Pumpkin Spice Syrup',
-            price: 0.75,
-          },
-          {
-            id: 'pumpkin-spice-syrup',
-            name: 'Pumpkin Spice Syrup',
-            price: 0.75,
-          },
-          {
-            id: 'caramel-syrup',
-            name: 'Caramel Syrup',
-            price: 0.5,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: '1',
-    name: 'Friday Favorite',
-    items: [
-      {
-        id: '0',
-        coffeeType: CoffeeType.REGULAR,
-        milkType: MilkType.ALMOND,
-        productId: 'cafe-americano',
-        basePrice: 5,
-        additions: [
-          {
-            id: 'pumpkin-spice-syrup',
-            name: 'Pumpkin Spice Syrup',
-            price: 0.75,
-          },
-        ],
-      },
-    ],
-  },
-];
+const FAVORITE_ORDERS: FavoriteOrder[] = [];
 
 @Injectable({
   providedIn: 'root',

@@ -6,56 +6,7 @@ import { Equals } from '../utility';
   providedIn: 'root',
 })
 export class CartService {
-  cartItems: OrderItem[] = [
-    {
-      productId: 'espresso',
-      basePrice: 5,
-      coffeeType: 'REGULAR',
-    },
-    {
-      productId: 'cafe-americano',
-      basePrice: 5,
-      coffeeType: 'REGULAR',
-      milkType: 'REGULAR',
-    },
-    {
-      productId: 'cafe-americano',
-      basePrice: 5,
-      coffeeType: 'REGULAR',
-      milkType: 'OAT',
-      additions: [
-        {
-          id: 'pumpkin-spice-syrup',
-          name: 'Pumpkin Spice Syrup',
-          price: 0.75,
-          enabled: false,
-        },
-      ],
-    },
-    {
-      productId: 'caramel-macchiato',
-      basePrice: 5,
-      coffeeType: 'REGULAR',
-    },
-    {
-      productId: 'caramel-macchiato',
-      basePrice: 5,
-      coffeeType: 'REGULAR',
-      additions: [
-        {
-          id: 'pumpkin-spice-syrup',
-          name: 'Pumpkin Spice Syrup',
-          price: 0.75,
-          enabled: false,
-        },
-      ],
-    },
-    {
-      productId: 'espresso',
-      basePrice: 5,
-      coffeeType: 'REGULAR',
-    },
-  ];
+  cartItems: OrderItem[] = [];
 
   public getOrderItems(): OrderItem[] {
     return this.cartItems;
