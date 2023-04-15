@@ -193,6 +193,7 @@ def create_product(product):
     )
 
     print("Product saved")
+    validated_product.pop('_type')
     return True, validated_product, id
 
 def upsert_product(event, context):

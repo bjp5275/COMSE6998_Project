@@ -104,6 +104,7 @@ def create_addition(addition):
     )
 
     print("Addition saved")
+    validated_addition.pop('_type')
     return True, validated_addition, id
 
 def upsert_addition(event, context):
