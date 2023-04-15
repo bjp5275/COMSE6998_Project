@@ -106,6 +106,7 @@ def get_additions(addition_ids):
     raw_additions = filter(lambda a: a['_type']['S'] == ADDITION_TYPE, raw_additions)
     for raw_addition in raw_additions:
         addition = deserialize_dynamo_object(raw_addition)
+        addition.pop('_type')
         additions[addition['id']] = addition
     
     return additions
