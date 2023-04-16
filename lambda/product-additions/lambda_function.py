@@ -3,7 +3,7 @@ import json
 import uuid
 import boto3
 from decimal import Decimal
-from project_utility import getQueryParameter, build_response, deserialize_dynamo_object, serialize_to_dynamo_object, validatePrice
+from project_utility import get_query_parameter, build_response, deserialize_dynamo_object, serialize_to_dynamo_object, validate_price
 
 # Dynamo Tables
 PRODUCTS_TABLE = os.environ['PRODUCTS_TABLE']
@@ -38,7 +38,7 @@ def get_additions(event, context):
     }
 
     # Check include_disabled flag
-    include_disabled = getQueryParameter(event, INCLUDE_DISABLED_FLAG, 'false').lower() == 'true'
+    include_disabled = get_query_parameter(event, INCLUDE_DISABLED_FLAG, 'false').lower() == 'true'
     
     # Filter out disabled items
     if not include_disabled:
@@ -87,7 +87,7 @@ def create_addition(addition):
         return False, None, 'Addition must have a name'
     
     if 'price' in addition:
-        price = validatePrice(addition['price'])
+        price = validate_price(addition['price'])
         if price is None:
             return False, None, 'Invalid price'
         elif price <= 0:

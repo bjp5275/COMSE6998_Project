@@ -40,13 +40,13 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
-        - AttributeName: customer-id
+        - AttributeName: customerId
           AttributeType: S
         - AttributeName: id
           AttributeType: S
       BillingMode: PROVISIONED
       KeySchema:
-        - AttributeName: customer-id
+        - AttributeName: customerId
           KeyType: HASH
         - AttributeName: id
           KeyType: RANGE

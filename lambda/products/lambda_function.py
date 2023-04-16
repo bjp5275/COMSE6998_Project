@@ -3,7 +3,7 @@ import json
 import uuid
 import boto3
 from decimal import Decimal
-from project_utility import getQueryParameter, build_response, deserialize_dynamo_object, serialize_to_dynamo_object, toCoffeeTypeList, toMilkTypeList, COFFEE_TYPES, MILK_TYPES, validatePrice
+from project_utility import get_additions_by_id, get_query_parameter, build_response, deserialize_dynamo_object, serialize_to_dynamo_object, to_coffee_type_list, to_milk_type_list, COFFEE_TYPES, MILK_TYPES, validate_price
 
 # Dynamo Tables
 PRODUCTS_TABLE = os.environ['PRODUCTS_TABLE']
@@ -38,7 +38,7 @@ def get_products(event, context):
     }
 
     # Check include_disabled flag
-    include_disabled = getQueryParameter(event, INCLUDE_DISABLED_FLAG, 'false').lower() == 'true'
+    include_disabled = get_query_parameter(event, INCLUDE_DISABLED_FLAG, 'false').lower() == 'true'
     
     # Filter out disabled items
     if not include_disabled:
@@ -59,7 +59,7 @@ def get_products(event, context):
 
     print(f"Found {len(products)} products")
     products = build_object_from_dynamo_response(products)
-    all_additions = get_additions(None)
+    all_additions = get_additions_by_id(dynamo, None)
     for product in products:
         if 'allowedAdditions' in product:
             allowed_additions = []
@@ -70,48 +70,6 @@ def get_products(event, context):
                         allowed_additions.append(all_additions[id])
             product['allowedAdditions'] = allowed_additions
     return build_response(200, products)
-
-def get_additions(addition_ids):
-    if addition_ids is not None:
-        keys = []
-        for id in addition_ids:
-            keys.append({
-                'id': {
-                    'S': id,
-                }
-            })
-
-        response = dynamo.batch_get_item(
-            RequestItems={
-                PRODUCTS_TABLE: {
-                    'Keys': keys
-                },
-            },
-        )
-        raw_additions = response['Responses'][PRODUCTS_TABLE]
-    else:
-        response = dynamo.scan(
-            TableName=PRODUCTS_TABLE,
-            FilterExpression='#TYPE = :type',
-            ExpressionAttributeNames={
-                '#TYPE': '_type'
-            },
-            ExpressionAttributeValues={
-                ':type': {
-                    'S': ADDITION_TYPE,
-                },
-            },
-        )
-        raw_additions = response['Items']
-
-    additions = {}
-    raw_additions = filter(lambda a: a['_type']['S'] == ADDITION_TYPE, raw_additions)
-    for raw_addition in raw_additions:
-        addition = deserialize_dynamo_object(raw_addition)
-        addition.pop('_type')
-        additions[addition['id']] = addition
-    
-    return additions
 
 def create_product(product):
     validated_product = {
@@ -140,12 +98,12 @@ def create_product(product):
         return False, None, 'Product must have a name'
     
     if 'basePrice' in product:
-        basePrice = validatePrice(product['basePrice'])
-        if basePrice is None:
+        base_price = validate_price(product['basePrice'])
+        if base_price is None:
             return False, None, 'Invalid base price'
-        elif basePrice <= 0:
+        elif base_price <= 0:
             return False, None, 'Base price must be non-negative'
-        validated_product['basePrice'] = basePrice
+        validated_product['basePrice'] = base_price
     else:
         return False, None, 'Product must have a base price'
     
@@ -155,22 +113,22 @@ def create_product(product):
         return False, None, 'Product must have an image URL'
 
     if 'allowedCoffeeTypes' in product:
-        coffeeTypes, invalidValues = toCoffeeTypeList(product['allowedCoffeeTypes'])
-        if len(invalidValues) > 0:
-            return False, None, f"Invalid coffee type(s): {', '.join(invalidValues)}. Known Types: {', '.join(COFFEE_TYPES)}"
-        elif len(coffeeTypes) == 0:
+        coffee_types, invalid_values = to_coffee_type_list(product['allowedCoffeeTypes'])
+        if len(invalid_values) > 0:
+            return False, None, f"Invalid coffee type(s): {', '.join(invalid_values)}. Known Types: {', '.join(COFFEE_TYPES)}"
+        elif len(coffee_types) == 0:
             return False, None, 'Product must have at least one allowed coffee type'
         else:
-            validated_product['allowedCoffeeTypes'] = coffeeTypes
+            validated_product['allowedCoffeeTypes'] = coffee_types
     else:
         return False, None, 'Product must have at least one allowed coffee type'
 
     if 'allowedMilkTypes' in product:
-        milkTypes, invalidValues = toMilkTypeList(product['allowedMilkTypes'])
-        if len(invalidValues) > 0:
-            return False, None, f"Invalid milk type(s): {', '.join(invalidValues)}. Known Types: {', '.join(MILK_TYPES)}"
-        elif len(milkTypes) > 0:
-            validated_product['allowedMilkTypes'] = milkTypes
+        milk_types, invalid_values = to_milk_type_list(product['allowedMilkTypes'])
+        if len(invalid_values) > 0:
+            return False, None, f"Invalid milk type(s): {', '.join(invalid_values)}. Known Types: {', '.join(MILK_TYPES)}"
+        elif len(milk_types) > 0:
+            validated_product['allowedMilkTypes'] = milk_types
 
     if 'allowedAdditions' in product:
         additions = product['allowedAdditions']
@@ -180,7 +138,7 @@ def create_product(product):
                 return False, None, 'All product additions must be identified by ID'
             addition_ids.append(addition['id'])
         
-        addition_mapping = get_additions(addition_ids)
+        addition_mapping = get_additions_by_id(dynamo, addition_ids)
         allowed_additions = []
         for id in addition_ids:
             if id not in addition_mapping:
