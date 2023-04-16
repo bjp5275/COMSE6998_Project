@@ -86,22 +86,22 @@ def validate_location(location, name):
     if 'streetAddress' in location:
         validated_location['streetAddress'] = str(location['streetAddress'])
     else:
-        return False, f"{name} must have a street address'
+        return False, f"{name} must have a street address"
 
     if 'city' in location:
         validated_location['city'] = str(location['city'])
     else:
-        return False, f"{name} must have a city'
+        return False, f"{name} must have a city"
 
     if 'state' in location:
         validated_location['state'] = str(location['state'])
     else:
-        return False, f"{name} must have a state'
+        return False, f"{name} must have a state"
 
     if 'zip' in location:
         validated_location['zip'] = str(location['zip'])
     else:
-        return False, f"{name} must have a zip'
+        return False, f"{name} must have a zip"
 
     return True, validated_location
 
@@ -111,17 +111,17 @@ def validate_payment_information(payment_info, name):
     if 'nameOnCard' in payment_info:
         validated_payment_info['nameOnCard'] = str(payment_info['nameOnCard'])
     else:
-        return False, f"{name} must have the name on the card'
+        return False, f"{name} must have the name on the card"
 
     if 'cardNumber' in payment_info:
         validated_payment_info['cardNumber'] = str(payment_info['cardNumber'])
     else:
-        return False, f"{name} must have the card number'
+        return False, f"{name} must have the card number"
 
     if 'cvv' in payment_info:
         validated_payment_info['cvv'] = str(payment_info['cvv'])
     else:
-        return False, f"{name} must have the CVV'
+        return False, f"{name} must have the CVV"
 
     return True, validated_payment_info
 
