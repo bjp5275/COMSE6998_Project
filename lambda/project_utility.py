@@ -165,7 +165,7 @@ def to_milk_type_list(milk_types):
 def get_additions_by_id(dynamo, addition_ids):
     if addition_ids is not None:
         keys = []
-        for id in addition_ids:
+        for id in list(set(addition_ids)):
             keys.append({
                 'id': {
                     'S': id,
@@ -207,7 +207,7 @@ def get_additions_by_id(dynamo, addition_ids):
 def get_products_by_id(dynamo, product_ids):
     if product_ids is not None:
         keys = []
-        for id in product_ids:
+        for id in list(set(product_ids)):
             keys.append({
                 'id': {
                     'S': id,
