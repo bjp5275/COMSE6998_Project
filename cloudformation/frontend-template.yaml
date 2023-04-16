@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Coffee Delivery Service Frontend Infrastructure"
+Parameters:
+  ResourcesBucket:
+    Type: String
+    Description: "The S3 bucket where deploy resources exist"
+    AllowedPattern: ^[-a-z0-9]+$
+    Default: "bjp2158-deploy-resources"
+    ConstraintDescription: "Malformed input - Parameter must only use lowercase letters, numbers, and dashes"
+  AppBucketBaseName:
+    Type: String
+    Description: "The base name for the S3 bucket that serves the app UI"
+    AllowedPattern: ^[-a-z0-9]+$
+    Default: "coffee-delivery-service-app"
+    ConstraintDescription: "Malformed input - Parameter must only use lowercase letters, numbers, and dashes"
+  ResourceSuffix:
+    Type: String
+    Description: "The suffix for created resources' names"
+    AllowedPattern: ^[-a-z0-9]+$
+    ConstraintDescription: "Malformed input - Parameter must only use lowercase letters, numbers, and dashes"
+
+Resources:
+  # Bucket for the application
+  S3AppBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AppBucketBaseName}-${ResourceSuffix}"
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - GET
+              - HEAD
+            AllowedOrigins:
+              - "*"
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      WebsiteConfiguration:
+        ErrorDocument: "index.html"
+        IndexDocument: "index.html"
+  S3AppBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3AppBucket
+      PolicyDocument:
+        Id: PublicReadPolicy
+        Version: 2012-10-17
+        Statement:
+          - Sid: PublicReadForGetBucketObjects
+            Effect: Allow
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Join
+              - ""
+              - - "arn:aws:s3:::"
+                - !Ref S3AppBucket
+                - /*
+
+Outputs:
+  # URL
+  WebsiteUrl:
+    Description: "URL for the app"
+    Value: !GetAtt S3AppBucket.WebsiteURL
+
+  # S3 Outputs
+  AppBucket:
+    Description: "The S3 bucket created for the app"
+    Value: !Ref S3AppBucket
