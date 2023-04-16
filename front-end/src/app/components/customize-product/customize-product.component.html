@@ -62,8 +62,8 @@
               *ngFor="let addition of filteredAdditions | async"
               [value]="addition.id"
             >
-              <span>{{ addition.name }}</span> |
-              <small>Price: {{ addition | additionPrice }}</small>
+              <span>{{ addition.name }} </span>
+              <small>({{ addition | additionPrice : true }})</small>
             </mat-option>
           </mat-autocomplete>
         </mat-form-field>
