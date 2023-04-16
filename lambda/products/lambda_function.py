@@ -65,7 +65,9 @@ def get_products(event, context):
             allowed_additions = []
             for id in product['allowedAdditions']:
                 if id in all_additions:
-                    allowed_additions.append(all_additions[id])
+                    addition = all_additions[id]
+                    if include_disabled or addition['enabled']:
+                        allowed_additions.append(all_additions[id])
             product['allowedAdditions'] = allowed_additions
     return build_response(200, products)
 
