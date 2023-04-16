@@ -46,7 +46,7 @@ def get_orders(event, context):
     orders = response['Items']
 
     print(f"Found {len(orders)} orders")
-    orders = build_object_from_dynamo_response(orders)
+    orders = build_order_from_dynamo_response(orders)
     return build_response(200, orders)
 
 def get_single_order(event, context):
@@ -73,7 +73,7 @@ def get_single_order(event, context):
     if order is None:
         return build_response(401, f"Order {order_id} not found")
 
-    order = build_object_from_dynamo_response([order])[0]
+    order = build_order_from_dynamo_response([order])[0]
     return build_response(200, order)
 
 def collect_used_products_and_additions(items):
