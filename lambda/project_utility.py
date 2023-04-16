@@ -35,8 +35,8 @@ def serialize_to_dynamo_object(obj):
 def _get_event_parameter(event, parameter_type, parameter_name, default_value):
     if parameter_type in event:
         parameters = event[parameter_type]
-        if parameters is not None and name in parameters:
-            return parameters[name]
+        if parameters is not None and parameter_name in parameters:
+            return parameters[parameter_name]
     return default_value
 
 def get_path_parameter(event, name, default_value):
