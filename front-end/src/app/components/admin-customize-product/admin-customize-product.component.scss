@@ -20,7 +20,10 @@
     grid-area: product;
     max-width: min(400px, 30vw);
     margin: auto;
-    margin-right: 5em;
+
+    .product-card {
+      margin-bottom: 1em;
+    }
   }
 
   .product-details {
