@@ -1,6 +1,6 @@
 <div class="page-container">
   <mat-toolbar color="primary" class="toolbar">
-    <button *ngIf="showMenu" mat-icon-button (click)="mainMenu.toggle()">
+    <button *ngIf="menuType" mat-icon-button (click)="mainMenu.toggle()">
       <mat-icon>menu</mat-icon>
     </button>
     <a class="text-link" routerLink="/">Coffee Delivery Service</a>
@@ -21,7 +21,7 @@
 
   <mat-drawer-container hasBackdrop="true">
     <mat-drawer #mainMenu class="menu" mode="over" position="start">
-      <ng-container [ngSwitch]="showMenu">
+      <ng-container [ngSwitch]="menuType">
         <ng-container
           *ngSwitchCase="'MENU'"
           [ngTemplateOutlet]="normalMenu"
@@ -33,14 +33,33 @@
       </ng-container>
     </mat-drawer>
     <mat-drawer #secondaryMenu class="menu" mode="over" position="end">
-      <div class="title mat-headline-6">Welcome back!</div>
+      <div class="title mat-headline-6" *ngIf="userInformation">
+        Welcome back, {{ userInformation.name }}!
+      </div>
+      <div
+        class="toggle-group-holder"
+        *ngIf="(userInformation?.roles?.length || 0) > 1"
+      >
+        <mat-button-toggle-group [(ngModel)]="actingRole">
+          <mat-button-toggle
+            *ngFor="let roleType of userInformation!.roles"
+            [value]="roleType"
+            #roleToggle
+          >
+            <mat-icon *ngIf="roleToggle.checked" color="primary">
+              check
+            </mat-icon>
+            {{ convertUserRoleToString(roleType) }}
+          </mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
       <mat-nav-list>
         <mat-list-item
           routerLinkActive
           routerLink="/favorites"
           #favoriteRla="routerLinkActive"
           [activated]="favoriteRla.isActive"
-          (click)="secondaryMenu.close()"
+          (click)="mainMenu.close(); secondaryMenu.close()"
         >
           <mat-icon matListItemIcon>favorite</mat-icon>
           <a matListItemTitle class="text-link">Favorites</a>
@@ -50,7 +69,7 @@
           routerLink="/history"
           #historyRla="routerLinkActive"
           [activated]="historyRla.isActive"
-          (click)="secondaryMenu.close()"
+          (click)="mainMenu.close(); secondaryMenu.close()"
         >
           <mat-icon matListItemIcon>history</mat-icon>
           <a matListItemTitle class="text-link">Order History</a>
@@ -76,7 +95,7 @@
       routerLink="/products"
       #productsRla="routerLinkActive"
       [activated]="productsRla.isActive"
-      (click)="mainMenu.close()"
+      (click)="mainMenu.close(); secondaryMenu.close()"
     >
       <mat-icon matListItemIcon>coffee</mat-icon>
       <a matListItemTitle class="text-link">Products</a>
@@ -86,7 +105,7 @@
       routerLink="/cart"
       #cart="routerLinkActive"
       [activated]="cart.isActive"
-      (click)="mainMenu.close()"
+      (click)="mainMenu.close(); secondaryMenu.close()"
     >
       <mat-icon matListItemIcon>shopping_cart</mat-icon>
       <a matListItemTitle class="text-link">Cart</a>
@@ -101,7 +120,7 @@
       routerLink="/admin/products"
       #adminProductsRla="routerLinkActive"
       [activated]="adminProductsRla.isActive"
-      (click)="mainMenu.close()"
+      (click)="mainMenu.close(); secondaryMenu.close()"
     >
       <mat-icon matListItemIcon>coffee</mat-icon>
       <a matListItemTitle class="text-link">Products</a>
@@ -111,7 +130,7 @@
       routerLink="/admin/additions"
       #adminAdditionsRla="routerLinkActive"
       [activated]="adminAdditionsRla.isActive"
-      (click)="mainMenu.close()"
+      (click)="mainMenu.close(); secondaryMenu.close()"
     >
       <mat-icon matListItemIcon>add_box</mat-icon>
       <a matListItemTitle class="text-link">Additions</a>
