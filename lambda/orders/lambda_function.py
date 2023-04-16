@@ -167,10 +167,6 @@ def create_order(customer_id, order):
     if 'deliveryTime' in order:
         delivery_time = order['deliveryTime']
         try:
-            datetime.strptime(delivery_time, "%Y-%m-%dT%H:%M:%S")
-        except:
-            return False, None, 'Invalid delivery time'
-        try:
             delivery_time = datetime.strptime(delivery_time, "%Y-%m-%dT%H:%M:%S.%fZ")
             if delivery_time < datetime.now() + MINIMUM_ORDER_TIME_DELTA:
                 return False, None, f"Order delivery time must be at least {MINIMUM_ORDER_TIME_DELTA_MINUTES} minutes in the future"
