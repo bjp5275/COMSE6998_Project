@@ -35,6 +35,10 @@ export class CartService {
     }
   }
 
+  public clearCart() {
+    this.cartItems = [];
+  }
+
   public size(): number {
     return this.cartItems.length;
   }

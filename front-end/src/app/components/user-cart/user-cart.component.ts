@@ -194,6 +194,7 @@ export class UserCartComponent {
       .subscribe({
         next: (order) => {
           console.log('Created order', order);
+          this.cartService.clearCart();
           this.router.navigate(['/order'], {
             queryParams: { id: order.id! },
             state: { order: order },
