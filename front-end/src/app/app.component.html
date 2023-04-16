@@ -1,4 +1,4 @@
-<div class="page-container">
+<div class="page-container" *ngIf="apiKey; else enterApiKey">
   <mat-toolbar color="primary" class="toolbar">
     <button *ngIf="menuType" mat-icon-button (click)="mainMenu.toggle()">
       <mat-icon>menu</mat-icon>
@@ -72,6 +72,12 @@
       <div class="title mat-headline-6" *ngIf="userInformation">
         Welcome back, {{ userInformation.name }}!
       </div>
+      <div id="api-key">
+        <mat-form-field appearance="outline" class="small-padding">
+          <mat-label>API Key</mat-label>
+          <input matInput type="password" [(ngModel)]="apiKey" />
+        </mat-form-field>
+      </div>
       <div
         class="toggle-group-holder"
         *ngIf="(userInformation?.roles?.length || 0) > 1"
@@ -124,3 +130,12 @@
     </div>
   </mat-drawer-container>
 </div>
+<ng-template #enterApiKey>
+  <div class="enter-api-key">
+    <div>Enter an API key to continue</div>
+    <mat-form-field appearance="outline" class="small-padding">
+      <mat-label>API Key</mat-label>
+      <input matInput type="password" [(ngModel)]="apiKey" />
+    </mat-form-field>
+  </div>
+</ng-template>

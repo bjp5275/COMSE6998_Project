@@ -30,6 +30,11 @@
     margin: 0;
   }
 
+  div#api-key {
+    text-align: center;
+    margin-top: 0.5em;
+  }
+
   div.toggle-group-holder {
     margin-bottom: 0.5em;
     text-align: center;
@@ -38,4 +43,15 @@
       border-radius: 1em;
     }
   }
+}
+
+.enter-api-key {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+
+  align-items: center;
+  justify-content: center;
 }

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { first } from 'rxjs';
+import { environment } from 'src/environments/environment';
 import { CartService } from './shared/services/cart.service';
 import {
   UserInformation,
@@ -21,6 +22,17 @@ export class AppComponent {
 
   userInformation?: UserInformation;
   actingRole: UserRole = UserRole.REGULAR_USER;
+
+  get apiKey(): string | undefined {
+    if (environment.apiKey && environment.apiKey.length > 0) {
+      return environment.apiKey;
+    } else {
+      return undefined;
+    }
+  }
+  set apiKey(key: string | undefined) {
+    environment.apiKey = key || '';
+  }
 
   get menuType(): MenuType {
     switch (this.actingRole) {
