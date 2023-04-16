@@ -16,5 +16,6 @@ Benjamin Pacifico (bjp2158)
 Currently deployed to http://coffee-delivery-service-app-140519b0.s3-website-us-east-1.amazonaws.com.
 
 *Note: URL is available via the Frontend's CloudFormation output value `WebsiteUrl` from the application stack.*
+
 *Note: API is currently protected via an API key to prevent misuse. API key is available via API Gateway's console. See the API's Cloudformation `ApiKey` resource. Eventually, the goal is to protect the UI via Cognito.*
 
