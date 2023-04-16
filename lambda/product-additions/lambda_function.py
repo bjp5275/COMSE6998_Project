@@ -66,7 +66,7 @@ def create_addition(addition):
         '_type': ADDITION_TYPE
     }
 
-    if 'id' in addition:
+    if 'id' in addition and len(str(addition['id'])) > 0:
         id = str(addition['id'])
         print(f"Updating addition {id}")
     else:

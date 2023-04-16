@@ -76,7 +76,7 @@ def create_product(product):
         '_type': PRODUCT_TYPE
     }
 
-    if 'id' in product:
+    if 'id' in product and len(str(product['id'])) > 0:
         id = str(product['id'])
         print(f"Updating product {id}")
     else:
