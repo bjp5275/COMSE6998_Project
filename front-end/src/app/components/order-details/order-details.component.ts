@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Navigation, Router } from '@angular/router';
-import { Observable, delay, first, of } from 'rxjs';
+import { Observable, catchError, delay, first, of } from 'rxjs';
 import { FavoriteOrder, Order } from 'src/app/model/models';
 import { OrderService } from 'src/app/shared/services/order.service';
 import { UserService } from 'src/app/shared/services/user.service';
+import { HttpError } from 'src/app/shared/utility';
 
 interface RouteState {
   order?: Order;
@@ -18,7 +19,7 @@ interface RouteState {
 export class OrderDetailsComponent {
   routeState: RouteState;
   orderId: string;
-  order$: Observable<Order>;
+  order$: Observable<Order | null>;
   isFavorite = false;
 
   constructor(
@@ -40,7 +41,15 @@ export class OrderDetailsComponent {
     if (this.routeState.order) {
       this.order$ = of(this.routeState.order).pipe(delay(1000));
     } else {
-      this.order$ = orderService.getOrder(orderId);
+      this.order$ = orderService.getOrder(orderId).pipe(
+        catchError((err: HttpError) => {
+          this.snackBar.open(
+            `Failed to load order: ${err.errorMessage}`,
+            'Dismiss'
+          );
+          return of(null);
+        })
+      );
     }
   }
 

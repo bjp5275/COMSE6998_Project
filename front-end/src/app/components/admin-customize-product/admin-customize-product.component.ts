@@ -199,8 +199,8 @@ export class AdminCustomizeProductComponent implements OnInit {
     // Get additions
     let allowedAdditions = this.getSelectedAdditions();
 
-    const productValue: Product = {
-      id: this.routeState.product?.id || '',
+    const productValue = {
+      id: this.routeState.product?.id,
       name: form.name!,
       basePrice: form.basePrice!,
       imageUrl: form.imageUrl!,
@@ -212,7 +212,7 @@ export class AdminCustomizeProductComponent implements OnInit {
 
     this.savingProduct = true;
     this.productService
-      .upsertProduct(productValue)
+      .upsertProduct(productValue as Product)
       .pipe(
         catchError(() => of(null)),
         first(),

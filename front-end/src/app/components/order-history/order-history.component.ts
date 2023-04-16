@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { Observable, map } from 'rxjs';
+import { Observable, catchError, map, of } from 'rxjs';
 import { Order } from 'src/app/model/models';
 import { CartService } from 'src/app/shared/services/cart.service';
 import { OrderService } from 'src/app/shared/services/order.service';
+import { HttpError } from 'src/app/shared/utility';
 import { CustomOrder, OrderAction } from '../order-list/order-list.component';
 
 @Component({
@@ -37,9 +39,17 @@ export class OrderHistoryComponent {
   constructor(
     orderService: OrderService,
     private cartService: CartService,
-    private router: Router
+    private router: Router,
+    snackBar: MatSnackBar
   ) {
     this.orders$ = orderService.getOrderHistory().pipe(
+      catchError((err: HttpError) => {
+        snackBar.open(
+          `Failed to load order history: ${err.errorMessage}`,
+          'Dismiss'
+        );
+        return of([] as Order[]);
+      }),
       map((orders) => {
         const customOrders: CustomOrder<Order>[] = [];
         orders.forEach((order) =>

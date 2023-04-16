@@ -1,12 +1,10 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, delay, of, throwError } from 'rxjs';
+import { Observable, catchError, map, retry, tap, throwError } from 'rxjs';
 
-import {
-  CreateOrder,
-  Order,
-  OrderRating,
-  OrderStatus,
-} from 'src/app/model/models';
+import { CreateOrder, Order, OrderRating } from 'src/app/model/models';
+import { environment } from 'src/environments/environment';
+import { HttpUtils } from '../utility';
 
 @Injectable({
   providedIn: 'root',
@@ -14,7 +12,44 @@ import {
 export class OrderService {
   orders = new Map<string, Order>();
 
-  constructor() {}
+  constructor(private http: HttpClient) {}
+
+  private cleanOrderFromService(order: Order): Order {
+    if (order) {
+      if (order.deliveryTime) {
+        order.deliveryTime = new Date(order.deliveryTime);
+      }
+      if (order.items) {
+        order.items = order.items.map((item) => {
+          if (item.basePrice) {
+            item.basePrice = HttpUtils.convertDecimalFromString(
+              item.basePrice
+            )!;
+          }
+
+          if (item.additions) {
+            item.additions = item.additions.map((addition) => {
+              addition.price = HttpUtils.convertDecimalFromString(
+                addition.price
+              )!;
+              return addition;
+            });
+          }
+          return item;
+        });
+      }
+    }
+
+    return order;
+  }
+
+  private cleanOrdersFromService(orders: Order[]): Order[] {
+    if (orders) {
+      orders = orders.map((order) => this.cleanOrderFromService(order));
+    }
+
+    return orders;
+  }
 
   /**
    * Get an order by ID
@@ -22,18 +57,30 @@ export class OrderService {
    * @param id Order ID
    */
   public getOrder(id: string): Observable<Order> {
-    if (this.orders.has(id)) {
-      return of(this.orders.get(id)!).pipe(delay(2500));
-    } else {
-      return throwError(() => new Error('Order not found'));
-    }
+    const url = `${environment.backendUrl}/orders/${id}`;
+    const headers = HttpUtils.getBaseHeaders();
+
+    return this.http.get<Order>(url, { headers }).pipe(
+      map((rawData) => this.cleanOrderFromService(rawData)),
+      tap((data) => console.log('Retrieved order', data)),
+      retry(HttpUtils.RETRY_ATTEMPTS),
+      catchError((error) => HttpUtils.handleError(error))
+    );
   }
 
   /**
    * Get all orders from the current user&#x27;s history
    */
   public getOrderHistory(): Observable<Order[]> {
-    return of([...this.orders.values()]).pipe(delay(2500));
+    const url = `${environment.backendUrl}/orders`;
+    const headers = HttpUtils.getBaseHeaders();
+
+    return this.http.get<Order[]>(url, { headers }).pipe(
+      map((rawData) => this.cleanOrdersFromService(rawData)),
+      tap((data) => console.log('Retrieved orders', data)),
+      retry(HttpUtils.RETRY_ATTEMPTS),
+      catchError((error) => HttpUtils.handleError(error))
+    );
   }
 
   /**
@@ -64,14 +111,14 @@ export class OrderService {
    * @param createOrder
    */
   public submitOrder(createOrder: CreateOrder): Observable<Order> {
-    const orderId = new Date().getTime().toString();
-    const order: Order = {
-      id: orderId,
-      ...createOrder,
-      orderStatus: OrderStatus.RECEIVED,
-    };
+    const url = `${environment.backendUrl}/orders`;
+    const headers = HttpUtils.getBaseHeaders();
 
-    this.orders.set(orderId, order);
-    return of(order).pipe(delay(2500));
+    return this.http.post<Order>(url, createOrder, { headers }).pipe(
+      map((rawData) => this.cleanOrderFromService(rawData)),
+      tap((data) => console.log('Created order', data)),
+      retry(HttpUtils.RETRY_ATTEMPTS),
+      catchError((error) => HttpUtils.handleError(error))
+    );
   }
 }

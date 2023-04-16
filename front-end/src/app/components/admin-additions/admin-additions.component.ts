@@ -30,6 +30,7 @@ export class AdminAdditionsComponent {
     ],
     enabled: [true, Validators.required],
   });
+  formResetValues = this.additionForm.value;
 
   additions$: Observable<ProductAddition[] | null>;
   submittingChange = false;
@@ -74,7 +75,7 @@ export class AdminAdditionsComponent {
         id: additionForm.id || undefined,
         name: additionForm.name!,
         price: +additionForm.price!,
-        enabled: additionForm.enabled || undefined,
+        enabled: additionForm.enabled!,
       };
 
       this.saveAddition(addition);
@@ -94,6 +95,10 @@ export class AdminAdditionsComponent {
 
   private saveAddition(addition: ProductAddition) {
     this.submittingChange = true;
+    if (addition.id == '') {
+      addition.id = undefined;
+    }
+
     this.productsService
       .upsertProductAddition(addition)
       .pipe(
@@ -104,6 +109,7 @@ export class AdminAdditionsComponent {
       .subscribe((addition) => {
         if (addition) {
           this.pullAdditions$.next(null);
+          this.additionForm.reset(this.formResetValues);
         } else {
           this.snackBar.open('Failed to save addition. Please try again', 'OK');
         }
