@@ -9,7 +9,7 @@ import {
   convertUserRoleToString,
 } from './shared/services/user.service';
 
-type MenuType = 'MENU' | 'ADMIN';
+type MenuType = 'MENU';
 
 @Component({
   selector: 'app-root',
@@ -24,9 +24,8 @@ export class AppComponent {
 
   get menuType(): MenuType {
     switch (this.actingRole) {
-      case UserRole.ADMIN:
-        return 'ADMIN';
       default:
+      case UserRole.ADMIN:
       case UserRole.REGULAR_USER:
         return 'MENU';
     }

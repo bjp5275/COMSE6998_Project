@@ -21,16 +21,52 @@
 
   <mat-drawer-container hasBackdrop="true">
     <mat-drawer #mainMenu class="menu" mode="over" position="start">
-      <ng-container [ngSwitch]="menuType">
-        <ng-container
-          *ngSwitchCase="'MENU'"
-          [ngTemplateOutlet]="normalMenu"
-        ></ng-container>
-        <ng-container
-          *ngSwitchCase="'ADMIN'"
-          [ngTemplateOutlet]="adminMenu"
-        ></ng-container>
-      </ng-container>
+      <mat-nav-list>
+        <mat-list-item
+          routerLinkActive
+          routerLink="/products"
+          #productsRla="routerLinkActive"
+          [activated]="productsRla.isActive"
+          (click)="mainMenu.close(); secondaryMenu.close()"
+        >
+          <mat-icon matListItemIcon>coffee</mat-icon>
+          <a matListItemTitle class="text-link">Products</a>
+        </mat-list-item>
+        <mat-list-item
+          routerLinkActive
+          routerLink="/cart"
+          #cart="routerLinkActive"
+          [activated]="cart.isActive"
+          (click)="mainMenu.close(); secondaryMenu.close()"
+        >
+          <mat-icon matListItemIcon>shopping_cart</mat-icon>
+          <a matListItemTitle class="text-link">Cart</a>
+        </mat-list-item>
+        <ng-container *ngIf="actingRole == 'ADMIN'">
+          <mat-divider></mat-divider>
+          <div class="title mat-headline-6">Administrative Console</div>
+          <mat-list-item
+            routerLinkActive
+            routerLink="/admin/products"
+            #adminProductsRla="routerLinkActive"
+            [activated]="adminProductsRla.isActive"
+            (click)="mainMenu.close(); secondaryMenu.close()"
+          >
+            <mat-icon matListItemIcon>coffee</mat-icon>
+            <a matListItemTitle class="text-link">Products</a>
+          </mat-list-item>
+          <mat-list-item
+            routerLinkActive
+            routerLink="/admin/additions"
+            #adminAdditionsRla="routerLinkActive"
+            [activated]="adminAdditionsRla.isActive"
+            (click)="mainMenu.close(); secondaryMenu.close()"
+          >
+            <mat-icon matListItemIcon>add_box</mat-icon>
+            <a matListItemTitle class="text-link">Additions</a>
+          </mat-list-item>
+        </ng-container>
+      </mat-nav-list>
     </mat-drawer>
     <mat-drawer #secondaryMenu class="menu" mode="over" position="end">
       <div class="title mat-headline-6" *ngIf="userInformation">
@@ -88,52 +124,3 @@
     </div>
   </mat-drawer-container>
 </div>
-<ng-template #normalMenu>
-  <mat-nav-list>
-    <mat-list-item
-      routerLinkActive
-      routerLink="/products"
-      #productsRla="routerLinkActive"
-      [activated]="productsRla.isActive"
-      (click)="mainMenu.close(); secondaryMenu.close()"
-    >
-      <mat-icon matListItemIcon>coffee</mat-icon>
-      <a matListItemTitle class="text-link">Products</a>
-    </mat-list-item>
-    <mat-list-item
-      routerLinkActive
-      routerLink="/cart"
-      #cart="routerLinkActive"
-      [activated]="cart.isActive"
-      (click)="mainMenu.close(); secondaryMenu.close()"
-    >
-      <mat-icon matListItemIcon>shopping_cart</mat-icon>
-      <a matListItemTitle class="text-link">Cart</a>
-    </mat-list-item>
-  </mat-nav-list>
-</ng-template>
-<ng-template #adminMenu>
-  <div class="title mat-headline-6">Administrative Console</div>
-  <mat-nav-list>
-    <mat-list-item
-      routerLinkActive
-      routerLink="/admin/products"
-      #adminProductsRla="routerLinkActive"
-      [activated]="adminProductsRla.isActive"
-      (click)="mainMenu.close(); secondaryMenu.close()"
-    >
-      <mat-icon matListItemIcon>coffee</mat-icon>
-      <a matListItemTitle class="text-link">Products</a>
-    </mat-list-item>
-    <mat-list-item
-      routerLinkActive
-      routerLink="/admin/additions"
-      #adminAdditionsRla="routerLinkActive"
-      [activated]="adminAdditionsRla.isActive"
-      (click)="mainMenu.close(); secondaryMenu.close()"
-    >
-      <mat-icon matListItemIcon>add_box</mat-icon>
-      <a matListItemTitle class="text-link">Additions</a>
-    </mat-list-item>
-  </mat-nav-list>
-</ng-template>
