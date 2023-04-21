@@ -20,6 +20,8 @@ import { OrderListComponent } from './components/order-list/order-list.component
 import { ProductListComponent } from './components/product-list/product-list.component';
 import { UserCartComponent } from './components/user-cart/user-cart.component';
 
+import { TypedTemplateDirective } from './shared/directives/typed-template.directive';
+
 import { LocationPipe } from './shared/pipes/location.pipe';
 import { OrderStatusPercentagePipe } from './shared/pipes/order-status-percentage.pipe';
 import {
@@ -71,6 +73,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     OrderListComponent,
     ProductListComponent,
     UserCartComponent,
+
+    TypedTemplateDirective,
 
     LocationPipe,
     OrderItemPricePipe,

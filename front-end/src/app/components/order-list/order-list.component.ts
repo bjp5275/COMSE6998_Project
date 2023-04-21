@@ -1,9 +1,11 @@
 import {
   Component,
+  ContentChild,
   Input,
   OnChanges,
   OnInit,
   SimpleChanges,
+  TemplateRef,
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Observable, catchError, first, map, of, shareReplay, tap } from 'rxjs';
@@ -51,6 +53,9 @@ export class OrderListComponent<T> implements OnInit, OnChanges {
 
   @Input() orders!: CustomOrder<T>[];
   @Input() actions?: OrderAction<T>[];
+  @Input() showTotalPrice = true;
+  @ContentChild('customOrderDetails', { static: false })
+  customOrderDetailsTemplateRef?: TemplateRef<CustomOrder<T>>;
 
   loadingProductMap = true;
   productMap$: Observable<Map<string, Product>>;
@@ -87,6 +92,12 @@ export class OrderListComponent<T> implements OnInit, OnChanges {
     }
     if (changes['actions']) {
       this.actions = changes['actions'].currentValue;
+    }
+    if (changes['showTotalPrice']) {
+      this.actions = changes['showTotalPrice'].currentValue;
+    }
+    if (changes['customOrderDetailsTemplateRef']) {
+      this.actions = changes['customOrderDetailsTemplateRef'].currentValue;
     }
   }
 

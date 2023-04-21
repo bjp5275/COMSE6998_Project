@@ -3,8 +3,7 @@
     *ngIf="orders$ | async as orders; else loadingOrders"
     [orders]="orders"
     [actions]="ORDER_ACTIONS"
-  >
-  </app-order-list>
+  ></app-order-list>
 </ng-container>
 <ng-template #loadingOrders>
   <div class="loading">

@@ -44,9 +44,15 @@
             >
           </mat-list-item>
         </mat-list>
-        <div class="price mat-subtitle-1">
+        <div *ngIf="showTotalPrice" class="price mat-subtitle-1">
           Total: ${{ order.items | orderItemsPrice }}
         </div>
+        <ng-container
+          *ngIf="customOrderDetailsTemplateRef"
+          [ngTemplateOutlet]="customOrderDetailsTemplateRef"
+          [ngTemplateOutletContext]="{ $implicit: order }"
+        >
+        </ng-container>
       </mat-card-content>
       <mat-card-actions *ngIf="actions">
         <button
