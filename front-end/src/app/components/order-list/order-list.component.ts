@@ -94,10 +94,10 @@ export class OrderListComponent<T> implements OnInit, OnChanges {
       this.actions = changes['actions'].currentValue;
     }
     if (changes['showTotalPrice']) {
-      this.actions = changes['showTotalPrice'].currentValue;
+      this.showTotalPrice = changes['showTotalPrice'].currentValue;
     }
     if (changes['customOrderDetailsTemplateRef']) {
-      this.actions = changes['customOrderDetailsTemplateRef'].currentValue;
+      this.customOrderDetailsTemplateRef = changes['customOrderDetailsTemplateRef'].currentValue;
     }
   }
 
