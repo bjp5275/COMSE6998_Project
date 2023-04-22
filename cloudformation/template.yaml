@@ -61,11 +61,13 @@ Resources:
 
   BackendStack:
     Type: AWS::CloudFormation::Stack
+    DependsOn: FrontendStack
     Properties:
       TemplateURL: !Sub "https://s3.amazonaws.com/${ResourcesBucket}/${BackendStackS3Key}"
       Parameters:
         ResourcesBucket: !Ref ResourcesBucket
         FunctionS3ObjectKeySuffix: !Ref FunctionS3ObjectKeySuffix
+        FrontEndUrl: !GetAtt FrontendStack.Outputs.WebsiteUrl
         ResourceSuffix: !Select
           - 0
           - !Split

@@ -7,15 +7,11 @@ from project_utility import (
     build_response,
     extract_api_key_id,
     extract_customer_id,
+    get_user_info,
 )
 
 # Clients
 api_gateway = boto3.client("apigateway")
-
-# Constants
-USERNAME_TAG = "username"
-DISPLAY_NAME_TAG = "displayName"
-ROLES_TAG = "roles"
 
 
 def get_validated_user_info(event, context):
@@ -32,23 +28,12 @@ def get_validated_user_info(event, context):
     api_key_id = extract_api_key_id(event)
     customer_id = extract_customer_id(event)
 
-    try:
-        response = api_gateway.get_api_key(apiKey=api_key_id, includeValue=False)
-        tags = response["tags"]
-        username = tags[USERNAME_TAG]
-        display_name = tags[DISPLAY_NAME_TAG]
-        roles = tags[ROLES_TAG].split(":")
-        return build_response(
-            200,
-            {
-                "id": customer_id,
-                "username": username,
-                "name": display_name,
-                "roles": roles,
-            },
-        )
-    except:
+    validated_user_info = get_user_info(api_gateway, api_key_id, customer_id)
+
+    if not validated_user_info or validated_user_info["username"] != username:
         return build_error_response(ErrorCodes.INVALID_DATA, "Invalid user information")
+    else:
+        return build_response(200, validated_user_info)
 
 
 def lambda_handler(event, context):

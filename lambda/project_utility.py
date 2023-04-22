@@ -8,10 +8,19 @@ from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 # Dynamo Tables
 PRODUCTS_TABLE = os.environ["PRODUCTS_TABLE"]
 ORDERS_TABLE = os.environ["ORDERS_TABLE"]
+UI_BASE_URL = os.environ["UI_BASE_URL"]
+USER_NOTIFICATION_QUEUE_URL = os.environ["USER_NOTIFICATION_QUEUE_URL"]
 
 # Constants
 PRODUCT_TYPE = "PRODUCT"
 ADDITION_TYPE = "ADDITION"
+
+SES_SOURCE = "bjp2158@columbia.edu"
+
+USER_INFO_EMAIL_TAG = "email"
+USER_INFO_USERNAME_TAG = "username"
+USER_INFO_DISPLAY_NAME_TAG = "displayName"
+USER_INFO_ROLES_TAG = "roles"
 
 
 # Classes
@@ -29,6 +38,54 @@ class ErrorCodes(ErrorCode, Enum):
     NOT_FOUND = 4, 404
 
 
+class UserNotificationType:
+    def __init__(self, type_code: str):
+        self.type_code = type_code
+
+
+class UserNotificationTypes(UserNotificationType, Enum):
+    ORDER_STATUS_UPDATE = "ORDER_STATUS_UPDATE"
+
+
+def createUiUrl(path):
+    return f"{UI_BASE_URL}/{path}"
+
+
+def send_sqs_message(sqs, queue_url, message):
+    response = sqs.send_message(QueueUrl=queue_url, MessageBody=json.dumps(message))
+    return response["MessageId"]
+
+
+def send_order_status_update_message(sqs, customer_id, order_id, new_status):
+    print(
+        f"Sending order status update message for customer {customer_id}'s order {order_id} with status {new_status}"
+    )
+    message = {
+        "type": UserNotificationTypes.ORDER_STATUS_UPDATE.type_code,
+        "customerId": customer_id,
+        "orderId": order_id,
+        "status": new_status,
+    }
+    return send_sqs_message(sqs, USER_NOTIFICATION_QUEUE_URL, message)
+
+
+def send_email(ses, destination_email, subject, message):
+    response = ses.send_email(
+        Source=SES_SOURCE,
+        Destination={"ToAddresses": [destination_email]},
+        Message={
+            "Subject": {"Data": subject},
+            "Body": {
+                "Html": {
+                    "Data": message,
+                }
+            },
+        },
+    )
+
+    print(f"Sent email {response['MessageId']}")
+
+
 def extract_api_key_id(event):
     if (
         "requestContext" in event
@@ -42,6 +99,25 @@ def extract_api_key_id(event):
 
 def extract_customer_id(event):
     return extract_api_key_id(event)
+
+
+def get_user_info(api_gateway, api_key_id, customer_id):
+    try:
+        response = api_gateway.get_api_key(apiKey=api_key_id, includeValue=False)
+        tags = response["tags"]
+        email = tags[USER_INFO_EMAIL_TAG]
+        username = tags[USER_INFO_USERNAME_TAG]
+        display_name = tags[USER_INFO_DISPLAY_NAME_TAG]
+        roles = tags[USER_INFO_ROLES_TAG].split(":")
+        return {
+            "id": customer_id,
+            "username": username,
+            "name": display_name,
+            "email": email,
+            "roles": roles,
+        }
+    except:
+        return None
 
 
 def decimal_encoder(d):

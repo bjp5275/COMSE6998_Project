@@ -14,6 +14,7 @@ from project_utility import (
     get_additions_by_id,
     get_path_parameter,
     get_products_by_id,
+    send_order_status_update_message,
     serialize_to_dynamo_object,
     to_coffee_type,
     to_milk_type,
@@ -282,6 +283,9 @@ def submit_order(event, context):
     success, order, data = create_order(customer_id, input_order)
 
     if success:
+        send_order_status_update_message(
+            boto3.client("sqs"), customer_id, order["id"], order["orderStatus"]
+        )
         return build_response(200, order)
     else:
         return build_error_response(ErrorCodes.INVALID_DATA, data)

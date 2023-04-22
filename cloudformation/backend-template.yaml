@@ -15,6 +15,9 @@ Parameters:
     Description: "The suffix for created resources' names"
     AllowedPattern: ^[-a-z0-9]+$
     ConstraintDescription: "Malformed input - Parameter must only use lowercase letters, numbers, and dashes"
+  FrontEndUrl:
+    Type: String
+    Description: "Base URL for the front end"
 
 Resources:
   # DynamoDB Tables
@@ -95,8 +98,60 @@ Resources:
                 Resource:
                   - !GetAtt ProductTable.Arn
                   - !GetAtt OrderTable.Arn
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                  - sqs:SendMessage
+                Resource:
+                  - !GetAtt UserNotificationQueue.Arn
+              - Effect: Allow
+                Action:
+                  - ses:SendEmail
+                Resource:
+                  - !Sub "arn:aws:ses:*:${AWS::AccountId}:identity/*"
+
+  # SQS Queues
+  UserNotificationQueue:
+    Type: AWS::SQS::Queue
+    Properties: 
+      Tags: 
+        - Key: Purpose
+          Value: "User notifications"
+  UserNotificationEventSource:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      Enabled: true
+      EventSourceArn: !GetAtt UserNotificationQueue.Arn
+      FunctionName: !Ref UserNotificationFunction
+      FunctionResponseTypes: 
+        - ReportBatchItemFailures
 
   # Lambda functions
+  UserNotificationFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Architectures:
+        - "x86_64"
+      Code:
+        S3Bucket: !Ref ResourcesBucket
+        S3Key: !Sub "coffee-delivery/user-notification-${FunctionS3ObjectKeySuffix}.zip"
+      Environment:
+        Variables:
+          STACK_ID: !Ref "AWS::StackId"
+          PRODUCTS_TABLE: !Ref ProductTable
+          ORDERS_TABLE: !Ref OrderTable
+          USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
+          UI_BASE_URL: !Ref FrontEndUrl
+      FunctionName: !Sub "coffee-delivery-user-notification-${ResourceSuffix}"
+      Handler: "lambda_function.lambda_handler"
+      MemorySize: 128
+      PackageType: "Zip"
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: "python3.9"
+      Timeout: 10
+
   LoginFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -110,6 +165,8 @@ Resources:
           STACK_ID: !Ref "AWS::StackId"
           PRODUCTS_TABLE: !Ref ProductTable
           ORDERS_TABLE: !Ref OrderTable
+          USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
+          UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-login-${ResourceSuffix}"
       Handler: "lambda_function.lambda_handler"
       MemorySize: 128
@@ -131,6 +188,8 @@ Resources:
           STACK_ID: !Ref "AWS::StackId"
           PRODUCTS_TABLE: !Ref ProductTable
           ORDERS_TABLE: !Ref OrderTable
+          USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
+          UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-products-${ResourceSuffix}"
       Handler: "lambda_function.lambda_handler"
       MemorySize: 128
@@ -152,6 +211,8 @@ Resources:
           STACK_ID: !Ref "AWS::StackId"
           PRODUCTS_TABLE: !Ref ProductTable
           ORDERS_TABLE: !Ref OrderTable
+          USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
+          UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-product-additions-${ResourceSuffix}"
       Handler: "lambda_function.lambda_handler"
       MemorySize: 128
@@ -173,6 +234,8 @@ Resources:
           STACK_ID: !Ref "AWS::StackId"
           PRODUCTS_TABLE: !Ref ProductTable
           ORDERS_TABLE: !Ref OrderTable
+          USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
+          UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-orders-${ResourceSuffix}"
       Handler: "lambda_function.lambda_handler"
       MemorySize: 128
