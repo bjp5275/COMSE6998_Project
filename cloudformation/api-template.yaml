@@ -144,7 +144,7 @@ Resources:
           Stage: !Ref StageName
       Description: String
       Quota:
-        Limit: 1000
+        Limit: 10000
         Period: DAY
       Throttle:
         BurstLimit: 5
