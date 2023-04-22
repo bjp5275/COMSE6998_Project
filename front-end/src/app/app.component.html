@@ -20,77 +20,62 @@
   </mat-toolbar>
 
   <mat-drawer-container hasBackdrop="true">
-    <mat-drawer #mainMenu class="menu" mode="over" position="start">
-      <mat-nav-list>
-        <mat-list-item
-          routerLinkActive
-          routerLink="/products"
-          #productsRla="routerLinkActive"
-          [activated]="productsRla.isActive"
-          (click)="mainMenu.close(); secondaryMenu.close()"
-        >
-          <mat-icon matListItemIcon>coffee</mat-icon>
-          <a matListItemTitle class="text-link">Products</a>
-        </mat-list-item>
-        <mat-list-item
-          routerLinkActive
-          routerLink="/cart"
-          #cart="routerLinkActive"
-          [activated]="cart.isActive"
-          (click)="mainMenu.close(); secondaryMenu.close()"
-        >
-          <mat-icon matListItemIcon>shopping_cart</mat-icon>
-          <a matListItemTitle class="text-link">Cart</a>
-        </mat-list-item>
-        <ng-container *ngIf="actingRole == 'DELIVERER'">
-          <mat-divider></mat-divider>
-          <div class="title mat-headline-6">Deliverer Console</div>
-          <mat-list-item
-            routerLinkActive
-            routerLink="/delivery/available"
-            #availableDeliveriesRla="routerLinkActive"
-            [activated]="availableDeliveriesRla.isActive"
-            (click)="mainMenu.close(); secondaryMenu.close()"
-          >
-            <mat-icon matListItemIcon>local_shipping</mat-icon>
-            <a matListItemTitle class="text-link">Available Deliveries</a>
-          </mat-list-item>
-          <mat-list-item
-            routerLinkActive
-            routerLink="/delivery/history"
-            #pastDeliveriesRla="routerLinkActive"
-            [activated]="pastDeliveriesRla.isActive"
-            (click)="mainMenu.close(); secondaryMenu.close()"
-          >
-            <mat-icon matListItemIcon>history</mat-icon>
-            <a matListItemTitle class="text-link">Delivery History</a>
-          </mat-list-item>
+    <ng-template
+      #menuLinkTemplate
+      let-link
+      [typedTemplate]="MENU_LINK_TYPE_TEMPLATE"
+    >
+      <mat-list-item
+        *ngIf="!link.show || link.show()"
+        routerLinkActive
+        [routerLink]="link.routerLink"
+        #linkRla="routerLinkActive"
+        [activated]="linkRla.isActive"
+        (click)="mainMenu.close(); secondaryMenu.close()"
+      >
+        <mat-icon matListItemIcon>{{ link.icon }}</mat-icon>
+        <a matListItemTitle class="text-link">{{ link.name }}</a>
+      </mat-list-item>
+    </ng-template>
+    <ng-template
+      #menuCategoryTemplate
+      let-category
+      [typedTemplate]="MENU_CATEGORY_TYPE_TEMPLATE"
+    >
+      <ng-container *ngIf="!category.show || category.show()">
+        <mat-divider *ngIf="category.includeDivider"></mat-divider>
+        <div class="title mat-headline-6">{{ category.title }}</div>
+        <ng-container *ngFor="let link of category.links">
+          <ng-container
+            *ngTemplateOutlet="menuLinkTemplate; context: { $implicit: link }"
+          ></ng-container>
         </ng-container>
-        <ng-container *ngIf="actingRole == 'ADMIN'">
-          <mat-divider></mat-divider>
-          <div class="title mat-headline-6">Administrative Console</div>
-          <mat-list-item
-            routerLinkActive
-            routerLink="/admin/products"
-            #adminProductsRla="routerLinkActive"
-            [activated]="adminProductsRla.isActive"
-            (click)="mainMenu.close(); secondaryMenu.close()"
-          >
-            <mat-icon matListItemIcon>coffee</mat-icon>
-            <a matListItemTitle class="text-link">Products</a>
-          </mat-list-item>
-          <mat-list-item
-            routerLinkActive
-            routerLink="/admin/additions"
-            #adminAdditionsRla="routerLinkActive"
-            [activated]="adminAdditionsRla.isActive"
-            (click)="mainMenu.close(); secondaryMenu.close()"
-          >
-            <mat-icon matListItemIcon>add_box</mat-icon>
-            <a matListItemTitle class="text-link">Additions</a>
-          </mat-list-item>
+      </ng-container>
+    </ng-template>
+    <ng-template
+      #menuItemsTemplate
+      let-menuItems
+      [typedTemplate]="MENU_ITEMS_TYPE_TEMPLATE"
+    >
+      <mat-nav-list>
+        <ng-container *ngFor="let menuItem of menuItems">
+          <ng-container
+            *ngTemplateOutlet="
+              menuItem.type == 'LINK' ? menuLinkTemplate : menuCategoryTemplate;
+              context: { $implicit: menuItem }
+            "
+          ></ng-container>
         </ng-container>
       </mat-nav-list>
+    </ng-template>
+
+    <mat-drawer #mainMenu class="menu" mode="over" position="start">
+      <ng-container
+        *ngTemplateOutlet="
+          menuItemsTemplate;
+          context: { $implicit: mainMenuItems }
+        "
+      ></ng-container>
     </mat-drawer>
     <mat-drawer #secondaryMenu class="menu" mode="over" position="end">
       <div class="title mat-headline-6" *ngIf="userInformation">
@@ -119,28 +104,12 @@
           </mat-button-toggle>
         </mat-button-toggle-group>
       </div>
-      <mat-nav-list>
-        <mat-list-item
-          routerLinkActive
-          routerLink="/favorites"
-          #favoriteRla="routerLinkActive"
-          [activated]="favoriteRla.isActive"
-          (click)="mainMenu.close(); secondaryMenu.close()"
-        >
-          <mat-icon matListItemIcon>favorite</mat-icon>
-          <a matListItemTitle class="text-link">Favorites</a>
-        </mat-list-item>
-        <mat-list-item
-          routerLinkActive
-          routerLink="/history"
-          #historyRla="routerLinkActive"
-          [activated]="historyRla.isActive"
-          (click)="mainMenu.close(); secondaryMenu.close()"
-        >
-          <mat-icon matListItemIcon>history</mat-icon>
-          <a matListItemTitle class="text-link">Order History</a>
-        </mat-list-item>
-      </mat-nav-list>
+      <ng-container
+        *ngTemplateOutlet="
+          menuItemsTemplate;
+          context: { $implicit: secondaryMenuItems }
+        "
+      ></ng-container>
 
       <div class="centered">
         <button mat-raised-button color="primary" (click)="logout()">
