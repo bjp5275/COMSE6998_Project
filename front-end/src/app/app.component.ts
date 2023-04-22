@@ -1,16 +1,14 @@
 import { Component } from '@angular/core';
+import { FormBuilder, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { first } from 'rxjs';
-import { environment } from 'src/environments/environment';
 import { CartService } from './shared/services/cart.service';
 import {
   UserInformation,
   UserRole,
   UserService,
-  convertUserRoleToString,
 } from './shared/services/user.service';
 
-type MenuType = 'MENU';
 type MenuItem = MenuLink | MenuCategory;
 interface _MenuItem {
   type: string;
@@ -20,7 +18,7 @@ interface _MenuItem {
 interface MenuCategory extends _MenuItem {
   type: 'CATEGORY';
   title: string;
-  includeDivider: boolean;
+  includeDivider?: boolean;
   links?: MenuLink[];
 }
 
@@ -37,28 +35,35 @@ interface MenuLink extends _MenuItem {
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
-  readonly convertUserRoleToString = convertUserRoleToString;
   readonly MENU_LINK_TYPE_TEMPLATE!: MenuLink;
   readonly MENU_CATEGORY_TYPE_TEMPLATE!: MenuCategory;
   readonly MENU_ITEMS_TYPE_TEMPLATE!: MenuItem[];
   readonly mainMenuItems: MenuItem[] = [
     {
-      type: 'LINK',
-      routerLink: '/products',
-      icon: 'coffee',
-      name: 'Products',
-    },
-    {
-      type: 'LINK',
-      routerLink: '/cart',
-      icon: 'shopping_cart',
-      name: 'Cart',
+      type: 'CATEGORY',
+      title: 'User Menu',
+      show: () =>
+        !!this.userInformation?.roles && this.userInformation.roles.length > 1,
+      links: [
+        {
+          type: 'LINK',
+          routerLink: '/products',
+          icon: 'coffee',
+          name: 'Products',
+        },
+        {
+          type: 'LINK',
+          routerLink: '/cart',
+          icon: 'shopping_cart',
+          name: 'Cart',
+        },
+      ],
     },
     {
       type: 'CATEGORY',
       includeDivider: true,
       title: 'Deliverer Console',
-      show: () => this.actingRole == UserRole.DELIVERER,
+      show: () => this.userHasRole(UserRole.DELIVERER),
       links: [
         {
           type: 'LINK',
@@ -78,7 +83,7 @@ export class AppComponent {
       type: 'CATEGORY',
       includeDivider: true,
       title: 'Administrative Console',
-      show: () => this.actingRole == UserRole.ADMIN,
+      show: () => this.userHasRole(UserRole.ADMIN),
       links: [
         {
           type: 'LINK',
@@ -111,27 +116,10 @@ export class AppComponent {
   ];
 
   userInformation?: UserInformation;
-  actingRole: UserRole = UserRole.REGULAR_USER;
-
-  get apiKey(): string | undefined {
-    if (environment.apiKey && environment.apiKey.length > 0) {
-      return environment.apiKey;
-    } else {
-      return undefined;
-    }
-  }
-  set apiKey(key: string | undefined) {
-    environment.apiKey = key || '';
-  }
-
-  get menuType(): MenuType {
-    switch (this.actingRole) {
-      default:
-      case UserRole.ADMIN:
-      case UserRole.REGULAR_USER:
-        return 'MENU';
-    }
-  }
+  loginForm = this.fb.group({
+    username: ['', Validators.required],
+    password: ['', Validators.required],
+  });
 
   get cartSize(): number {
     return this.cartService.size();
@@ -143,25 +131,43 @@ export class AppComponent {
 
   constructor(
     private cartService: CartService,
-    userService: UserService,
-    snackBar: MatSnackBar
+    private userService: UserService,
+    private snackBar: MatSnackBar,
+    private fb: FormBuilder
   ) {
-    userService
-      .getUserInformation()
-      .pipe(first())
-      .subscribe({
-        next: (info) => (this.userInformation = info),
-        error: () => {
-          snackBar.open(
-            'Failed to load user information. Please try again later.',
-            'Close'
-          );
-        },
-      });
+    userService.getUserInformation().subscribe({
+      next: (info) => (this.userInformation = info),
+    });
+  }
+
+  userHasRole(role: UserRole): boolean {
+    return (
+      (this.userInformation &&
+        this.userInformation.roles &&
+        this.userInformation.roles.includes(role)) ||
+      false
+    );
+  }
+
+  login(loginInfo = this.loginForm.value) {
+    if (loginInfo.username && loginInfo.password) {
+      this.userService
+        .login(loginInfo.username, loginInfo.password)
+        .pipe(first())
+        .subscribe({
+          next: (info) => {
+            this.userInformation = info;
+          },
+          error: () => {
+            this.snackBar.open('Invalid login credentials', 'OK');
+          },
+        });
+    } else {
+      console.log('ERROR: Invalid login details');
+    }
   }
 
   logout() {
-    // TODO: Implement
-    console.log('Logout');
+    this.userService.logout();
   }
 }

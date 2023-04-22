@@ -29,29 +29,24 @@
     text-align: center;
     margin: 0;
   }
-
-  div#api-key {
-    text-align: center;
-    margin-top: 0.5em;
-  }
-
-  div.toggle-group-holder {
-    margin-bottom: 0.5em;
-    text-align: center;
-
-    mat-button-toggle-group {
-      border-radius: 1em;
-    }
-  }
 }
 
-.enter-api-key {
+.login-screen {
   width: 100%;
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 1em;
 
-  align-items: center;
-  justify-content: center;
+  .toolbar {
+    z-index: 1000;
+  }
+
+  .content {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+  }
 }

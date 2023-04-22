@@ -1,6 +1,6 @@
-<div class="page-container" *ngIf="apiKey; else enterApiKey">
+<div class="page-container" *ngIf="userInformation; else loginScreen">
   <mat-toolbar color="primary" class="toolbar">
-    <button *ngIf="menuType" mat-icon-button (click)="mainMenu.toggle()">
+    <button mat-icon-button (click)="mainMenu.toggle()">
       <mat-icon>menu</mat-icon>
     </button>
     <a class="text-link" routerLink="/">Coffee Delivery Service</a>
@@ -71,44 +71,17 @@
 
     <mat-drawer #mainMenu class="menu" mode="over" position="start">
       <ng-container
-        *ngTemplateOutlet="
-          menuItemsTemplate;
-          context: { $implicit: mainMenuItems }
-        "
+        [ngTemplateOutlet]="menuItemsTemplate"
+        [ngTemplateOutletContext]="{ $implicit: mainMenuItems }"
       ></ng-container>
     </mat-drawer>
     <mat-drawer #secondaryMenu class="menu" mode="over" position="end">
-      <div class="title mat-headline-6" *ngIf="userInformation">
+      <div class="title mat-headline-6">
         Welcome back, {{ userInformation.name }}!
       </div>
-      <div id="api-key">
-        <mat-form-field appearance="outline" class="small-padding">
-          <mat-label>API Key</mat-label>
-          <input matInput type="password" [(ngModel)]="apiKey" />
-        </mat-form-field>
-      </div>
-      <div
-        class="toggle-group-holder"
-        *ngIf="(userInformation?.roles?.length || 0) > 1"
-      >
-        <mat-button-toggle-group [(ngModel)]="actingRole">
-          <mat-button-toggle
-            *ngFor="let roleType of userInformation!.roles"
-            [value]="roleType"
-            #roleToggle
-          >
-            <mat-icon *ngIf="roleToggle.checked" color="primary">
-              check
-            </mat-icon>
-            {{ convertUserRoleToString(roleType) }}
-          </mat-button-toggle>
-        </mat-button-toggle-group>
-      </div>
       <ng-container
-        *ngTemplateOutlet="
-          menuItemsTemplate;
-          context: { $implicit: secondaryMenuItems }
-        "
+        [ngTemplateOutlet]="menuItemsTemplate"
+        [ngTemplateOutletContext]="{ $implicit: secondaryMenuItems }"
       ></ng-container>
 
       <div class="centered">
@@ -123,12 +96,28 @@
     </div>
   </mat-drawer-container>
 </div>
-<ng-template #enterApiKey>
-  <div class="enter-api-key">
-    <div>Enter an API key to continue</div>
-    <mat-form-field appearance="outline" class="small-padding">
-      <mat-label>API Key</mat-label>
-      <input matInput type="password" [(ngModel)]="apiKey" />
-    </mat-form-field>
+<ng-template #loginScreen>
+  <div class="login-screen">
+    <mat-toolbar color="primary" class="toolbar">
+      <a class="text-link" routerLink="/">Coffee Delivery Service</a>
+    </mat-toolbar>
+    <form [formGroup]="loginForm" (ngSubmit)="login()" class="content">
+      <div class="mat-headline-5 centered">
+        Welcome to the Coffee Delivery Service!
+        <br />
+        Log in to continue
+      </div>
+      <mat-form-field appearance="outline" class="small-padding">
+        <mat-label>Username</mat-label>
+        <input matInput type="text" formControlName="username" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="small-padding">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" formControlName="password" />
+      </mat-form-field>
+      <button mat-raised-button type="submit" [disabled]="!loginForm.valid">
+        Login
+      </button>
+    </form>
   </div>
 </ng-template>

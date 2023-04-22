@@ -8,7 +8,7 @@ import {
   throwError,
   timer,
 } from 'rxjs';
-import { environment } from 'src/environments/environment';
+import { UserService } from './services/user.service';
 
 export interface HttpError {
   errorCode: number;
@@ -36,12 +36,19 @@ export class ObservableUtils {
 export class HttpUtils {
   static AUTHORIZATION_HEADER = 'X-Api-Key';
   static RETRY_ATTEMPTS = 2;
+  static userService: UserService;
+
+  public static _setUserService(userService: UserService) {
+    this.userService = userService;
+  }
 
   public static getBaseHeaders(): HttpHeaders {
-    return new HttpHeaders().set(
-      HttpUtils.AUTHORIZATION_HEADER,
-      environment.apiKey
-    );
+    let headers = new HttpHeaders();
+    if (this.userService) {
+      headers = this.userService.addAuthorizationHeader(headers);
+    }
+
+    return headers;
   }
 
   public static handleError(error: Error): Observable<never> {
