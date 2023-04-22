@@ -1,11 +1,36 @@
 import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
-import { Observable, throwError } from 'rxjs';
+import {
+  MonoTypeOperatorFunction,
+  Observable,
+  expand,
+  switchMap,
+  throwError,
+  timer,
+} from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 export interface HttpError {
   errorCode: number;
   errorMessage: string;
+}
+
+export class ObservableUtils {
+  public static DEFAULT_POLLING_MS = 2500;
+
+  /**
+   * Poll for data. Only start fetching new data after a previous fetch completes plus the specified poll interval
+   * @param pollInterval interval to wait after a successful fetch to poll again
+   * @returns the operator function to perform polling
+   */
+  public static pollAfterData<T>(
+    pollInterval = ObservableUtils.DEFAULT_POLLING_MS
+  ): MonoTypeOperatorFunction<T> {
+    return (source$) =>
+      source$.pipe(
+        expand(() => timer(pollInterval).pipe(switchMap(() => source$)))
+      );
+  }
 }
 
 export class HttpUtils {

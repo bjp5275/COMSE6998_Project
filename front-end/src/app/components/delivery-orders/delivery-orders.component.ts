@@ -13,7 +13,7 @@ import {
 import { DeliveryOrder } from 'src/app/model/models';
 import { LocationPipe } from 'src/app/shared/pipes/location.pipe';
 import { DeliveryService } from 'src/app/shared/services/delivery.service';
-import { HttpError } from 'src/app/shared/utility';
+import { HttpError, ObservableUtils } from 'src/app/shared/utility';
 import { CustomOrder, OrderAction } from '../order-list/order-list.component';
 
 export type DeliveryOrdersType = 'HISTORY' | 'AVAILABLE';
@@ -65,7 +65,9 @@ export class DeliveryOrdersComponent {
       switchMap((ordersType) => {
         switch (ordersType) {
           case DeliveryOrdersType.AVAILABLE:
-            return deliveryService.getAvailableDeliveries();
+            return deliveryService
+              .getAvailableDeliveries()
+              .pipe(ObservableUtils.pollAfterData());
 
           case DeliveryOrdersType.HISTORY:
             return deliveryService.getHistoricalDeliveries();
