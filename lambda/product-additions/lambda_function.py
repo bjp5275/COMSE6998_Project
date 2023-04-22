@@ -3,115 +3,122 @@ import json
 import uuid
 import boto3
 from decimal import Decimal
-from project_utility import get_query_parameter, build_response, deserialize_dynamo_object, serialize_to_dynamo_object, validate_price
+from project_utility import (
+    get_query_parameter,
+    build_response,
+    deserialize_dynamo_object,
+    serialize_to_dynamo_object,
+    validate_price,
+)
 
 # Dynamo Tables
-PRODUCTS_TABLE = os.environ['PRODUCTS_TABLE']
+PRODUCTS_TABLE = os.environ["PRODUCTS_TABLE"]
 
 # Clients
-dynamo = boto3.client('dynamodb')
+dynamo = boto3.client("dynamodb")
 
 # Constants
-INCLUDE_DISABLED_FLAG = 'includeDisabled'
-PRODUCT_TYPE = 'PRODUCT'
-ADDITION_TYPE = 'ADDITION'
+INCLUDE_DISABLED_FLAG = "includeDisabled"
+PRODUCT_TYPE = "PRODUCT"
+ADDITION_TYPE = "ADDITION"
 
 
 def build_object_from_dynamo_response(items):
     objects = []
     for item in items:
         obj = deserialize_dynamo_object(item)
-        obj.pop('_type')
+        obj.pop("_type")
         objects.append(obj)
     return objects
 
+
 def get_additions(event, context):
     # Base filter expression and values
-    filterExpression = '#TYPE = :type'
+    filterExpression = "#TYPE = :type"
     filterExpressionValues = {
-        ':type': {
-            'S': ADDITION_TYPE,
+        ":type": {
+            "S": ADDITION_TYPE,
         },
     }
-    expressionNames={
-        '#TYPE': '_type'
-    }
+    expressionNames = {"#TYPE": "_type"}
 
     # Check include_disabled flag
-    include_disabled = get_query_parameter(event, INCLUDE_DISABLED_FLAG, 'false').lower() == 'true'
-    
+    include_disabled = (
+        get_query_parameter(event, INCLUDE_DISABLED_FLAG, "false").lower() == "true"
+    )
+
     # Filter out disabled items
     if not include_disabled:
         filterExpression = f"({filterExpression}) AND enabled = :enabled"
-        filterExpressionValues[':enabled'] = {
-            'BOOL': True,
+        filterExpressionValues[":enabled"] = {
+            "BOOL": True,
         }
-    
 
-    print(f"Getting all additions ({'including' if include_disabled else 'excluding'} disabled additions)")
+    print(
+        f"Getting all additions ({'including' if include_disabled else 'excluding'} disabled additions)"
+    )
     response = dynamo.scan(
         TableName=PRODUCTS_TABLE,
         FilterExpression=filterExpression,
         ExpressionAttributeNames=expressionNames,
         ExpressionAttributeValues=filterExpressionValues,
     )
-    additions = response['Items']
+    additions = response["Items"]
 
     print(f"Found {len(additions)} additions")
     additions = build_object_from_dynamo_response(additions)
     return build_response(200, additions)
 
-def create_addition(addition):
-    validated_addition = {
-        '_type': ADDITION_TYPE
-    }
 
-    if 'id' in addition and len(str(addition['id'])) > 0:
-        id = str(addition['id'])
+def create_addition(addition):
+    validated_addition = {"_type": ADDITION_TYPE}
+
+    if "id" in addition and len(str(addition["id"])) > 0:
+        id = str(addition["id"])
         print(f"Updating addition {id}")
     else:
         id = str(uuid.uuid4())
         print(f"Creating addition {id}", addition)
-    validated_addition['id'] = id
+    validated_addition["id"] = id
 
     print("Validating addition...")
 
-    if 'enabled' in addition:
-        validated_addition['enabled'] = str(addition['enabled']).lower() == 'true'
+    if "enabled" in addition:
+        validated_addition["enabled"] = str(addition["enabled"]).lower() == "true"
     else:
-        validated_addition['enabled'] = True
-    
-    if 'name' in addition:
-        validated_addition['name'] = str(addition['name'])
+        validated_addition["enabled"] = True
+
+    if "name" in addition:
+        validated_addition["name"] = str(addition["name"])
     else:
-        return False, None, 'Addition must have a name'
-    
-    if 'price' in addition:
-        price = validate_price(addition['price'])
+        return False, None, "Addition must have a name"
+
+    if "price" in addition:
+        price = validate_price(addition["price"])
         if price is None:
-            return False, None, 'Invalid price'
+            return False, None, "Invalid price"
         elif price <= 0:
-            return False, None, 'Price must be non-negative'
-        validated_addition['price'] = price
+            return False, None, "Price must be non-negative"
+        validated_addition["price"] = price
     else:
-        return False, None, 'Addition must have a price'
+        return False, None, "Addition must have a price"
 
     print("Validated. Saving to Dynamo...", validated_addition)
 
     dynamo.put_item(
-        TableName=PRODUCTS_TABLE,
-        Item=serialize_to_dynamo_object(validated_addition)
+        TableName=PRODUCTS_TABLE, Item=serialize_to_dynamo_object(validated_addition)
     )
 
     print("Addition saved")
-    validated_addition.pop('_type')
+    validated_addition.pop("_type")
     return True, validated_addition, id
 
-def upsert_addition(event, context):
-    if 'body' not in event or event['body'] is None:
-        return build_response(400, 'Must specify a request body')
 
-    input_addition = json.loads(event['body'], parse_float=Decimal)
+def upsert_addition(event, context):
+    if "body" not in event or event["body"] is None:
+        return build_response(400, "Must specify a request body")
+
+    input_addition = json.loads(event["body"], parse_float=Decimal)
     success, addition, data = create_addition(input_addition)
 
     if success:
@@ -123,14 +130,14 @@ def upsert_addition(event, context):
 def lambda_handler(event, context):
     print(f"Received event: {event}")
     print(f"Context: {context}")
-    
-    httpMethod = event['httpMethod']
-    if httpMethod == 'GET':
+
+    httpMethod = event["httpMethod"]
+    if httpMethod == "GET":
         response = get_additions(event, context)
-    elif httpMethod == 'POST':
+    elif httpMethod == "POST":
         response = upsert_addition(event, context)
     else:
         response = build_response(500, f"Unknown method: {httpMethod}")
-    
+
     print("Response", response)
     return response
