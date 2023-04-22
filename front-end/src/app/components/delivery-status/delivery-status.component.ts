@@ -67,7 +67,7 @@ export class DeliveryStatusComponent {
   private updateStatus(order: DeliveryOrder, status: OrderStatus) {
     this.updatingOrder = true;
     this.deliveryService
-      .updateOrderStatus(order.id, status)
+      .updateDeliveryStatus(order.id, status)
       .pipe(
         first(),
         catchError((err: HttpError) => {

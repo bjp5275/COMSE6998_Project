@@ -110,7 +110,7 @@ export class DeliveryOrdersComponent {
 
   secureOrder(orderId: string) {
     this.deliveryService
-      .secureOrder(orderId)
+      .secureDelivery(orderId)
       .pipe(
         first(),
         catchError((err: HttpError) => {

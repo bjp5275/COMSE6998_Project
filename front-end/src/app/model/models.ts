@@ -33,7 +33,7 @@ export interface DeliveryOrder {
    */
   id: string;
   /**
-   * Status of an order
+   * Status of the order
    */
   readonly orderStatus: OrderStatus;
   /**
@@ -302,6 +302,10 @@ export interface PendingOrder {
    */
   id: string;
   /**
+   * Status of the order
+   */
+  readonly orderStatus: OrderStatus;
+  /**
    * Requested delivery time for the order
    */
   deliveryTime: Date;
@@ -310,6 +314,10 @@ export interface PendingOrder {
    * Payment amount to prepare order
    */
   commission?: number;
+  /**
+   * Items within the order
+   */
+  items: OrderItem[];
 }
 
 /**

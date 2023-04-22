@@ -28,9 +28,9 @@ Parameters:
     Type: String
     Description: "The S3 object key for the API stack YAML file"
     Default: "coffee-delivery/api-template.yaml"
-  PhotosBucket:
+  PhotosBucketBaseName:
     Type: String
-    Description: "The S3 bucket where image resources should be stored"
+    Description: "The base name of the S3 bucket where image resources should be stored"
     Default: "coffee-delivery-photos"
   ApiGatewayYamlS3ObjectKey:
     Type: String
@@ -42,6 +42,53 @@ Parameters:
     Default: "v1"
 
 Resources:
+  # Bucket for photos
+  S3PhotosBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join
+        - "-"
+        - - !Ref PhotosBucketBaseName
+          - !Select
+            - 0
+            - !Split
+              - "-"
+              - !Select
+                - 2
+                - !Split
+                  - "/"
+                  - !Ref "AWS::StackId"
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - GET
+              - HEAD
+            AllowedOrigins:
+              - "*"
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+  S3PhotosBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3PhotosBucket
+      PolicyDocument:
+        Id: PublicReadPolicy
+        Version: 2012-10-17
+        Statement:
+          - Sid: PublicReadForGetBucketObjects
+            Effect: Allow
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "arn:aws:s3:::${S3PhotosBucket}/*"
+
   FrontendStack:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -84,7 +131,7 @@ Resources:
     Properties:
       TemplateURL: !Sub "https://s3.amazonaws.com/${ResourcesBucket}/${ApiStackS3Key}"
       Parameters:
-        PhotosBucket: !Ref PhotosBucket
+        PhotosBucket: !Ref S3PhotosBucket
         ResourcesBucket: !Ref ResourcesBucket
         ApiGatewayYamlS3ObjectKey: !Ref ApiGatewayYamlS3ObjectKey
         LambdaExecutionRoleName: !GetAtt BackendStack.Outputs.LambdaExecutionRoleName
@@ -100,6 +147,11 @@ Resources:
                 - !Ref "AWS::StackId"
 
 Outputs:
+  # Base Resources
+  S3PhotosBucket:
+    Description: "Bucket for photos"
+    Value: !Ref S3PhotosBucket
+
   # Child Stacks
   FrontendStackId:
     Description: "ID of backend stack"

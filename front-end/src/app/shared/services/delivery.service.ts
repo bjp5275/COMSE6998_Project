@@ -81,7 +81,7 @@ export class DeliveryService {
    * Uses the user context to determine which deliverer the order will be assigned to
    * @param id Order ID
    */
-  public secureOrder(id: string): Observable<boolean> {
+  public secureDelivery(id: string): Observable<boolean> {
     // TODO - Implement properly
     return of(true).pipe(delay(1000));
   }
@@ -92,7 +92,7 @@ export class DeliveryService {
    * @param id Order ID
    * @param newStatus New order status
    */
-  public updateOrderStatus(
+  public updateDeliveryStatus(
     id: string,
     newStatus: OrderStatus
   ): Observable<boolean> {
