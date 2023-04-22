@@ -42,6 +42,30 @@
           <mat-icon matListItemIcon>shopping_cart</mat-icon>
           <a matListItemTitle class="text-link">Cart</a>
         </mat-list-item>
+        <ng-container *ngIf="actingRole == 'DELIVERER'">
+          <mat-divider></mat-divider>
+          <div class="title mat-headline-6">Deliverer Console</div>
+          <mat-list-item
+            routerLinkActive
+            routerLink="/delivery/available"
+            #availableDeliveriesRla="routerLinkActive"
+            [activated]="availableDeliveriesRla.isActive"
+            (click)="mainMenu.close(); secondaryMenu.close()"
+          >
+            <mat-icon matListItemIcon>local_shipping</mat-icon>
+            <a matListItemTitle class="text-link">Available Deliveries</a>
+          </mat-list-item>
+          <mat-list-item
+            routerLinkActive
+            routerLink="/delivery/history"
+            #pastDeliveriesRla="routerLinkActive"
+            [activated]="pastDeliveriesRla.isActive"
+            (click)="mainMenu.close(); secondaryMenu.close()"
+          >
+            <mat-icon matListItemIcon>history</mat-icon>
+            <a matListItemTitle class="text-link">Delivery History</a>
+          </mat-list-item>
+        </ng-container>
         <ng-container *ngIf="actingRole == 'ADMIN'">
           <mat-divider></mat-divider>
           <div class="title mat-headline-6">Administrative Console</div>

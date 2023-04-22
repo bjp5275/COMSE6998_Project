@@ -33,10 +33,11 @@ const PAYMENT_METHODS: PaymentInformation[] = [
 
 const FAVORITE_ORDERS: FavoriteOrder[] = [];
 
-export type UserRole = 'REGULAR_USER' | 'ADMIN';
+export type UserRole = 'REGULAR_USER' | 'ADMIN' | 'DELIVERER';
 export const UserRole = {
   REGULAR_USER: 'REGULAR_USER' as UserRole,
   ADMIN: 'ADMIN' as UserRole,
+  DELIVERER: 'DELIVERER' as UserRole,
 };
 export function convertUserRoleToString(userRole: UserRole): string {
   switch (userRole) {
@@ -44,6 +45,8 @@ export function convertUserRoleToString(userRole: UserRole): string {
       return 'User';
     case UserRole.ADMIN:
       return 'Admin';
+    case UserRole.DELIVERER:
+      return 'Deliverer';
     default:
       throw new Error(`Unknown user role: ${userRole}`);
   }
@@ -65,7 +68,7 @@ export class UserService {
   userInformation: UserInformation = {
     id: 'id',
     name: 'Ben',
-    roles: [UserRole.REGULAR_USER, UserRole.ADMIN],
+    roles: [UserRole.REGULAR_USER, UserRole.ADMIN, UserRole.DELIVERER],
   };
 
   constructor() {}
