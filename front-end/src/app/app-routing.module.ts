@@ -9,6 +9,7 @@ import {
   DeliveryOrdersComponent,
   DeliveryOrdersType,
 } from './components/delivery-orders/delivery-orders.component';
+import { DeliveryStatusComponent } from './components/delivery-status/delivery-status.component';
 import { FavoritesComponent } from './components/favorites/favorites.component';
 import { OrderDetailsComponent } from './components/order-details/order-details.component';
 import { OrderHistoryComponent } from './components/order-history/order-history.component';
@@ -31,6 +32,7 @@ const routes: Routes = [
     component: DeliveryOrdersComponent,
     data: { type: DeliveryOrdersType.HISTORY },
   },
+  { path: 'delivery/status', component: DeliveryStatusComponent },
   { path: 'admin/additions', component: AdminAdditionsComponent },
   { path: 'admin/products', component: AdminProductsComponent },
   { path: 'admin/product', component: AdminCustomizeProductComponent },

@@ -33,6 +33,10 @@ export interface DeliveryOrder {
    */
   id: string;
   /**
+   * Status of an order
+   */
+  readonly orderStatus: OrderStatus;
+  /**
    * Requested time for the delivery
    */
   deliveryTime: Date;

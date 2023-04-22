@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, map, of, switchMap, throwError } from 'rxjs';
+import { Observable, delay, map, of, switchMap, throwError } from 'rxjs';
 import { DeliveryOrder, OrderStatus } from 'src/app/model/models';
 import { OrderService } from './order.service';
 
@@ -7,6 +7,8 @@ import { OrderService } from './order.service';
   providedIn: 'root',
 })
 export class DeliveryService {
+  private updatedStatuses = new Map<string, OrderStatus>();
+
   constructor(private orderService: OrderService) {}
 
   private getOrders(): Observable<DeliveryOrder[]> {
@@ -16,6 +18,11 @@ export class DeliveryService {
         orders.forEach((order) => {
           deliveryOrders.push({
             id: order.id!,
+            orderStatus:
+              this.updatedStatuses.get(order.id!) ||
+              (order.deliveryTime <= new Date()
+                ? OrderStatus.DELIVERED
+                : OrderStatus.MADE),
             deliveryLocation: order.deliveryLocation,
             deliveryTime: order.deliveryTime,
             deliveryFee: 5,
@@ -56,6 +63,7 @@ export class DeliveryService {
    * @param id Order ID
    */
   public getDelivery(id: string): Observable<DeliveryOrder> {
+    // TODO - Implement properly
     return this.getOrders().pipe(
       map((orders) => orders.find((order) => order.id == id) || null),
       switchMap((order) => {
@@ -75,7 +83,7 @@ export class DeliveryService {
    */
   public secureOrder(id: string): Observable<boolean> {
     // TODO - Implement properly
-    return of(true);
+    return of(true).pipe(delay(1000));
   }
 
   /**
@@ -88,6 +96,8 @@ export class DeliveryService {
     id: string,
     newStatus: OrderStatus
   ): Observable<boolean> {
-    return throwError(() => new Error('undefined'));
+    // TODO - Implement properly
+    this.updatedStatuses.set(id, newStatus);
+    return of(true).pipe(delay(1000));
   }
 }

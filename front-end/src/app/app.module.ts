@@ -13,6 +13,7 @@ import { AdminProductsComponent } from './components/admin-products/admin-produc
 import { CustomerProductsComponent } from './components/customer-products/customer-products.component';
 import { CustomizeProductComponent } from './components/customize-product/customize-product.component';
 import { DeliveryOrdersComponent } from './components/delivery-orders/delivery-orders.component';
+import { DeliveryStatusComponent } from './components/delivery-status/delivery-status.component';
 import { FavoritesComponent } from './components/favorites/favorites.component';
 import { OrderDetailsComponent } from './components/order-details/order-details.component';
 import { OrderHistoryComponent } from './components/order-history/order-history.component';
@@ -68,6 +69,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     CustomerProductsComponent,
     CustomizeProductComponent,
     DeliveryOrdersComponent,
+    DeliveryStatusComponent,
     FavoritesComponent,
     OrderDetailsComponent,
     OrderHistoryComponent,
