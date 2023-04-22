@@ -15,11 +15,15 @@ import { Location } from 'src/app/model/models';
   pure: true,
 })
 export class LocationPipe implements PipeTransform {
+  static convert(location: Location): string {
+    return `${location.streetAddress}, ${location.city}, ${location.state} ${location.zip}`;
+  }
+
   transform(value?: Location | null): string {
     if (!value) {
       return '';
     }
 
-    return `${value.streetAddress}, ${value.city}, ${value.state} ${value.zip}`;
+    return LocationPipe.convert(value);
   }
 }

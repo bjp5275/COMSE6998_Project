@@ -12,6 +12,7 @@ import { AdminCustomizeProductComponent } from './components/admin-customize-pro
 import { AdminProductsComponent } from './components/admin-products/admin-products.component';
 import { CustomerProductsComponent } from './components/customer-products/customer-products.component';
 import { CustomizeProductComponent } from './components/customize-product/customize-product.component';
+import { DeliveryOrdersComponent } from './components/delivery-orders/delivery-orders.component';
 import { FavoritesComponent } from './components/favorites/favorites.component';
 import { OrderDetailsComponent } from './components/order-details/order-details.component';
 import { OrderHistoryComponent } from './components/order-history/order-history.component';
@@ -66,6 +67,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     AppComponent,
     CustomerProductsComponent,
     CustomizeProductComponent,
+    DeliveryOrdersComponent,
     FavoritesComponent,
     OrderDetailsComponent,
     OrderHistoryComponent,

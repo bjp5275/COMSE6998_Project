@@ -41,7 +41,11 @@ export interface DeliveryOrder {
   /**
    * Payment amount to perform order delivery
    */
-  deliveryFee?: number;
+  deliveryFee: number;
+  /**
+   * Items within the order
+   */
+  items: OrderItem[];
 }
 
 /**
