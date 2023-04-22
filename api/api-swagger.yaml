@@ -13,6 +13,9 @@ servers:
 paths:
   /login:
     post:
+      tags:
+      - Login
+      summary: Log in to the service
       operationId: "login"
       requestBody:
         content:
@@ -94,6 +97,9 @@ paths:
         type: "mock"
   /upload:
     put:
+      tags:
+      - Pictures
+      summary: Upload a picture to S3
       operationId: "uploadPhoto"
       requestBody:
         required: true
@@ -120,6 +126,15 @@ paths:
             Access-Control-Allow-Origin:
               schema:
                 type: "string"
+            Access-Control-Expose-Headers:
+              schema:
+                type: "string"
+            Photo-Bucket:
+              schema:
+                type: "string"
+            Photo-Url:
+              schema:
+                type: "string"
         "403":
           description: "403 response"
           headers:
@@ -139,6 +154,10 @@ paths:
             statusCode: "200"
             responseParameters:
               method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Expose-Headers: "'*, Photo-Url, Photo-Bucket'"
+              method.response.header.Photo-Bucket:
+                Fn::Sub: "'${PhotosBucket}'"
+              method.response.header.Photo-Url: "context.requestId"
         requestParameters:
           integration.request.path.objectKey: "context.requestId"
         passthroughBehavior: "when_no_templates"
@@ -172,6 +191,9 @@ paths:
         type: "mock"
   /deliveries/available:
     get:
+      tags:
+      - Delivery Service
+      summary: Get all orders available for delivery pickup
       operationId: "getAvailableDeliveries"
       responses:
         "400":
@@ -235,6 +257,10 @@ paths:
         type: "mock"
   /orders/{id}:
     get:
+      tags:
+      - Orders Service
+      summary: Get an order by ID
+      description: Access control for the order will be enforced via the user context
       operationId: "getOrder"
       parameters:
       - name: "id"
@@ -320,9 +346,98 @@ paths:
           application/json: "{\"statusCode\": 200}"
         passthroughBehavior: "when_no_match"
         type: "mock"
+  /deliveries/{id}:
+    get:
+      tags:
+      - Delivery Service
+      summary: Get a delivery order
+      description: User context must be the deliverer assigned to the order
+      operationId: "getDelivery"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeliveryOrder"
+        "400":
+          description: "400 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMessage"
+        "500":
+          description: "500 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMessage"
+        "401":
+          description: "401 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMessage"
+      x-amazon-apigateway-integration:
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        requestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        passthroughBehavior: "when_no_match"
+        type: "mock"
+    options:
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Access-Control-Allow-Methods:
+              schema:
+                type: "string"
+            Access-Control-Allow-Headers:
+              schema:
+                type: "string"
+          content: {}
+      x-amazon-apigateway-integration:
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        requestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        passthroughBehavior: "when_no_match"
+        type: "mock"
   /deliveries/{id}/status:
     post:
-      operationId: "updateOrderStatus_1"
+      tags:
+      - Delivery Service
+      summary: Update an order's delivery status
+      description: User context must be the deliverer assigned to the order
+      operationId: "updateDeliveryStatus"
       parameters:
       - name: "newStatus"
         in: "query"
@@ -405,7 +520,12 @@ paths:
         type: "mock"
   /deliveries/{id}/secure:
     post:
-      operationId: "secureOrder_1"
+      tags:
+      - Delivery Service
+      summary: Secure an order for delivery pickup
+      description: Uses the user context to determine which deliverer the order will
+        be assigned to
+      operationId: "secureDelivery"
       parameters:
       - name: "id"
         in: "path"
@@ -481,9 +601,99 @@ paths:
           application/json: "{\"statusCode\": 200}"
         passthroughBehavior: "when_no_match"
         type: "mock"
+  /pending-orders/{id}:
+    get:
+      tags:
+      - Pending Order Service
+      summary: Get a pending order's details
+      description: User context must be the shop assigned to the order
+      operationId: "getPendingOrder"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PendingOrder"
+        "400":
+          description: "400 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMessage"
+        "500":
+          description: "500 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMessage"
+        "401":
+          description: "401 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMessage"
+      x-amazon-apigateway-integration:
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        requestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        passthroughBehavior: "when_no_match"
+        type: "mock"
+    options:
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Access-Control-Allow-Methods:
+              schema:
+                type: "string"
+            Access-Control-Allow-Headers:
+              schema:
+                type: "string"
+          content: {}
+      x-amazon-apigateway-integration:
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        requestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        passthroughBehavior: "when_no_match"
+        type: "mock"
   /pending-orders/{id}/secure:
     post:
-      operationId: "secureOrder"
+      tags:
+      - Pending Order Service
+      summary: Secure an order for preparation
+      description: Uses the user context to determine which shop the order will be
+        assigned to
+      operationId: "securePendingOrder"
       parameters:
       - name: "id"
         in: "path"
@@ -561,6 +771,9 @@ paths:
         type: "mock"
   /products:
     get:
+      tags:
+      - Product Service
+      summary: Get all products in the system
       operationId: "getProducts"
       parameters:
       - name: "includeDisabled"
@@ -608,6 +821,10 @@ paths:
         type: "aws_proxy"
 
     post:
+      tags:
+      - Product Service
+      summary: Add or update a product in the system
+      description: User context used to enforce admin access to the system
       operationId: "upsertProduct"
       requestBody:
         content:
@@ -689,6 +906,9 @@ paths:
         type: "mock"
   /pending-orders:
     get:
+      tags:
+      - Pending Order Service
+      summary: Get all orders prepared by the current shop
       operationId: "getHistoricalOrdersPrepared"
       responses:
         "400":
@@ -752,6 +972,9 @@ paths:
         type: "mock"
   /orders:
     get:
+      tags:
+      - Orders Service
+      summary: Get all orders from the current user's history
       operationId: "getOrderHistory"
       responses:
         "400":
@@ -793,6 +1016,9 @@ paths:
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws_proxy"
     post:
+      tags:
+      - Orders Service
+      summary: Submit a new order
       operationId: "submitOrder"
       requestBody:
         content:
@@ -868,7 +1094,11 @@ paths:
         type: "mock"
   /pending-orders/{id}/status:
     post:
-      operationId: "updateOrderStatus"
+      tags:
+      - Pending Order Service
+      summary: Update in-preparation order's status
+      description: User context must be the shop assigned to the order
+      operationId: "updatePendingOrderStatus"
       parameters:
       - name: "newStatus"
         in: "query"
@@ -951,7 +1181,10 @@ paths:
         type: "mock"
   /pending-orders/available:
     get:
-      operationId: "getAvailableOrders"
+      tags:
+      - Pending Order Service
+      summary: Get all orders available for preparation
+      operationId: "getAvailablePendingOrders"
       responses:
         "400":
           description: "400 response"
@@ -1014,6 +1247,10 @@ paths:
         type: "mock"
   /orders/{id}/ratings:
     get:
+      tags:
+      - Orders Service
+      summary: Get all ratings for an order
+      description: Access control for the order will be enforced via the user context
       operationId: "getOrderRatings"
       parameters:
       - name: "id"
@@ -1061,6 +1298,10 @@ paths:
         passthroughBehavior: "when_no_match"
         type: "mock"
     put:
+      tags:
+      - Orders Service
+      summary: Rate an item in an order
+      description: Access control for the order will be enforced via the user context
       operationId: "rateOrderItem"
       parameters:
       - name: "id"
@@ -1145,6 +1386,9 @@ paths:
         type: "mock"
   /deliveries:
     get:
+      tags:
+      - Delivery Service
+      summary: Get all historical deliveries for the current user
       operationId: "getHistoricalDeliveries"
       responses:
         "400":
@@ -1208,6 +1452,9 @@ paths:
         type: "mock"
   /favorites:
     get:
+      tags:
+      - Favorites Service
+      summary: Get all favorites for the current user
       operationId: "getFavorites"
       responses:
         "400":
@@ -1243,6 +1490,10 @@ paths:
         passthroughBehavior: "when_no_match"
         type: "mock"
     post:
+      tags:
+      - Favorites Service
+      summary: Add or update a favorite order
+      description: User context must own the favorite being updated
       operationId: "saveFavorite"
       requestBody:
         content:
@@ -1318,6 +1569,9 @@ paths:
         type: "mock"
   /products/additions:
     get:
+      tags:
+      - Product Service
+      summary: Get all product additions in the system
       operationId: "getProductAdditions"
       parameters:
       - name: "includeDisabled"
@@ -1364,6 +1618,10 @@ paths:
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws_proxy"
     post:
+      tags:
+      - Product Service
+      summary: Add or update a product addition in the system
+      description: User context used to enforce admin access to the system
       operationId: "upsertProductAddition"
       requestBody:
         content:
@@ -1445,6 +1703,10 @@ paths:
         type: "mock"
   /shop-settings:
     get:
+      tags:
+      - Shop Owner Service
+      summary: Get the current shop's settings
+      description: User context used to determine current shop
       operationId: "getShopSettings"
       responses:
         "400":
@@ -1480,6 +1742,10 @@ paths:
         passthroughBehavior: "when_no_match"
         type: "mock"
     post:
+      tags:
+      - Shop Owner Service
+      summary: Update the current shop's settings
+      description: User context used to determine which shop to update
       operationId: "updateShopSettings"
       requestBody:
         content:
@@ -1568,9 +1834,11 @@ components:
       properties:
         id:
           type: "string"
+          readOnly: true
           description: "ID for the order"
         orderStatus:
           type: "string"
+          readOnly: true
           description: "Status of an order"
           enum:
           - "RECEIVED"
@@ -1588,6 +1856,7 @@ components:
           $ref: "#/components/schemas/Location"
         deliveredBy:
           type: "string"
+          readOnly: true
           description: "Who delivered the order"
         payment:
           $ref: "#/components/schemas/PaymentInformation"
@@ -1613,6 +1882,7 @@ components:
       properties:
         id:
           type: "string"
+          readOnly: true
           description: "ID for the saved order"
         name:
           type: "string"
@@ -1651,13 +1921,18 @@ components:
       - "allowedCoffeeTypes"
       - "basePrice"
       - "id"
+      - "enabled"
       - "imageUrl"
       - "name"
       type: "object"
       properties:
         id:
           type: "string"
+          readOnly: true
           description: "Unique ID for the product"
+        enabled:
+          type: "boolean"
+          description: "Whether this product is available for use currently"
         name:
           type: "string"
         basePrice:
@@ -1701,6 +1976,7 @@ components:
       required:
       - "deliveryLocation"
       - "deliveryTime"
+      - "orderStatus"
       - "id"
       - "preparedLocation"
       type: "object"
@@ -1708,6 +1984,14 @@ components:
         id:
           type: "string"
           description: "ID for the order"
+        orderStatus:
+          type: string
+          description: Status of the order
+          readOnly: true
+          enum:
+          - MADE
+          - PICKED_UP
+          - DELIVERED
         deliveryTime:
           type: "string"
           description: "Requested time for the delivery"
@@ -1720,6 +2004,11 @@ components:
           type: "number"
           description: "Payment amount to perform order delivery"
           format: "double"
+        items:
+          type: "array"
+          description: "Items within the order"
+          items:
+            $ref: "#/components/schemas/OrderItem"
       description: "Information about an order for a delivery person"
     OrderRating:
       required:
@@ -1749,12 +2038,23 @@ components:
       required:
       - "deliveryLocation"
       - "deliveryTime"
+      - "orderStatus"
       - "id"
       type: "object"
       properties:
         id:
           type: "string"
           description: "ID for the order"
+        orderStatus:
+          type: "string"
+          readOnly: true
+          description: "Status of the order"
+          enum:
+          - "RECEIVED"
+          - "BREWING"
+          - "MADE"
+          - "PICKED_UP"
+          - "DELIVERED"
         deliveryTime:
           type: "string"
           description: "Requested delivery time for the order"
@@ -1772,16 +2072,22 @@ components:
         $ref: "#/components/schemas/OrderRating"
     OrderItem:
       required:
+      - "basePrice"
       - "coffeeType"
       - "productId"
       type: "object"
       properties:
         id:
           type: "string"
+          readOnly: true
           description: "Unique ID of the item within the order"
         productId:
           type: "string"
           description: "Product ID of the item"
+        basePrice:
+          type: "number"
+          description: "Price for the product without any additions"
+          format: "double"
         coffeeType:
           type: "string"
           description: "The type of coffee used in a drink"
