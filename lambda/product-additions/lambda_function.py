@@ -1,12 +1,15 @@
-import os
 import json
+import os
 import uuid
-import boto3
 from decimal import Decimal
+
+import boto3
 from project_utility import (
-    get_query_parameter,
+    ErrorCodes,
+    build_error_response,
     build_response,
     deserialize_dynamo_object,
+    get_query_parameter,
     serialize_to_dynamo_object,
     validate_price,
 )
@@ -116,7 +119,9 @@ def create_addition(addition):
 
 def upsert_addition(event, context):
     if "body" not in event or event["body"] is None:
-        return build_response(400, "Must specify a request body")
+        return build_error_response(
+            ErrorCodes.MISSING_BODY, "Must specify a request body"
+        )
 
     input_addition = json.loads(event["body"], parse_float=Decimal)
     success, addition, data = create_addition(input_addition)
@@ -124,20 +129,26 @@ def upsert_addition(event, context):
     if success:
         return build_response(200, addition)
     else:
-        return build_response(400, data)
+        return build_error_response(ErrorCodes.INVALID_DATA, data)
 
 
 def lambda_handler(event, context):
     print(f"Received event: {event}")
     print(f"Context: {context}")
 
-    httpMethod = event["httpMethod"]
-    if httpMethod == "GET":
-        response = get_additions(event, context)
-    elif httpMethod == "POST":
-        response = upsert_addition(event, context)
-    else:
-        response = build_response(500, f"Unknown method: {httpMethod}")
+    try:
+        httpMethod = event["httpMethod"]
+        if httpMethod == "GET":
+            response = get_additions(event, context)
+        elif httpMethod == "POST":
+            response = upsert_addition(event, context)
+        else:
+            response = build_error_response(
+                ErrorCodes.UNKNOWN_ERROR, f"Unknown method: {httpMethod}"
+            )
+    except Exception as e:
+        print("Error", e)
+        response = build_error_response(ErrorCodes.UNKNOWN_ERROR, "Internal Exception")
 
     print("Response", response)
     return response

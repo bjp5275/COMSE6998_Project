@@ -26,6 +26,9 @@ Parameters:
     Description: "The suffix for created resources' names"
     AllowedPattern: ^[-a-z0-9]+$
     ConstraintDescription: "Malformed input - Parameter must only use lowercase letters, numbers, and dashes"
+  LambdaExecutionRoleName:
+    Type: String
+    Description: "The name of the execution role the lambdas use"
 
 Resources:
   # API Execution Roles
@@ -85,7 +88,7 @@ Resources:
   # API Resources
   RestApi:
     Type: AWS::ApiGateway::RestApi
-    DependsOn: 
+    DependsOn:
       - ApiLambdaExecutionRole
       - ApiS3ExecutionRole
     Properties:
@@ -128,7 +131,7 @@ Resources:
 
   # API Key Resources
   ApiKey:
-    Type: "AWS::ApiGateway::ApiKey"
+    Type: AWS::ApiGateway::ApiKey
     DependsOn: RestApiStage
     Properties:
       Enabled: true
@@ -152,6 +155,25 @@ Resources:
       KeyId: !Ref ApiKey
       KeyType: API_KEY
       UsagePlanId: !Ref ApiUsagePlan
+
+  # API Key Policies for Lambda
+  ApiKeyAccessPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: coffee-api-key-access
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: "*"
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - apigateway:GET
+            Resource:
+              - !Sub "arn:aws:apigateway:${AWS::Region}::/apikeys/${ApiKey}"
+      Roles:
+        - !Ref LambdaExecutionRoleName
 
 Outputs:
   # URL

@@ -97,6 +97,27 @@ Resources:
                   - !GetAtt OrderTable.Arn
 
   # Lambda functions
+  LoginFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Architectures:
+        - "x86_64"
+      Code:
+        S3Bucket: !Ref ResourcesBucket
+        S3Key: !Sub "coffee-delivery/login-${FunctionS3ObjectKeySuffix}.zip"
+      Environment:
+        Variables:
+          STACK_ID: !Ref "AWS::StackId"
+          PRODUCTS_TABLE: !Ref ProductTable
+          ORDERS_TABLE: !Ref OrderTable
+      FunctionName: !Sub "coffee-delivery-login-${ResourceSuffix}"
+      Handler: "lambda_function.lambda_handler"
+      MemorySize: 128
+      PackageType: "Zip"
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: "python3.9"
+      Timeout: 10
+
   ProductsFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -161,7 +182,15 @@ Resources:
       Timeout: 10
 
 Outputs:
+  # Roles
+  LambdaExecutionRoleName:
+    Description: "Name for the Lambda execution role"
+    Value: !Ref LambdaExecutionRole
+
   # Lambda Outputs
+  LoginFunctionArn:
+    Description: "ARN for login Lambda"
+    Value: !GetAtt LoginFunction.Arn
   ProductsFunctionArn:
     Description: "ARN for products Lambda"
     Value: !GetAtt ProductsFunction.Arn

@@ -1,18 +1,21 @@
-import os
 import json
+import os
 import uuid
-import boto3
 from decimal import Decimal
+
+import boto3
 from project_utility import (
-    get_additions_by_id,
-    get_query_parameter,
+    COFFEE_TYPES,
+    MILK_TYPES,
+    ErrorCodes,
+    build_error_response,
     build_response,
     deserialize_dynamo_object,
+    get_additions_by_id,
+    get_query_parameter,
     serialize_to_dynamo_object,
     to_coffee_type_list,
     to_milk_type_list,
-    COFFEE_TYPES,
-    MILK_TYPES,
     validate_price,
 )
 
@@ -180,7 +183,9 @@ def create_product(product):
 
 def upsert_product(event, context):
     if "body" not in event or event["body"] is None:
-        return build_response(400, "Must specify a request body")
+        return build_error_response(
+            ErrorCodes.MISSING_BODY, "Must specify a request body"
+        )
 
     input_product = json.loads(event["body"], parse_float=Decimal)
     success, product, data = create_product(input_product)
@@ -188,20 +193,26 @@ def upsert_product(event, context):
     if success:
         return build_response(200, product)
     else:
-        return build_response(400, data)
+        return build_error_response(ErrorCodes.INVALID_DATA, data)
 
 
 def lambda_handler(event, context):
     print(f"Received event: {event}")
     print(f"Context: {context}")
 
-    httpMethod = event["httpMethod"]
-    if httpMethod == "GET":
-        response = get_products(event, context)
-    elif httpMethod == "POST":
-        response = upsert_product(event, context)
-    else:
-        response = build_response(500, f"Unknown method: {httpMethod}")
+    try:
+        httpMethod = event["httpMethod"]
+        if httpMethod == "GET":
+            response = get_products(event, context)
+        elif httpMethod == "POST":
+            response = upsert_product(event, context)
+        else:
+            response = build_error_response(
+                ErrorCodes.UNKNOWN_ERROR, f"Unknown method: {httpMethod}"
+            )
+    except Exception as e:
+        print("Error", e)
+        response = build_error_response(ErrorCodes.UNKNOWN_ERROR, "Internal Exception")
 
     print("Response", response)
     return response

@@ -85,6 +85,7 @@ Resources:
         PhotosBucket: !Ref PhotosBucket
         ResourcesBucket: !Ref ResourcesBucket
         ApiGatewayYamlS3ObjectKey: !Ref ApiGatewayYamlS3ObjectKey
+        LambdaExecutionRoleName: !GetAtt BackendStack.Outputs.LambdaExecutionRoleName
         StageName: !Ref StageName
         ResourceSuffix: !Select
           - 0

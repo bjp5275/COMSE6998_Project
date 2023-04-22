@@ -11,6 +11,87 @@ servers:
     basePath:
       default: "test"
 paths:
+  /login:
+    post:
+      operationId: "login"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInformation"
+        required: true
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserInformation"
+        "400":
+          description: "400 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMessage"
+        "500":
+          description: "500 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMessage"
+        "401":
+          description: "401 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMessage"
+      security:
+      - api_key: []
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        credentials:
+          Fn::GetAtt: [ ApiLambdaExecutionRole, Arn ]
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:coffee-delivery-login-${ResourceSuffix}/invocations
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+    options:
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Access-Control-Allow-Methods:
+              schema:
+                type: "string"
+            Access-Control-Allow-Headers:
+              schema:
+                type: "string"
+          content: {}
+      x-amazon-apigateway-integration:
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        requestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        passthroughBehavior: "when_no_match"
+        type: "mock"
   /upload:
     put:
       operationId: "uploadPhoto"
@@ -190,17 +271,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorMessage"
-      x-amazon-apigateway-integration:
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        requestTemplates:
-          application/json: "{\"statusCode\": 200}"
-        passthroughBehavior: "when_no_match"
-        type: "mock"
-
       security:
       - api_key: []
       x-amazon-apigateway-integration:
@@ -520,17 +590,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ArrayOfProduct"
-      x-amazon-apigateway-integration:
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        requestTemplates:
-          application/json: "{\"statusCode\": 200}"
-        passthroughBehavior: "when_no_match"
-        type: "mock"
-
       security:
       - api_key: []
       x-amazon-apigateway-integration:
@@ -585,17 +644,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorMessage"
-      x-amazon-apigateway-integration:
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        requestTemplates:
-          application/json: "{\"statusCode\": 200}"
-        passthroughBehavior: "when_no_match"
-        type: "mock"
-
       security:
       - api_key: []
       x-amazon-apigateway-integration:
@@ -728,17 +776,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ArrayOfOrder"
-      x-amazon-apigateway-integration:
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        requestTemplates:
-          application/json: "{\"statusCode\": 200}"
-        passthroughBehavior: "when_no_match"
-        type: "mock"
-
       security:
       - api_key: []
       x-amazon-apigateway-integration:
@@ -786,17 +823,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Order"
-      x-amazon-apigateway-integration:
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        requestTemplates:
-          application/json: "{\"statusCode\": 200}"
-        passthroughBehavior: "when_no_match"
-        type: "mock"
-
       security:
       - api_key: []
       x-amazon-apigateway-integration:
@@ -1321,17 +1347,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ArrayOfProductAddition"
-      x-amazon-apigateway-integration:
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        requestTemplates:
-          application/json: "{\"statusCode\": 200}"
-        passthroughBehavior: "when_no_match"
-        type: "mock"
-
       security:
       - api_key: []
       x-amazon-apigateway-integration:
@@ -1385,17 +1400,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorMessage"
-      x-amazon-apigateway-integration:
-        responses:
-          default:
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        requestTemplates:
-          application/json: "{\"statusCode\": 200}"
-        passthroughBehavior: "when_no_match"
-        type: "mock"
-
       security:
       - api_key: []
       x-amazon-apigateway-integration:
@@ -1818,6 +1822,38 @@ components:
         \ credit card number and CVV would be secured properly (e.g., hashed) to avoid\
         \ losing customer data in a spill. For simplicity of this application, full\
         \ number and CVV are used."
+    LoginInformation:
+      required:
+      - "username"
+      type: "object"
+      properties:
+        username:
+          type: "string"
+          description: "Username for login"
+    UserInformation:
+      required:
+      - "id"
+      - "name"
+      - "username"
+      - "roles"
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          description: "System-assigned user ID"
+        name:
+          type: "string"
+          description: "Display name"
+        username:
+          type: "string"
+          description: "Username for login"
+        roles:
+          type: "string"
+          description: "The roles the user has"
+          enum:
+          - "REGULAR_USER"
+          - "ADMIN"
+          - "DELIVERER"
     ErrorMessage:
       required:
       - "code"

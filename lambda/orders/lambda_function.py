@@ -1,20 +1,24 @@
-import os
 import json
+import os
 import uuid
-import boto3
-from decimal import Decimal
 from datetime import datetime, timedelta
+from decimal import Decimal
+
+import boto3
 from project_utility import (
-    get_products_by_id,
-    get_additions_by_id,
-    get_path_parameter,
-    validate_location,
-    validate_payment_information,
+    ErrorCodes,
+    build_error_response,
     build_response,
     deserialize_dynamo_object,
+    extract_customer_id,
+    get_additions_by_id,
+    get_path_parameter,
+    get_products_by_id,
     serialize_to_dynamo_object,
     to_coffee_type,
     to_milk_type,
+    validate_location,
+    validate_payment_information,
 )
 
 # Dynamo Tables
@@ -27,7 +31,6 @@ dynamo = boto3.client("dynamodb")
 # Constants
 PRODUCT_TYPE = "PRODUCT"
 ADDITION_TYPE = "ADDITION"
-CUSTOMER_ID = "customer-tbd"
 MINIMUM_ORDER_TIME_DELTA_MINUTES = 30
 MINIMUM_ORDER_TIME_DELTA = timedelta(minutes=MINIMUM_ORDER_TIME_DELTA_MINUTES)
 
@@ -42,8 +45,7 @@ def build_order_from_dynamo_response(items):
 
 
 def get_orders(event, context):
-    # TODO: Fill in from context
-    customer_id = CUSTOMER_ID
+    customer_id = extract_customer_id(event)
 
     print(f"Getting all orders for customer {customer_id}")
     response = dynamo.query(
@@ -63,12 +65,11 @@ def get_orders(event, context):
 
 
 def get_single_order(event, context):
-    # TODO: Fill in from context
-    customer_id = CUSTOMER_ID
+    customer_id = extract_customer_id(event)
 
     order_id = get_path_parameter(event, "id", None)
     if order_id is None:
-        return build_response(400, "Must specify an order ID")
+        return build_error_response(ErrorCodes.MISSING_DATA, "Must specify an order ID")
 
     print(f"Getting order {order_id} for customer {customer_id}")
     response = dynamo.get_item(
@@ -84,7 +85,7 @@ def get_single_order(event, context):
     )
     order = response["Item"] if "Item" in response else None
     if order is None:
-        return build_response(401, f"Order {order_id} not found")
+        return build_error_response(ErrorCodes.NOT_FOUND, f"Order {order_id} not found")
 
     order = build_order_from_dynamo_response([order])[0]
     return build_response(200, order)
@@ -270,11 +271,12 @@ def create_order(customer_id, order):
 
 
 def submit_order(event, context):
-    # TODO: Fill in from context
-    customer_id = CUSTOMER_ID
+    customer_id = extract_customer_id(event)
 
     if "body" not in event or event["body"] is None:
-        return build_response(400, "Must specify a request body")
+        return build_error_response(
+            ErrorCodes.MISSING_BODY, "Must specify a request body"
+        )
 
     input_order = json.loads(event["body"], parse_float=Decimal)
     success, order, data = create_order(customer_id, input_order)
@@ -282,24 +284,31 @@ def submit_order(event, context):
     if success:
         return build_response(200, order)
     else:
-        return build_response(400, data)
+        return build_error_response(ErrorCodes.INVALID_DATA, data)
 
 
 def lambda_handler(event, context):
     print(f"Received event: {event}")
     print(f"Context: {context}")
 
-    httpMethod = event["httpMethod"]
-    resource = event["resource"]
-    if httpMethod == "GET":
-        if resource == "/orders":
-            response = get_orders(event, context)
+    try:
+        httpMethod = event["httpMethod"]
+        resource = event["resource"]
+        if httpMethod == "GET":
+            if resource == "/orders":
+                response = get_orders(event, context)
+            else:
+                response = get_single_order(event, context)
+        elif httpMethod == "POST":
+            response = submit_order(event, context)
         else:
-            response = get_single_order(event, context)
-    elif httpMethod == "POST":
-        response = submit_order(event, context)
-    else:
-        response = build_response(500, f"Unknown resource: {httpMethod} {resource}")
+            response = build_error_response(
+                ErrorCodes.UNKNOWN_ERROR,
+                f"Unknown resource: {httpMethod} {resource}",
+            )
+    except Exception as e:
+        print("Error", e)
+        response = build_error_response(ErrorCodes.UNKNOWN_ERROR, "Internal Exception")
 
     print("Response", response)
     return response

@@ -67,6 +67,7 @@ export function convertUserRoleToString(userRole: UserRole): string {
 export interface UserInformation {
   id: string;
   name: string;
+  username: string;
   roles: UserRole[];
 }
 
@@ -80,6 +81,7 @@ export function cleanUserInfo(
   return {
     id: info.id,
     name: info.name,
+    username: info.username,
     roles: info.roles,
   };
 }
@@ -98,12 +100,7 @@ export class UserService {
   paymentMethods: PaymentInformation[] = [...PAYMENT_METHODS];
   favoriteOrders: FavoriteOrder[] = [...FAVORITE_ORDERS];
   userInformation$ = new BehaviorSubject<UserInformationWithSecret | undefined>(
-    {
-      id: 'id',
-      apiKey: environment.apiKey || '',
-      name: 'Ben',
-      roles: [UserRole.REGULAR_USER, UserRole.ADMIN, UserRole.DELIVERER],
-    }
+    environment.userInformation
   );
 
   constructor(private http: HttpClient) {
