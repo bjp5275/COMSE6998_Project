@@ -65,7 +65,7 @@ def get_previous_orders(event, context):
         TableName=ORDERS_TABLE,
         FilterExpression="delivererId = :delivererId",
         ExpressionAttributeValues={
-            ":deliverer": {
+            ":delivererId": {
                 "S": deliverer_id,
             },
         },

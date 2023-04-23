@@ -13,7 +13,7 @@ import {
 import { OrderStatus, PendingOrder } from 'src/app/model/models';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../utility';
-import { OrderService, cleanOrderItemsFromService } from './order.service';
+import { cleanOrderItemsFromService } from './order.service';
 
 @Injectable({
   providedIn: 'root',
@@ -43,7 +43,7 @@ export class ShopService {
     return orders;
   }
 
-  constructor(private orderService: OrderService, private http: HttpClient) {}
+  constructor(private http: HttpClient) {}
 
   /**
    * Get all orders available for preparation

@@ -1,47 +1,62 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, delay, map, of, switchMap, throwError } from 'rxjs';
+import {
+  Observable,
+  catchError,
+  map,
+  of,
+  retry,
+  switchMap,
+  tap,
+  throwError,
+} from 'rxjs';
 import { DeliveryOrder, OrderStatus } from 'src/app/model/models';
-import { OrderService } from './order.service';
+import { environment } from 'src/environments/environment';
+import { HttpUtils } from '../utility';
+import { cleanOrderItemsFromService } from './order.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DeliveryService {
-  private updatedStatuses = new Map<string, OrderStatus>();
+  private cleanOrderFromService(order: DeliveryOrder): DeliveryOrder {
+    if (order) {
+      if (order.deliveryTime) {
+        order.deliveryTime = new Date(order.deliveryTime);
+      }
+      if (order.deliveryFee) {
+        order.deliveryFee = HttpUtils.convertDecimalFromString(
+          order.deliveryFee
+        )!;
+      }
+      order.items = cleanOrderItemsFromService(order.items);
+    }
 
-  constructor(private orderService: OrderService) {}
-
-  private getOrders(): Observable<DeliveryOrder[]> {
-    return this.orderService.getOrderHistory().pipe(
-      map((orders) => {
-        const deliveryOrders: DeliveryOrder[] = [];
-        orders.forEach((order) => {
-          deliveryOrders.push({
-            id: order.id!,
-            orderStatus:
-              this.updatedStatuses.get(order.id!) ||
-              (order.deliveryTime <= new Date()
-                ? OrderStatus.DELIVERED
-                : OrderStatus.MADE),
-            deliveryLocation: order.deliveryLocation,
-            deliveryTime: order.deliveryTime,
-            deliveryFee: 5,
-            preparedLocation: order.deliveryLocation,
-            items: order.items,
-          });
-        });
-        return deliveryOrders;
-      })
-    );
+    return order;
   }
+
+  private cleanOrdersFromService(orders: DeliveryOrder[]): DeliveryOrder[] {
+    if (orders) {
+      orders = orders.map((order) => this.cleanOrderFromService(order));
+    }
+
+    return orders;
+  }
+
+  constructor(private http: HttpClient) {}
 
   /**
    * Get all orders available for delivery pickup
    */
   public getAvailableDeliveries(): Observable<DeliveryOrder[]> {
-    // TODO - Implement properly
-    return this.getOrders().pipe(
-      map((orders) => orders.filter((order) => order.deliveryTime > new Date()))
+    const url = `${environment.backendUrl}/deliveries/available`;
+    const headers = HttpUtils.getBaseHeaders();
+
+    return this.http.get<DeliveryOrder[]>(url, { headers }).pipe(
+      map((rawData) => this.cleanOrdersFromService(rawData)),
+      tap((data) => console.log('Retrieved delivery orders', data)),
+      retry(HttpUtils.RETRY_ATTEMPTS),
+      catchError((error) => HttpUtils.handleError(error))
     );
   }
 
@@ -49,11 +64,14 @@ export class DeliveryService {
    * Get all historical deliveries for the current user
    */
   public getHistoricalDeliveries(): Observable<DeliveryOrder[]> {
-    // TODO - Implement properly
-    return this.getOrders().pipe(
-      map((orders) =>
-        orders.filter((order) => order.deliveryTime <= new Date())
-      )
+    const url = `${environment.backendUrl}/deliveries`;
+    const headers = HttpUtils.getBaseHeaders();
+
+    return this.http.get<DeliveryOrder[]>(url, { headers }).pipe(
+      map((rawData) => this.cleanOrdersFromService(rawData)),
+      tap((data) => console.log('Retrieved historical delivery orders', data)),
+      retry(HttpUtils.RETRY_ATTEMPTS),
+      catchError((error) => HttpUtils.handleError(error))
     );
   }
 
@@ -63,16 +81,14 @@ export class DeliveryService {
    * @param id Order ID
    */
   public getDelivery(id: string): Observable<DeliveryOrder> {
-    // TODO - Implement properly
-    return this.getOrders().pipe(
-      map((orders) => orders.find((order) => order.id == id) || null),
-      switchMap((order) => {
-        if (order) {
-          return of(order);
-        } else {
-          return throwError(() => new Error('Not found'));
-        }
-      })
+    const url = `${environment.backendUrl}/deliveries/${id}`;
+    const headers = HttpUtils.getBaseHeaders();
+
+    return this.http.get<DeliveryOrder>(url, { headers }).pipe(
+      map((rawData) => this.cleanOrderFromService(rawData)),
+      tap((data) => console.log('Retrieved delivery order', data)),
+      retry(HttpUtils.RETRY_ATTEMPTS),
+      catchError((error) => HttpUtils.handleError(error))
     );
   }
 
@@ -82,8 +98,20 @@ export class DeliveryService {
    * @param id Order ID
    */
   public secureDelivery(id: string): Observable<boolean> {
-    // TODO - Implement properly
-    return of(true).pipe(delay(1000));
+    const url = `${environment.backendUrl}/deliveries/${id}/secure`;
+    const headers = HttpUtils.getBaseHeaders();
+
+    return this.http.post(url, null, { headers, observe: 'response' }).pipe(
+      switchMap((response) => {
+        if (response.ok) {
+          return of(true);
+        } else {
+          return throwError(() => response.body);
+        }
+      }),
+      retry(HttpUtils.RETRY_ATTEMPTS),
+      catchError((error) => HttpUtils.handleError(error))
+    );
   }
 
   /**
@@ -96,8 +124,19 @@ export class DeliveryService {
     id: string,
     newStatus: OrderStatus
   ): Observable<boolean> {
-    // TODO - Implement properly
-    this.updatedStatuses.set(id, newStatus);
-    return of(true).pipe(delay(1000));
+    const url = `${environment.backendUrl}/deliveries/${id}/status?newStatus=${newStatus}`;
+    const headers = HttpUtils.getBaseHeaders();
+
+    return this.http.post(url, null, { headers, observe: 'response' }).pipe(
+      switchMap((response) => {
+        if (response.ok) {
+          return of(true);
+        } else {
+          return throwError(() => response.body);
+        }
+      }),
+      retry(HttpUtils.RETRY_ATTEMPTS),
+      catchError((error) => HttpUtils.handleError(error))
+    );
   }
 }
