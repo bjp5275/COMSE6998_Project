@@ -23,6 +23,9 @@ USER_INFO_DISPLAY_NAME_TAG = "displayName"
 USER_INFO_ROLES_TAG = "roles"
 
 COMMISSION_RATE = Decimal("0.20")
+MIN_COMMISSION = Decimal("3")
+DELIVERY_FEE_RATE = Decimal("0.1")
+MIN_DELIVERY_FEE = Decimal("1.5")
 
 
 # Classes
@@ -48,6 +51,19 @@ class UserNotificationType:
 class UserNotificationTypes(UserNotificationType, Enum):
     ORDER_STATUS_UPDATE = "ORDER_STATUS_UPDATE"
 
+
+def calculate_order_total_percentage(order, rate, minimum):
+    order_total = Decimal(0)
+    for item in order['items']:
+        order_total += item['basePrice']
+        if 'additions' in item:
+            for addition in item['additions']:
+                order_total += addition['price']
+    
+    calculated = order_total * rate
+    output = max(calculated, minimum)
+
+    return round(output, 2)
 
 def createUiUrl(path):
     return f"{UI_BASE_URL}/{path}"
@@ -103,6 +119,9 @@ def extract_customer_id(event):
     return extract_api_key_id(event)
 
 def extract_shop_id(event):
+    return extract_api_key_id(event)
+
+def extract_deliverer_id(event):
     return extract_api_key_id(event)
 
 

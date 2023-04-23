@@ -1,17 +1,18 @@
 import os
 
 import boto3
-from decimal import Decimal
 from project_utility import (
+    COMMISSION_RATE,
+    MIN_COMMISSION,
     ErrorCodes,
     build_error_response,
     build_response,
+    calculate_order_total_percentage,
     deserialize_dynamo_object,
     extract_shop_id,
     get_path_parameter,
     get_query_parameter,
     serialize_to_dynamo_object,
-    COMMISSION_RATE,
 )
 
 # Dynamo Tables
@@ -31,15 +32,9 @@ TRANFER_FIELDS = [
     "items",
 ]
 
+
 def calculate_commission(order):
-    order_total = Decimal(0)
-    for item in order['items']:
-        order_total += item['basePrice']
-        if 'additions' in item:
-            for addition in item['additions']:
-                order_total += addition['price']
-    
-    return round(order_total * COMMISSION_RATE, 2)
+    return calculate_order_total_percentage(order, COMMISSION_RATE, MIN_COMMISSION)
 
 
 def transfer_field(raw_order, destination_order, field, required=False):
@@ -93,7 +88,7 @@ def get_raw_order(order_id):
         },
     )
 
-    orders = response["Item"] if "Item" in response else None
+    orders = response["Items"] if "Items" in response else None
     if orders is None or len(orders) != 1:
         return None
 
@@ -114,7 +109,7 @@ def get_available_orders(event, context):
     orders = build_pending_orders_from_dynamo_response(orders)
 
     for order in orders:
-        order['commission'] = calculate_commission(order)
+        order["commission"] = calculate_commission(order)
 
     return build_response(200, orders)
 
@@ -134,7 +129,7 @@ def get_order_for_shop(shop_id, order_id):
         },
     )
 
-    orders = response["Item"] if "Item" in response else None
+    orders = response["Items"] if "Items" in response else None
     if orders is None or len(orders) != 1:
         return None
     else:
