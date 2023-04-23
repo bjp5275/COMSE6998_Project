@@ -15,7 +15,7 @@
       <div class="mat-subtitle-2">
         Pick Up: {{ order.data.preparedLocation | locationAddress }}
         <br />
-        Delivery: {{ order.data.preparedLocation | locationAddress }} ({{
+        Delivery: {{ order.data.deliveryLocation | locationAddress }} ({{
           order.data.deliveryTime | date : "shortTime"
         }})
       </div>
