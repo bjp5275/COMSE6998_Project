@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, catchError, map, retry, tap, throwError } from 'rxjs';
+import { Observable, catchError, delay, map, of, retry, tap } from 'rxjs';
 
 import {
   CreateOrder,
@@ -40,7 +40,8 @@ export function cleanOrderItemsFromService(items: OrderItem[]): OrderItem[] {
   providedIn: 'root',
 })
 export class OrderService {
-  orders = new Map<string, Order>();
+  // TODO - implement properly
+  orderRatings = new Map<string, OrderRating[]>();
 
   constructor(private http: HttpClient) {}
 
@@ -102,7 +103,8 @@ export class OrderService {
    */
   public getOrderRatings(id: string): Observable<OrderRating[]> {
     // TODO - implement
-    return throwError(() => new Error('undefined'));
+    const ratings: OrderRating[] = this.orderRatings.get(id) || [];
+    return of(ratings).pipe(delay(2500));
   }
 
   /**
@@ -116,7 +118,10 @@ export class OrderService {
     orderRating: OrderRating
   ): Observable<boolean> {
     // TODO - implement
-    return throwError(() => new Error('undefined'));
+    const ratings: OrderRating[] = this.orderRatings.get(id) || [];
+    ratings.push(orderRating);
+    this.orderRatings.set(id, ratings);
+    return of(false).pipe(delay(2500));
   }
 
   /**

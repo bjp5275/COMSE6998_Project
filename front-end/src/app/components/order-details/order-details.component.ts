@@ -1,11 +1,32 @@
 import { Component } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Navigation, Router } from '@angular/router';
-import { Observable, catchError, concat, first, of } from 'rxjs';
-import { FavoriteOrder, Order } from 'src/app/model/models';
+import {
+  BehaviorSubject,
+  Observable,
+  catchError,
+  concat,
+  first,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
+import {
+  FavoriteOrder,
+  Order,
+  OrderItem,
+  OrderRating,
+  Product,
+} from 'src/app/model/models';
 import { OrderService } from 'src/app/shared/services/order.service';
 import { UserService } from 'src/app/shared/services/user.service';
 import { HttpError, ObservableUtils } from 'src/app/shared/utility';
+import {
+  RateOrderItemDialog,
+  RatingInput,
+} from '../dialogs/rate-order-item/rate-order-item.component';
+import { OrderItemAction } from '../order-item-list/order-item-list.component';
 
 interface RouteState {
   order?: Order;
@@ -17,15 +38,28 @@ interface RouteState {
   styleUrls: ['./order-details.component.scss'],
 })
 export class OrderDetailsComponent {
+  readonly ACTIONS: OrderItemAction[] = [
+    {
+      buttonText: 'Rate',
+      color: 'primary',
+      onClick: (product, orderItem, _index) =>
+        this.rateItem(orderItem, product),
+    },
+  ];
+
   routeState: RouteState;
   orderId: string;
   order$: Observable<Order | null>;
+  orderRatings$: Observable<OrderRating[]>;
+  pullOrderRatings$ = new BehaviorSubject(null);
+  order?: Order;
   isFavorite = false;
 
   constructor(
     private userService: UserService,
     private snackBar: MatSnackBar,
-    orderService: OrderService,
+    private dialog: MatDialog,
+    private orderService: OrderService,
     router: Router,
     activatedRoute: ActivatedRoute
   ) {
@@ -40,6 +74,7 @@ export class OrderDetailsComponent {
     this.routeState = this._getRouteState(router.getCurrentNavigation());
     const orderPolling$ = orderService.getOrder(orderId).pipe(
       ObservableUtils.pollAfterData(),
+      tap((order) => (this.order = order)),
       catchError((err: HttpError) => {
         this.snackBar.open(
           `Failed to load order: ${err.errorMessage}`,
@@ -47,6 +82,10 @@ export class OrderDetailsComponent {
         );
         return of(null);
       })
+    );
+
+    this.orderRatings$ = this.pullOrderRatings$.pipe(
+      switchMap(() => orderService.getOrderRatings(orderId))
     );
 
     if (this.routeState.order) {
@@ -59,6 +98,23 @@ export class OrderDetailsComponent {
   private _getRouteState(navigation: Navigation | null): RouteState {
     const order = navigation?.extras?.state?.['order'];
     return { order };
+  }
+
+  rateItem(orderItem: OrderItem, product: Product) {
+    const ratingInput: RatingInput = {
+      order: this.order!,
+      orderItem,
+      product,
+    };
+
+    this.dialog
+      .open(RateOrderItemDialog, { data: ratingInput })
+      .afterClosed()
+      .subscribe((success: boolean) => {
+        if (success) {
+          this.pullOrderRatings$.next(null);
+        }
+      });
   }
 
   saveAsFavorite(order: Order) {

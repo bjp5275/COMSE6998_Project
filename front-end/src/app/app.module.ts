@@ -40,6 +40,7 @@ import { SafeUrlPipe } from './shared/pipes/safe-url.pipe';
 import { CreateLocationDialog } from './components/dialogs/create-location-dialog/create-location-dialog.component';
 import { CreatePaymentMethodDialog } from './components/dialogs/create-payment-method-dialog/create-payment-method-dialog.component';
 import { EditFavoriteDialog } from './components/dialogs/edit-favorite/edit-favorite.component';
+import { RateOrderItemDialog } from './components/dialogs/rate-order-item/rate-order-item.component';
 
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -58,6 +59,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSliderModule } from '@angular/material/slider';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -96,6 +98,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     CreateLocationDialog,
     CreatePaymentMethodDialog,
     EditFavoriteDialog,
+    RateOrderItemDialog,
   ],
   imports: [
     BrowserAnimationsModule,
@@ -123,6 +126,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatSelectModule,
     MatSidenavModule,
     MatSlideToggleModule,
+    MatSliderModule,
     MatSnackBarModule,
     MatToolbarModule,
     MatTooltipModule,

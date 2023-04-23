@@ -50,7 +50,7 @@ export const UserRole = {
   REGULAR_USER: 'REGULAR_USER' as UserRole,
   ADMIN: 'ADMIN' as UserRole,
   DELIVERER: 'DELIVERER' as UserRole,
-  SHOP_OWNER: 'SHOP_OWNER' as UserRole
+  SHOP_OWNER: 'SHOP_OWNER' as UserRole,
 };
 export function convertUserRoleToString(userRole: UserRole): string {
   switch (userRole) {
@@ -141,9 +141,7 @@ export class UserService {
   }
 
   public getUserInformation(): Observable<UserInformation | undefined> {
-    return this.userInformation$
-      .asObservable()
-      .pipe(map((info) => cleanUserInfoSafe(info)));
+    return this.userInformation$.pipe(map((info) => cleanUserInfoSafe(info)));
   }
 
   public addAuthorizationHeader(headers: HttpHeaders): HttpHeaders {

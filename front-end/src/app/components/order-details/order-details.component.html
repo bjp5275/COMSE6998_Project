@@ -1,6 +1,9 @@
 <div class="container" *ngIf="order$ | async as order; else loadingOrder">
   <div class="order-item-details">
-    <app-order-item-list [orderItems]="order.items"></app-order-item-list>
+    <app-order-item-list
+      [orderItems]="order.items"
+      [actions]="ACTIONS"
+    ></app-order-item-list>
   </div>
   <div class="order-status">
     <div class="inner-order-status">

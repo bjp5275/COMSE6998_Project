@@ -1,0 +1,38 @@
+<h2 mat-dialog-title>Rate {{ input.product.name }}</h2>
+<mat-dialog-content>
+  <p>How would you rate this item?</p>
+  <form [formGroup]="ratingForm" (ngSubmit)="submitForm()">
+    <div class="slider-holder">
+      <label for="rating">Rating</label>
+      <mat-slider
+        max="5"
+        min="1"
+        step="1"
+        [discrete]="true"
+        [showTickMarks]="true"
+      >
+        <input matSliderThumb formControlName="rating" />
+      </mat-slider>
+    </div>
+    <button type="submit" hidden [disabled]="!ratingForm.valid">Submit</button>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <ng-container *ngIf="!savingRating; else savingSpinner">
+    <button mat-button mat-dialog-close cdkFocusInitial>Cancel</button>
+    <button
+      #saveButton
+      mat-button
+      (click)="submitForm()"
+      [disabled]="!ratingForm.valid || savingRating"
+    >
+      Submit
+    </button>
+  </ng-container>
+  <ng-template #savingSpinner>
+    <mat-progress-bar
+      *ngIf="savingRating"
+      mode="indeterminate"
+    ></mat-progress-bar>
+  </ng-template>
+</mat-dialog-actions>
