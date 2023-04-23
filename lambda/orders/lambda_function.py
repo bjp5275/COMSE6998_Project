@@ -428,7 +428,7 @@ def lambda_handler(event, context):
                     response = get_orders(event, context)
                 elif resource == "/orders/{id}/ratings":
                     response = get_order_ratings(event, context)
-                elif resource == "/orders/{id}/ratings":
+                elif resource == "/orders/{id}":
                     response = get_single_order(event, context)
             elif httpMethod == "POST" and resource == "/orders":
                 response = submit_order(event, context)

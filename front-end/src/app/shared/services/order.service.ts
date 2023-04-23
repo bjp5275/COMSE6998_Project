@@ -1,6 +1,15 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, catchError, delay, map, of, retry, tap } from 'rxjs';
+import {
+  Observable,
+  catchError,
+  map,
+  of,
+  retry,
+  switchMap,
+  tap,
+  throwError,
+} from 'rxjs';
 
 import {
   CreateOrder,
@@ -40,9 +49,6 @@ export function cleanOrderItemsFromService(items: OrderItem[]): OrderItem[] {
   providedIn: 'root',
 })
 export class OrderService {
-  // TODO - implement properly
-  orderRatings = new Map<string, OrderRating[]>();
-
   constructor(private http: HttpClient) {}
 
   private cleanOrderFromService(order: Order): Order {
@@ -102,9 +108,14 @@ export class OrderService {
    * @param id Order ID
    */
   public getOrderRatings(id: string): Observable<OrderRating[]> {
-    // TODO - implement
-    const ratings: OrderRating[] = this.orderRatings.get(id) || [];
-    return of(ratings).pipe(delay(2500));
+    const url = `${environment.backendUrl}/orders/${id}/ratings`;
+    const headers = HttpUtils.getBaseHeaders();
+
+    return this.http.get<OrderRating[]>(url, { headers }).pipe(
+      tap((data) => console.log('Got order ratings', data)),
+      retry(HttpUtils.RETRY_ATTEMPTS),
+      catchError((error) => HttpUtils.handleError(error))
+    );
   }
 
   /**
@@ -117,11 +128,22 @@ export class OrderService {
     id: string,
     orderRating: OrderRating
   ): Observable<boolean> {
-    // TODO - implement
-    const ratings: OrderRating[] = this.orderRatings.get(id) || [];
-    ratings.push(orderRating);
-    this.orderRatings.set(id, ratings);
-    return of(true).pipe(delay(2500));
+    const url = `${environment.backendUrl}/orders/${id}/ratings`;
+    const headers = HttpUtils.getBaseHeaders();
+
+    return this.http
+      .put(url, orderRating, { headers, observe: 'response' })
+      .pipe(
+        switchMap((response) => {
+          if (response.ok) {
+            return of(true);
+          } else {
+            return throwError(() => response.body);
+          }
+        }),
+        retry(HttpUtils.RETRY_ATTEMPTS),
+        catchError((error) => HttpUtils.handleError(error))
+      );
   }
 
   /**
