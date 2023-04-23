@@ -1347,16 +1347,22 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorMessage"
+      security:
+      - api_key: []
       x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        credentials:
+          Fn::GetAtt: [ ApiLambdaExecutionRole, Arn ]
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:coffee-delivery-orders-${ResourceSuffix}/invocations
         responses:
           default:
             statusCode: "200"
             responseParameters:
               method.response.header.Access-Control-Allow-Origin: "'*'"
-        requestTemplates:
-          application/json: "{\"statusCode\": 200}"
         passthroughBehavior: "when_no_match"
-        type: "mock"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
     put:
       tags:
       - Orders Service
@@ -1401,16 +1407,22 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorMessage"
+      security:
+      - api_key: []
       x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        credentials:
+          Fn::GetAtt: [ ApiLambdaExecutionRole, Arn ]
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:coffee-delivery-orders-${ResourceSuffix}/invocations
         responses:
           default:
             statusCode: "200"
             responseParameters:
               method.response.header.Access-Control-Allow-Origin: "'*'"
-        requestTemplates:
-          application/json: "{\"statusCode\": 200}"
         passthroughBehavior: "when_no_match"
-        type: "mock"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
     options:
       parameters:
       - name: "id"

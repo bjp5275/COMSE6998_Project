@@ -61,6 +61,28 @@ Resources:
         - Key: Purpose
           Value: "Contains order details indexed on customer ID"
 
+  OrderRatingsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: orderId
+          AttributeType: S
+        - AttributeName: orderItemId
+          AttributeType: S
+      BillingMode: PROVISIONED
+      KeySchema:
+        - AttributeName: orderId
+          KeyType: HASH
+        - AttributeName: orderItemId
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 3
+        WriteCapacityUnits: 3
+      TableName: "order-ratings"
+      Tags:
+        - Key: Purpose
+          Value: "Contains order ratings indexed on order ID"
+
   # IAM Roles
   LambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -98,6 +120,7 @@ Resources:
                 Resource:
                   - !GetAtt ProductTable.Arn
                   - !GetAtt OrderTable.Arn
+                  - !GetAtt OrderRatingsTable.Arn
               - Effect: Allow
                 Action:
                   - sqs:ReceiveMessage
@@ -142,6 +165,7 @@ Resources:
           STACK_ID: !Ref "AWS::StackId"
           PRODUCTS_TABLE: !Ref ProductTable
           ORDERS_TABLE: !Ref OrderTable
+          ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-user-notification-${ResourceSuffix}"
@@ -165,6 +189,7 @@ Resources:
           STACK_ID: !Ref "AWS::StackId"
           PRODUCTS_TABLE: !Ref ProductTable
           ORDERS_TABLE: !Ref OrderTable
+          ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-login-${ResourceSuffix}"
@@ -188,6 +213,7 @@ Resources:
           STACK_ID: !Ref "AWS::StackId"
           PRODUCTS_TABLE: !Ref ProductTable
           ORDERS_TABLE: !Ref OrderTable
+          ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-pending-orders-${ResourceSuffix}"
@@ -211,6 +237,7 @@ Resources:
           STACK_ID: !Ref "AWS::StackId"
           PRODUCTS_TABLE: !Ref ProductTable
           ORDERS_TABLE: !Ref OrderTable
+          ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-products-${ResourceSuffix}"
@@ -234,6 +261,7 @@ Resources:
           STACK_ID: !Ref "AWS::StackId"
           PRODUCTS_TABLE: !Ref ProductTable
           ORDERS_TABLE: !Ref OrderTable
+          ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-product-additions-${ResourceSuffix}"
@@ -257,6 +285,7 @@ Resources:
           STACK_ID: !Ref "AWS::StackId"
           PRODUCTS_TABLE: !Ref ProductTable
           ORDERS_TABLE: !Ref OrderTable
+          ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-orders-${ResourceSuffix}"
@@ -280,6 +309,7 @@ Resources:
           STACK_ID: !Ref "AWS::StackId"
           PRODUCTS_TABLE: !Ref ProductTable
           ORDERS_TABLE: !Ref OrderTable
+          ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-deliveries-${ResourceSuffix}"

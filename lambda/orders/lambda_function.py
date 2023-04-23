@@ -28,6 +28,7 @@ from project_utility import (
 # Dynamo Tables
 PRODUCTS_TABLE = os.environ["PRODUCTS_TABLE"]
 ORDERS_TABLE = os.environ["ORDERS_TABLE"]
+ORDER_RATINGS_TABLE = os.environ["ORDER_RATINGS_TABLE"]
 
 # Clients
 dynamo = boto3.client("dynamodb")
@@ -39,13 +40,21 @@ MINIMUM_ORDER_TIME_DELTA_MINUTES = 30
 MINIMUM_ORDER_TIME_DELTA = timedelta(minutes=MINIMUM_ORDER_TIME_DELTA_MINUTES)
 
 
-def build_order_from_dynamo_response(items):
-    orders = []
+def _build_items_from_dynamo_response(items):
+    cleaned_items = []
     for item in items:
         order = deserialize_dynamo_object(item)
         order.pop("customerId")
-        orders.append(order)
-    return orders
+        cleaned_items.append(order)
+    return cleaned_items
+
+
+def build_orders_from_dynamo_response(items):
+    return _build_items_from_dynamo_response(items)
+
+
+def build_order_ratings_from_dynamo_response(items):
+    return _build_items_from_dynamo_response(items)
 
 
 def get_orders(event, context):
@@ -64,8 +73,119 @@ def get_orders(event, context):
     orders = response["Items"]
 
     print(f"Found {len(orders)} orders")
-    orders = build_order_from_dynamo_response(orders)
+    orders = build_orders_from_dynamo_response(orders)
     return build_response(200, orders)
+
+
+def user_owns_order(user_id, order_id):
+    print(f"Checking user {user_id} owns order {order_id}")
+    order = get_raw_order_for_user(user_id, order_id)
+    return order is not None, order
+
+
+def get_order_ratings(event, context):
+    user_id = extract_user_id(event)
+
+    order_id = get_path_parameter(event, "id", None)
+    if order_id is None:
+        return build_error_response(ErrorCodes.MISSING_DATA, "Must specify an order ID")
+
+    has_ownership, _ = user_owns_order(user_id, order_id)
+    if not has_ownership:
+        return build_error_response(
+            ErrorCodes.NOT_AUTHORIZED, "You must own the order to see ratings"
+        )
+
+    print(f"Getting all order ratings for order {order_id}")
+    response = dynamo.query(
+        TableName=ORDER_RATINGS_TABLE,
+        KeyConditionExpression="orderId = :orderId",
+        ExpressionAttributeValues={
+            ":orderId": {
+                "S": order_id,
+            },
+        },
+    )
+    ratings = response["Items"]
+
+    print(f"Found {len(ratings)} order ratings")
+    ratings = build_order_ratings_from_dynamo_response(ratings)
+    return build_response(200, ratings)
+
+
+def submit_order_rating(event, context):
+    user_id = extract_user_id(event)
+
+    order_id = get_path_parameter(event, "id", None)
+    if order_id is None:
+        return build_error_response(ErrorCodes.MISSING_DATA, "Must specify an order ID")
+
+    has_ownership, raw_order = user_owns_order(user_id, order_id)
+    if not has_ownership:
+        return build_error_response(
+            ErrorCodes.NOT_AUTHORIZED, "You must own the order to submit ratings"
+        )
+
+    input_rating = json.loads(event["body"])
+    validated_rating = {"customerId": user_id}
+
+    if "orderId" not in input_rating or input_rating["orderId"] != order_id:
+        return build_error_response(
+            ErrorCodes.INVALID_DATA, "Invalid orderId value in rating"
+        )
+    validated_rating["orderId"] = order_id
+
+    order_item_ids = [item["id"] for item in raw_order["items"]]
+    if (
+        "orderItemId" not in input_rating
+        or str(input_rating["orderItemId"]) not in order_item_ids
+    ):
+        return build_error_response(
+            ErrorCodes.INVALID_DATA, "Invalid orderItemId value in rating"
+        )
+    validated_rating["orderItemId"] = str(input_rating["orderItemId"])
+
+    if "rating" not in input_rating:
+        return build_error_response(
+            ErrorCodes.INVALID_DATA, "You must specify a rating value"
+        )
+    else:
+        try:
+            rating_value = int(input_rating["rating"])
+            if rating_value < 1 or rating_value > 5:
+                return build_error_response(
+                    ErrorCodes.INVALID_DATA, "Rating must be an integer between 1 and 5"
+                )
+
+            validated_rating["orderItemId"] = str(input_rating["orderItemId"])
+        except:
+            return build_error_response(ErrorCodes.INVALID_DATA, "Invalid rating value")
+
+    print("Validated. Saving to Dynamo...", validated_rating)
+
+    dynamo.put_item(
+        TableName=ORDER_RATINGS_TABLE, Item=serialize_to_dynamo_object(validated_rating)
+    )
+
+    print("Order rating saved")
+    return build_response(200, None)
+
+
+def get_raw_order_for_user(user_id, order_id):
+    print(f"Getting order {order_id} for customer {user_id}")
+    response = dynamo.get_item(
+        TableName=ORDERS_TABLE,
+        Key={
+            "customerId": {
+                "S": user_id,
+            },
+            "id": {
+                "S": order_id,
+            },
+        },
+    )
+    order = response["Item"] if "Item" in response else None
+    return order
 
 
 def get_single_order(event, context):
@@ -75,23 +195,11 @@ def get_single_order(event, context):
     if order_id is None:
         return build_error_response(ErrorCodes.MISSING_DATA, "Must specify an order ID")
 
-    print(f"Getting order {order_id} for customer {customer_id}")
-    response = dynamo.get_item(
-        TableName=ORDERS_TABLE,
-        Key={
-            "customerId": {
-                "S": customer_id,
-            },
-            "id": {
-                "S": order_id,
-            },
-        },
-    )
-    order = response["Item"] if "Item" in response else None
-    if order is None:
+    raw_order = get_raw_order_for_user(customer_id, order_id)
+    if raw_order is None:
         return build_error_response(ErrorCodes.NOT_FOUND, f"Order {order_id} not found")
 
-    order = build_order_from_dynamo_response([order])[0]
+    order = build_orders_from_dynamo_response([raw_order])[0]
     return build_response(200, order)
 
 
@@ -226,7 +334,7 @@ def create_order(customer_id, order):
 
             validated_order["deliveryTime"] = f"{delivery_time.isoformat()}Z"
         except:
-            print("Error")
+            return False, None, "Invalid delivery time"
     else:
         return False, None, "Order must have a delivery time"
 
@@ -319,9 +427,13 @@ def lambda_handler(event, context):
                 if resource == "/orders":
                     response = get_orders(event, context)
                 elif resource == "/orders/{id}/ratings":
+                    response = get_order_ratings(event, context)
+                elif resource == "/orders/{id}/ratings":
                     response = get_single_order(event, context)
             elif httpMethod == "POST" and resource == "/orders":
                 response = submit_order(event, context)
+            elif httpMethod == "PUT" and resource == "/orders/{id}/ratings":
+                response = submit_order_rating(event, context)
     except Exception as e:
         print("Error", e)
         response = build_error_response(ErrorCodes.UNKNOWN_ERROR, "Internal Exception")
