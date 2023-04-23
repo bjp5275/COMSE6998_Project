@@ -2,9 +2,39 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, catchError, map, retry, tap, throwError } from 'rxjs';
 
-import { CreateOrder, Order, OrderRating } from 'src/app/model/models';
+import {
+  CreateOrder,
+  Order,
+  OrderItem,
+  OrderRating,
+} from 'src/app/model/models';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../utility';
+
+export function cleanOrderItemFromService(item: OrderItem): OrderItem {
+  if (!item) {
+    return item;
+  }
+
+  if (item.basePrice) {
+    item.basePrice = HttpUtils.convertDecimalFromString(item.basePrice)!;
+  }
+
+  if (item.additions) {
+    item.additions = item.additions.map((addition) => {
+      addition.price = HttpUtils.convertDecimalFromString(addition.price)!;
+      return addition;
+    });
+  }
+  return item;
+}
+
+export function cleanOrderItemsFromService(items: OrderItem[]): OrderItem[] {
+  if (items) {
+    items = items.map((item) => cleanOrderItemFromService(item));
+  }
+  return items;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -19,25 +49,7 @@ export class OrderService {
       if (order.deliveryTime) {
         order.deliveryTime = new Date(order.deliveryTime);
       }
-      if (order.items) {
-        order.items = order.items.map((item) => {
-          if (item.basePrice) {
-            item.basePrice = HttpUtils.convertDecimalFromString(
-              item.basePrice
-            )!;
-          }
-
-          if (item.additions) {
-            item.additions = item.additions.map((addition) => {
-              addition.price = HttpUtils.convertDecimalFromString(
-                addition.price
-              )!;
-              return addition;
-            });
-          }
-          return item;
-        });
-      }
+      order.items = cleanOrderItemsFromService(order.items);
     }
 
     return order;

@@ -39,7 +39,7 @@ def calculate_commission(order):
             for addition in item['additions']:
                 order_total += addition['price']
     
-    return order_total * COMMISSION_RATE
+    return round(order_total * COMMISSION_RATE, 2)
 
 
 def transfer_field(raw_order, destination_order, field, required=False):
@@ -85,7 +85,7 @@ def get_raw_order(order_id):
     print(f"Looking up {order_id}")
     response = dynamo.scan(
         TableName=ORDERS_TABLE,
-        FilterExpression="orderId = :orderId",
+        FilterExpression="id = :orderId",
         ExpressionAttributeValues={
             ":orderId": {
                 "S": order_id,
@@ -123,7 +123,7 @@ def get_order_for_shop(shop_id, order_id):
     print(f"Getting order {order_id} for shop {shop_id}")
     response = dynamo.scan(
         TableName=ORDERS_TABLE,
-        FilterExpression="orderId = :orderId AND shopId = :shopId",
+        FilterExpression="id = :orderId AND shopId = :shopId",
         ExpressionAttributeValues={
             ":orderId": {
                 "S": order_id,
