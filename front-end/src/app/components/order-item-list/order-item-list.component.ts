@@ -15,7 +15,7 @@ import {
   convertMilkTypeToString,
 } from 'src/app/model/models';
 import { ProductsService } from 'src/app/shared/services/products.service';
-import { HttpError } from 'src/app/shared/utility';
+import { ClassUtils, HttpError } from 'src/app/shared/utility';
 
 export interface OrderItemAction {
   buttonText: string;
@@ -103,10 +103,7 @@ export class OrderItemListComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    for (const propName of Object.keys(changes)) {
-      const newValue = changes[propName].currentValue;
-      Object.defineProperty(this, propName, newValue);
-    }
+    ClassUtils.processChanges(this, changes);
   }
 
   expandOrderItems(

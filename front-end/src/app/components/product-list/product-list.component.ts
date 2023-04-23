@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Product } from 'src/app/model/models';
+import { ClassUtils } from 'src/app/shared/utility';
 
 export interface ProductAction {
   buttonText: string;
@@ -68,10 +69,7 @@ export class ProductListComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    for (const propName of Object.keys(changes)) {
-      const newValue = changes[propName].currentValue;
-      Object.defineProperty(this, propName, newValue);
-    }
+    ClassUtils.processChanges(this, changes);
   }
 
   onClick(action: ProductAction, product: Product, index: number) {

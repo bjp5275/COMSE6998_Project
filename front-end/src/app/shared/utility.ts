@@ -1,4 +1,5 @@
 import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { SimpleChanges } from '@angular/core';
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import {
   MonoTypeOperatorFunction,
@@ -17,8 +18,19 @@ export interface HttpError {
 }
 
 export interface PollAfterDataConfig<T> {
+  /** interval to wait after a successful fetch to poll again */
   pollInterval?: number;
+  /** predicate to determine when to stop polling */
   takeWhilePredicate?: (value: T, index: number) => boolean;
+}
+
+export class ClassUtils {
+  public static processChanges(object: any, changes: SimpleChanges): void {
+    for (const propName in changes) {
+      const newValue = changes[propName].currentValue;
+      object[propName] = newValue;
+    }
+  }
 }
 
 export class ObservableUtils {
@@ -26,7 +38,7 @@ export class ObservableUtils {
 
   /**
    * Poll for data. Only start fetching new data after a previous fetch completes plus the specified poll interval
-   * @param pollInterval interval to wait after a successful fetch to poll again
+   * @param config configuration for the polling action
    * @returns the operator function to perform polling
    */
   public static pollAfterData<T>(
