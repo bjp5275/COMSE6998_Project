@@ -100,6 +100,9 @@ def extract_api_key_id(event):
 def extract_customer_id(event):
     return extract_api_key_id(event)
 
+def extract_shop_id(event):
+    return extract_api_key_id(event)
+
 
 def get_user_info(api_gateway, api_key_id, customer_id):
     try:
@@ -156,7 +159,7 @@ def get_query_parameter(event, name, default_value):
 
 def build_response(code, body):
     formatted_body = body
-    if type(body) != str:
+    if body is not None and type(body) != str:
         formatted_body = json.dumps(body, default=decimal_encoder)
 
     return {

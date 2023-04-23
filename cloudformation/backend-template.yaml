@@ -115,8 +115,8 @@ Resources:
   # SQS Queues
   UserNotificationQueue:
     Type: AWS::SQS::Queue
-    Properties: 
-      Tags: 
+    Properties:
+      Tags:
         - Key: Purpose
           Value: "User notifications"
   UserNotificationEventSource:
@@ -125,7 +125,7 @@ Resources:
       Enabled: true
       EventSourceArn: !GetAtt UserNotificationQueue.Arn
       FunctionName: !Ref UserNotificationFunction
-      FunctionResponseTypes: 
+      FunctionResponseTypes:
         - ReportBatchItemFailures
 
   # Lambda functions
@@ -168,6 +168,29 @@ Resources:
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-login-${ResourceSuffix}"
+      Handler: "lambda_function.lambda_handler"
+      MemorySize: 128
+      PackageType: "Zip"
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: "python3.9"
+      Timeout: 10
+
+  PendingOrdersFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Architectures:
+        - "x86_64"
+      Code:
+        S3Bucket: !Ref ResourcesBucket
+        S3Key: !Sub "coffee-delivery/pending-orders-${FunctionS3ObjectKeySuffix}.zip"
+      Environment:
+        Variables:
+          STACK_ID: !Ref "AWS::StackId"
+          PRODUCTS_TABLE: !Ref ProductTable
+          ORDERS_TABLE: !Ref OrderTable
+          USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
+          UI_BASE_URL: !Ref FrontEndUrl
+      FunctionName: !Sub "coffee-delivery-pending-orders-${ResourceSuffix}"
       Handler: "lambda_function.lambda_handler"
       MemorySize: 128
       PackageType: "Zip"
@@ -254,6 +277,9 @@ Outputs:
   LoginFunctionArn:
     Description: "ARN for login Lambda"
     Value: !GetAtt LoginFunction.Arn
+  PendingOrdersFunctionArn:
+    Description: "ARN for pending orders Lambda"
+    Value: !GetAtt PendingOrdersFunction.Arn
   ProductsFunctionArn:
     Description: "ARN for products Lambda"
     Value: !GetAtt ProductsFunction.Arn
