@@ -267,6 +267,29 @@ Resources:
       Runtime: "python3.9"
       Timeout: 10
 
+  DeliveriesFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Architectures:
+        - "x86_64"
+      Code:
+        S3Bucket: !Ref ResourcesBucket
+        S3Key: !Sub "coffee-delivery/deliveries-${FunctionS3ObjectKeySuffix}.zip"
+      Environment:
+        Variables:
+          STACK_ID: !Ref "AWS::StackId"
+          PRODUCTS_TABLE: !Ref ProductTable
+          ORDERS_TABLE: !Ref OrderTable
+          USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
+          UI_BASE_URL: !Ref FrontEndUrl
+      FunctionName: !Sub "coffee-delivery-deliveries-${ResourceSuffix}"
+      Handler: "lambda_function.lambda_handler"
+      MemorySize: 128
+      PackageType: "Zip"
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: "python3.9"
+      Timeout: 10
+
 Outputs:
   # Roles
   LambdaExecutionRoleName:
@@ -289,3 +312,6 @@ Outputs:
   OrdersFunctionArn:
     Description: "ARN for orders Lambda"
     Value: !GetAtt OrdersFunction.Arn
+  DeliveriesFunctionArn:
+    Description: "ARN for deliveries Lambda"
+    Value: !GetAtt DeliveriesFunction.Arn
