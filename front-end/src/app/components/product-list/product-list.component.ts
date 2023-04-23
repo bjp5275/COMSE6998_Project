@@ -67,12 +67,10 @@ export class ProductListComponent implements OnInit, OnChanges {
     }
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['products$']) {
-      this.products$ = changes['products$'].currentValue;
-    }
-    if (changes['actions']) {
-      this.actions = changes['actions'].currentValue;
+  ngOnChanges(changes: SimpleChanges): void {
+    for (const propName of Object.keys(changes)) {
+      const newValue = changes[propName].currentValue;
+      Object.defineProperty(this, propName, newValue);
     }
   }
 

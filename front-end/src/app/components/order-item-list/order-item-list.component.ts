@@ -102,15 +102,10 @@ export class OrderItemListComponent implements OnInit, OnChanges {
     }
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['orderItems']) {
-      this.orderItems = changes['orderItems'].currentValue;
-    }
-    if (changes['actions']) {
-      this.actions = changes['actions'].currentValue;
-    }
-    if (changes['listOutAdditions']) {
-      this.listOutAdditions = changes['listOutAdditions'].currentValue;
+  ngOnChanges(changes: SimpleChanges): void {
+    for (const propName of Object.keys(changes)) {
+      const newValue = changes[propName].currentValue;
+      Object.defineProperty(this, propName, newValue);
     }
   }
 

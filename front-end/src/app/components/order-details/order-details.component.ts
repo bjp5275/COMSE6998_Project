@@ -17,6 +17,7 @@ import {
   Order,
   OrderItem,
   OrderRating,
+  OrderStatus,
   Product,
 } from 'src/app/model/models';
 import { OrderService } from 'src/app/shared/services/order.service';
@@ -73,7 +74,10 @@ export class OrderDetailsComponent {
 
     this.routeState = this._getRouteState(router.getCurrentNavigation());
     const orderPolling$ = orderService.getOrder(orderId).pipe(
-      ObservableUtils.pollAfterData(),
+      ObservableUtils.pollAfterData({
+        takeWhilePredicate: (value) =>
+          value.orderStatus != OrderStatus.DELIVERED,
+      }),
       tap((order) => (this.order = order)),
       catchError((err: HttpError) => {
         this.snackBar.open(

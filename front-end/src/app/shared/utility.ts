@@ -5,6 +5,7 @@ import {
   Observable,
   expand,
   switchMap,
+  takeWhile,
   throwError,
   timer,
 } from 'rxjs';
@@ -13,6 +14,11 @@ import { UserService } from './services/user.service';
 export interface HttpError {
   errorCode: number;
   errorMessage: string;
+}
+
+export interface PollAfterDataConfig<T> {
+  pollInterval?: number;
+  takeWhilePredicate?: (value: T, index: number) => boolean;
 }
 
 export class ObservableUtils {
@@ -24,11 +30,16 @@ export class ObservableUtils {
    * @returns the operator function to perform polling
    */
   public static pollAfterData<T>(
-    pollInterval = ObservableUtils.DEFAULT_POLLING_MS
+    config?: PollAfterDataConfig<T>
   ): MonoTypeOperatorFunction<T> {
+    const pollInterval =
+      config?.pollInterval || ObservableUtils.DEFAULT_POLLING_MS;
+    const takeWhilePredicate = config?.takeWhilePredicate || (() => true);
+
     return (source$) =>
       source$.pipe(
-        expand(() => timer(pollInterval).pipe(switchMap(() => source$)))
+        expand(() => timer(pollInterval).pipe(switchMap(() => source$))),
+        takeWhile(takeWhilePredicate)
       );
   }
 }
@@ -56,12 +67,22 @@ export class HttpUtils {
     console.log('Handling error', error);
 
     if (error instanceof HttpErrorResponse) {
+      let errorMessage: string | undefined;
+      try {
+        if (error.error.message) {
+          errorMessage = error.error.message;
+        }
+      } catch (error) {
+        // Skip
+      }
+
       errorResponse = {
         errorCode: error.status,
         errorMessage:
+          errorMessage ||
           error.message ||
-          error.error ||
           error.statusText ||
+          error.error ||
           `Error ${error.status}`,
       };
     } else if (error instanceof Error) {
