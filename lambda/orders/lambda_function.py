@@ -310,18 +310,18 @@ def lambda_handler(event, context):
         else:
             httpMethod = event["httpMethod"]
             resource = event["resource"]
+            response = build_error_response(
+                ErrorCodes.UNKNOWN_ERROR,
+                f"Unknown resource: {httpMethod} {resource}",
+            )
+
             if httpMethod == "GET":
                 if resource == "/orders":
                     response = get_orders(event, context)
-                else:
+                elif resource == "/orders/{id}/ratings":
                     response = get_single_order(event, context)
-            elif httpMethod == "POST":
+            elif httpMethod == "POST" and resource == "/orders":
                 response = submit_order(event, context)
-            else:
-                response = build_error_response(
-                    ErrorCodes.UNKNOWN_ERROR,
-                    f"Unknown resource: {httpMethod} {resource}",
-                )
     except Exception as e:
         print("Error", e)
         response = build_error_response(ErrorCodes.UNKNOWN_ERROR, "Internal Exception")

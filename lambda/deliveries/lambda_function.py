@@ -234,23 +234,24 @@ def lambda_handler(event, context):
         else:
             httpMethod = event["httpMethod"]
             resource = event["resource"]
+
+            response = build_error_response(
+                ErrorCodes.UNKNOWN_ERROR,
+                f"Unknown resource: {httpMethod} {resource}",
+            )
+
             if httpMethod == "GET":
                 if resource == "/deliveries":
                     response = get_previous_orders(event, context)
                 elif resource == "/deliveries/available":
                     response = get_available_orders(event, context)
-                else:
+                elif resource == "/deliveries/{id}":
                     response = get_single_order(event, context)
             elif httpMethod == "POST":
                 if resource == "/deliveries/{id}/secure":
                     response = secure_order(event, context)
-                else:
+                elif resource == "/deliveries/{id}/status":
                     response = update_order_status(event, context)
-            else:
-                response = build_error_response(
-                    ErrorCodes.UNKNOWN_ERROR,
-                    f"Unknown resource: {httpMethod} {resource}",
-                )
     except Exception as e:
         print("Error", e)
         response = build_error_response(ErrorCodes.UNKNOWN_ERROR, "Internal Exception")
