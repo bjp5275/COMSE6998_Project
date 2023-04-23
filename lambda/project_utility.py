@@ -44,6 +44,9 @@ class ErrorCodes(ErrorCode, Enum):
     NOT_FOUND = 4, 404
     NOT_AUTHORIZED = 5, 401
 
+    def __str__(self):
+        return self.name
+
 
 class UserNotificationType:
     def __init__(self, type_code: str):
@@ -52,6 +55,9 @@ class UserNotificationType:
 
 class UserNotificationTypes(UserNotificationType, Enum):
     ORDER_STATUS_UPDATE = "ORDER_STATUS_UPDATE"
+    
+    def __str__(self):
+        return self.name
 
 
 class UserRole(Enum):
@@ -60,6 +66,9 @@ class UserRole(Enum):
     DELIVERER = "DELIVERER"
     SHOP_OWNER = "SHOP_OWNER"
 
+    def __str__(self):
+        return self.name
+
 
 class OrderStatus(Enum):
     RECEIVED = "RECEIVED"
@@ -67,6 +76,9 @@ class OrderStatus(Enum):
     MADE = "MADE"
     PICKED_UP = "PICKED_UP"
     DELIVERED = "DELIVERED"
+
+    def __str__(self):
+        return self.name
 
 
 def calculate_order_total_percentage(order, rate, minimum):
@@ -169,10 +181,10 @@ def user_has_role(user_id, role: UserRole, api_gateway=None):
     if user_info is not None:
         print(f"User roles: {user_info['roles']}")
         if role is None or role.value in user_info["roles"]:
-            print(f"User has role ({role.name})")
+            print(f"User has role ({role})")
             return True
     
-    print(f"User does not have role ({role.name})")
+    print(f"User does not have role ({role})")
     return False
 
 
