@@ -13,6 +13,7 @@ from project_utility import (
     get_path_parameter,
     get_query_parameter,
     serialize_to_dynamo_object,
+    send_order_status_update_message,
 )
 
 # Dynamo Tables
@@ -168,6 +169,9 @@ def secure_order(event, context):
     dynamo.put_item(TableName=ORDERS_TABLE, Item=serialize_to_dynamo_object(order))
 
     print("Order secured")
+    send_order_status_update_message(
+        boto3.client("sqs"), order["customerId"], order["id"], order["orderStatus"]
+    )
     return build_response(200, None)
 
 
@@ -192,6 +196,9 @@ def update_order_status(event, context):
     dynamo.put_item(TableName=ORDERS_TABLE, Item=serialize_to_dynamo_object(order))
 
     print("Order Updated")
+    send_order_status_update_message(
+        boto3.client("sqs"), order["customerId"], order["id"], order["orderStatus"]
+    )
     return build_response(200, None)
 
 

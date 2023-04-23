@@ -12,6 +12,7 @@ from project_utility import (
     extract_deliverer_id,
     get_path_parameter,
     get_query_parameter,
+    send_order_status_update_message,
     serialize_to_dynamo_object,
 )
 
@@ -167,7 +168,7 @@ def secure_order(event, context):
     order = get_raw_order(order_id)
     if order is None or "delivererId" in order:
         return build_error_response(ErrorCodes.INVALID_DATA, "Order is already taken")
-    elif order['orderStatus'] != "MADE":
+    elif order["orderStatus"] != "MADE":
         return build_error_response(ErrorCodes.INVALID_DATA, "Order is not available")
 
     order["delivererId"] = deliverer_id
@@ -175,6 +176,9 @@ def secure_order(event, context):
     dynamo.put_item(TableName=ORDERS_TABLE, Item=serialize_to_dynamo_object(order))
 
     print("Order secured")
+    send_order_status_update_message(
+        boto3.client("sqs"), order["customerId"], order["id"], order["orderStatus"]
+    )
     return build_response(200, None)
 
 
@@ -205,6 +209,9 @@ def update_order_status(event, context):
     dynamo.put_item(TableName=ORDERS_TABLE, Item=serialize_to_dynamo_object(order))
 
     print("Order Updated")
+    send_order_status_update_message(
+        boto3.client("sqs"), order["customerId"], order["id"], order["orderStatus"]
+    )
     return build_response(200, None)
 
 
