@@ -19,6 +19,8 @@ import { OrderDetailsComponent } from './components/order-details/order-details.
 import { OrderHistoryComponent } from './components/order-history/order-history.component';
 import { OrderItemListComponent } from './components/order-item-list/order-item-list.component';
 import { OrderListComponent } from './components/order-list/order-list.component';
+import { PendingOrderStatusComponent } from './components/pending-order-status/pending-order-status.component';
+import { PendingOrdersComponent } from './components/pending-orders/pending-orders.component';
 import { ProductListComponent } from './components/product-list/product-list.component';
 import { UserCartComponent } from './components/user-cart/user-cart.component';
 
@@ -75,6 +77,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     OrderHistoryComponent,
     OrderItemListComponent,
     OrderListComponent,
+    PendingOrdersComponent,
+    PendingOrderStatusComponent,
     ProductListComponent,
     UserCartComponent,
 

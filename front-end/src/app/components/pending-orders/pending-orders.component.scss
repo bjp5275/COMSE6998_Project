@@ -1,0 +1,24 @@
+.loading {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+
+  mat-progress-bar {
+    max-width: 15em;
+    margin: 0 2.5em;
+  }
+}
+
+.in-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+  
+  background: lightgray;
+}

@@ -313,7 +313,7 @@ export interface PendingOrder {
   /**
    * Payment amount to prepare order
    */
-  commission?: number;
+  commission: number;
   /**
    * Items within the order
    */

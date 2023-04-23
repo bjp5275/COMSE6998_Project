@@ -1,0 +1,71 @@
+<div class="container" *ngIf="order$ | async as order; else loadingOrder">
+  <div class="order-item-details">
+    <app-order-item-list [orderItems]="order.items"></app-order-item-list>
+  </div>
+  <div class="order-status">
+    <div class="inner-order-status">
+      <mat-progress-bar
+        class="order-progress"
+        mode="determinate"
+        [value]="(order.orderStatus | orderStatusPercentage) || 5"
+      ></mat-progress-bar>
+      <div class="order-progress-states">
+        <span>Received</span>
+        <span>Brewing</span>
+        <span>Made</span>
+        <span>Picked Up</span>
+        <span>Delivered</span>
+      </div>
+      <br />
+      <iframe
+        width="100%"
+        height="300"
+        frameborder="0"
+        scrolling="no"
+        [src]="
+          'https://maps.google.com/maps?width=100%25&amp;height=600&amp;hl=en&amp;q=' +
+            (order.deliveryLocation | locationAddress) +
+            '+()&amp;t=&amp;z=15&amp;ie=UTF8&amp;iwloc=B&amp;output=embed'
+            | safeUrl : true
+        "
+      ></iframe>
+      <br />
+      <mat-chip-set class="order-detail-chips">
+        <mat-chip disableRipple>
+          <mat-icon matChipAvatar>schedule</mat-icon>
+          <span>{{ order.deliveryTime | date : "shortTime" }}</span>
+        </mat-chip>
+        <mat-chip disableRipple>
+          <mat-icon matChipAvatar>place</mat-icon>
+          <span>{{
+            order.deliveryLocation.name || order.deliveryLocation.streetAddress
+          }}</span>
+        </mat-chip>
+        <mat-chip disableRipple>
+          <mat-icon matChipAvatar>paid</mat-icon>
+          <span>{{ order.commission | price : false }}</span>
+        </mat-chip>
+      </mat-chip-set>
+      <br />
+      <div class="centered-buttons">
+        <button
+          *ngIf="order.orderStatus == 'BREWING'"
+          mat-raised-button
+          color="primary"
+          [disabled]="updatingOrder"
+          (click)="orderMade(order)"
+        >
+          <mat-icon>coffee_maker</mat-icon>
+          Order Made
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #loadingOrder>
+  <div class="loading-order">
+    <mat-spinner></mat-spinner>
+    <br />
+    <i>Loading order {{ orderId }} details...</i>
+  </div>
+</ng-template>

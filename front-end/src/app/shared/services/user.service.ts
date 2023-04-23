@@ -45,11 +45,12 @@ const PAYMENT_METHODS: PaymentInformation[] = [
 
 const FAVORITE_ORDERS: FavoriteOrder[] = [];
 
-export type UserRole = 'REGULAR_USER' | 'ADMIN' | 'DELIVERER';
+export type UserRole = 'REGULAR_USER' | 'ADMIN' | 'DELIVERER' | 'SHOP_OWNER';
 export const UserRole = {
   REGULAR_USER: 'REGULAR_USER' as UserRole,
   ADMIN: 'ADMIN' as UserRole,
   DELIVERER: 'DELIVERER' as UserRole,
+  SHOP_OWNER: 'SHOP_OWNER' as UserRole
 };
 export function convertUserRoleToString(userRole: UserRole): string {
   switch (userRole) {
@@ -59,6 +60,8 @@ export function convertUserRoleToString(userRole: UserRole): string {
       return 'Admin';
     case UserRole.DELIVERER:
       return 'Deliverer';
+    case UserRole.SHOP_OWNER:
+      return 'Shop Owner';
     default:
       throw new Error(`Unknown user role: ${userRole}`);
   }
@@ -163,30 +166,36 @@ export class UserService {
   }
 
   public getSavedLocations(): Observable<Location[]> {
+    // TODO - implement
     return of(this.locations);
   }
 
   public addSavedLocation(location: Location): Observable<boolean> {
+    // TODO - implement
     this.locations.push(location);
     return of(true).pipe(delay(500));
   }
 
   public getSavedPaymentMethods(): Observable<PaymentInformation[]> {
+    // TODO - implement
     return of(this.paymentMethods);
   }
 
   public addSavedPaymentMethods(
     paymentMethod: PaymentInformation
   ): Observable<boolean> {
+    // TODO - implement
     this.paymentMethods.push(paymentMethod);
     return of(true).pipe(delay(500));
   }
 
   public getFavoriteOrders(): Observable<FavoriteOrder[]> {
+    // TODO - implement
     return of(this.favoriteOrders);
   }
 
   public addFavoriteOrder(order: FavoriteOrder): Observable<string> {
+    // TODO - implement
     const id = new Date().getTime().toString();
     this.favoriteOrders.push({
       id,
@@ -201,6 +210,7 @@ export class UserService {
     id: string,
     updatedOrder: FavoriteOrder
   ): Observable<boolean> {
+    // TODO - implement
     const order = this.favoriteOrders.find((order) => order.id == id);
     if (!order) {
       return throwError(() => new Error('Favorite not found'));

@@ -82,6 +82,26 @@ export class AppComponent {
     {
       type: 'CATEGORY',
       includeDivider: true,
+      title: 'Shop Owner Console',
+      show: () => this.userHasRole(UserRole.SHOP_OWNER),
+      links: [
+        {
+          type: 'LINK',
+          routerLink: '/pending/available',
+          icon: 'receipt_long',
+          name: 'Available Orders',
+        },
+        {
+          type: 'LINK',
+          routerLink: '/pending/history',
+          icon: 'coffee_maker',
+          name: 'Order History',
+        },
+      ],
+    },
+    {
+      type: 'CATEGORY',
+      includeDivider: true,
       title: 'Administrative Console',
       show: () => this.userHasRole(UserRole.ADMIN),
       links: [

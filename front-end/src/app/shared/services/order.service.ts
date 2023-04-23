@@ -89,6 +89,7 @@ export class OrderService {
    * @param id Order ID
    */
   public getOrderRatings(id: string): Observable<OrderRating[]> {
+    // TODO - implement
     return throwError(() => new Error('undefined'));
   }
 
@@ -102,6 +103,7 @@ export class OrderService {
     id: string,
     orderRating: OrderRating
   ): Observable<boolean> {
+    // TODO - implement
     return throwError(() => new Error('undefined'));
   }
 

@@ -13,6 +13,11 @@ import { DeliveryStatusComponent } from './components/delivery-status/delivery-s
 import { FavoritesComponent } from './components/favorites/favorites.component';
 import { OrderDetailsComponent } from './components/order-details/order-details.component';
 import { OrderHistoryComponent } from './components/order-history/order-history.component';
+import { PendingOrderStatusComponent } from './components/pending-order-status/pending-order-status.component';
+import {
+  PendingOrdersComponent,
+  PendingOrdersType,
+} from './components/pending-orders/pending-orders.component';
 import { UserCartComponent } from './components/user-cart/user-cart.component';
 
 const routes: Routes = [
@@ -33,6 +38,17 @@ const routes: Routes = [
     data: { type: DeliveryOrdersType.HISTORY },
   },
   { path: 'delivery/status', component: DeliveryStatusComponent },
+  {
+    path: 'pending/available',
+    component: PendingOrdersComponent,
+    data: { type: PendingOrdersType.AVAILABLE },
+  },
+  {
+    path: 'pending/history',
+    component: PendingOrdersComponent,
+    data: { type: PendingOrdersType.HISTORY },
+  },
+  { path: 'pending/status', component: PendingOrderStatusComponent },
   { path: 'admin/additions', component: AdminAdditionsComponent },
   { path: 'admin/products', component: AdminProductsComponent },
   { path: 'admin/product', component: AdminCustomizeProductComponent },
