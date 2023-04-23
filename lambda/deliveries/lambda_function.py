@@ -102,7 +102,12 @@ def get_available_orders(event, context):
     print(f"Looking up available orders for deliverer {deliverer_id}")
     response = dynamo.scan(
         TableName=ORDERS_TABLE,
-        FilterExpression="attribute_not_exists(delivererId)",
+        FilterExpression="attribute_not_exists(delivererId) AND orderStatus = :orderStatus",
+        ExpressionAttributeValues={
+            ":orderStatus": {
+                "S": "MADE",
+            },
+        },
     )
     orders = response["Items"]
 
@@ -162,6 +167,8 @@ def secure_order(event, context):
     order = get_raw_order(order_id)
     if order is None or "delivererId" in order:
         return build_error_response(ErrorCodes.INVALID_DATA, "Order is already taken")
+    elif order['orderStatus'] != "MADE":
+        return build_error_response(ErrorCodes.INVALID_DATA, "Order is not available")
 
     order["delivererId"] = deliverer_id
     order["deliveryFee"] = calculate_delivery_fee(order)
