@@ -13,11 +13,10 @@ ses = boto3.client("ses")
 api_gateway = boto3.client("apigateway")
 
 
-def email_user_new_status(customer_id, order_id, new_status):
-    api_key_id = customer_id
-    user_info = get_user_info(api_gateway, api_key_id, customer_id)
+def email_user_new_status(user_id, order_id, new_status):
+    user_info = get_user_info(user_id, api_gateway)
     if not user_info:
-        raise ValueError(f"Cannot find user {customer_id}")
+        raise ValueError(f"Cannot find user {user_id}")
 
     email = user_info["email"]
     pretty_status = " ".join(map(lambda s: s.capitalize(), new_status.split("_")))

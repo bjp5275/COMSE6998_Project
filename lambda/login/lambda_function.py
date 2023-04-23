@@ -5,8 +5,7 @@ from project_utility import (
     ErrorCodes,
     build_error_response,
     build_response,
-    extract_api_key_id,
-    extract_customer_id,
+    extract_user_id,
     get_user_info,
 )
 
@@ -25,10 +24,9 @@ def get_validated_user_info(event, context):
         return build_error_response(ErrorCodes.INVALID_DATA, "Must specify username")
 
     username = body["username"]
-    api_key_id = extract_api_key_id(event)
-    customer_id = extract_customer_id(event)
+    user_id = extract_user_id(event)
 
-    validated_user_info = get_user_info(api_gateway, api_key_id, customer_id)
+    validated_user_info = get_user_info(user_id, api_gateway)
 
     if not validated_user_info or validated_user_info["username"] != username:
         return build_error_response(ErrorCodes.INVALID_DATA, "Invalid user information")

@@ -6,11 +6,15 @@ from decimal import Decimal
 import boto3
 from project_utility import (
     ErrorCodes,
+    UserRole,
     build_error_response,
     build_response,
     deserialize_dynamo_object,
+    extract_user_id,
     get_query_parameter,
+    is_valid_user,
     serialize_to_dynamo_object,
+    user_has_role,
     validate_price,
 )
 
@@ -139,9 +143,19 @@ def lambda_handler(event, context):
     try:
         httpMethod = event["httpMethod"]
         if httpMethod == "GET":
-            response = get_additions(event, context)
+            if is_valid_user(extract_user_id(event)):
+                response = get_additions(event, context)
+            else:
+                response = build_error_response(
+                    ErrorCodes.NOT_AUTHORIZED, "You must sign up to use this service!"
+                )
         elif httpMethod == "POST":
-            response = upsert_addition(event, context)
+            if user_has_role(extract_user_id(event), UserRole.ADMIN):
+                response = upsert_addition(event, context)
+            else:
+                response = build_error_response(
+                    ErrorCodes.NOT_AUTHORIZED, "You are not an admin!"
+                )
         else:
             response = build_error_response(
                 ErrorCodes.UNKNOWN_ERROR, f"Unknown method: {httpMethod}"

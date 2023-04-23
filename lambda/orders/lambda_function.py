@@ -8,10 +8,11 @@ import boto3
 from project_utility import (
     ErrorCodes,
     OrderStatus,
+    UserRole,
     build_error_response,
     build_response,
     deserialize_dynamo_object,
-    extract_customer_id,
+    extract_user_id,
     get_additions_by_id,
     get_path_parameter,
     get_products_by_id,
@@ -19,6 +20,7 @@ from project_utility import (
     serialize_to_dynamo_object,
     to_coffee_type,
     to_milk_type,
+    user_has_role,
     validate_location,
     validate_payment_information,
 )
@@ -47,7 +49,7 @@ def build_order_from_dynamo_response(items):
 
 
 def get_orders(event, context):
-    customer_id = extract_customer_id(event)
+    customer_id = extract_user_id(event)
 
     print(f"Getting all orders for customer {customer_id}")
     response = dynamo.query(
@@ -67,7 +69,7 @@ def get_orders(event, context):
 
 
 def get_single_order(event, context):
-    customer_id = extract_customer_id(event)
+    customer_id = extract_user_id(event)
 
     order_id = get_path_parameter(event, "id", None)
     if order_id is None:
@@ -277,7 +279,7 @@ def create_order(customer_id, order):
 
 
 def submit_order(event, context):
-    customer_id = extract_customer_id(event)
+    customer_id = extract_user_id(event)
 
     if "body" not in event or event["body"] is None:
         return build_error_response(
@@ -301,20 +303,25 @@ def lambda_handler(event, context):
     print(f"Context: {context}")
 
     try:
-        httpMethod = event["httpMethod"]
-        resource = event["resource"]
-        if httpMethod == "GET":
-            if resource == "/orders":
-                response = get_orders(event, context)
-            else:
-                response = get_single_order(event, context)
-        elif httpMethod == "POST":
-            response = submit_order(event, context)
-        else:
+        if not user_has_role(extract_user_id(event), UserRole.REGULAR_USER):
             response = build_error_response(
-                ErrorCodes.UNKNOWN_ERROR,
-                f"Unknown resource: {httpMethod} {resource}",
+                ErrorCodes.NOT_AUTHORIZED, "You must sign up to be a customer!"
             )
+        else:
+            httpMethod = event["httpMethod"]
+            resource = event["resource"]
+            if httpMethod == "GET":
+                if resource == "/orders":
+                    response = get_orders(event, context)
+                else:
+                    response = get_single_order(event, context)
+            elif httpMethod == "POST":
+                response = submit_order(event, context)
+            else:
+                response = build_error_response(
+                    ErrorCodes.UNKNOWN_ERROR,
+                    f"Unknown resource: {httpMethod} {resource}",
+                )
     except Exception as e:
         print("Error", e)
         response = build_error_response(ErrorCodes.UNKNOWN_ERROR, "Internal Exception")

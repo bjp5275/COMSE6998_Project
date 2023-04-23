@@ -3,6 +3,7 @@ import os
 from decimal import Decimal, InvalidOperation
 from enum import Enum
 
+import boto3
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 
 # Dynamo Tables
@@ -41,6 +42,7 @@ class ErrorCodes(ErrorCode, Enum):
     MISSING_DATA = 2, 400
     INVALID_DATA = 3, 400
     NOT_FOUND = 4, 404
+    NOT_AUTHORIZED = 5, 401
 
 
 class UserNotificationType:
@@ -52,26 +54,34 @@ class UserNotificationTypes(UserNotificationType, Enum):
     ORDER_STATUS_UPDATE = "ORDER_STATUS_UPDATE"
 
 
+class UserRole(Enum):
+    REGULAR_USER = "REGULAR_USER"
+    ADMIN = "ADMIN"
+    DELIVERER = "DELIVERER"
+    SHOP_OWNER = "SHOP_OWNER"
+
+
 class OrderStatus(Enum):
-    RECEIVED = "RECEIVED" 
-    BREWING = "BREWING" 
-    MADE = "MADE" 
-    PICKED_UP = "PICKED_UP" 
+    RECEIVED = "RECEIVED"
+    BREWING = "BREWING"
+    MADE = "MADE"
+    PICKED_UP = "PICKED_UP"
     DELIVERED = "DELIVERED"
 
 
 def calculate_order_total_percentage(order, rate, minimum):
     order_total = Decimal(0)
-    for item in order['items']:
-        order_total += item['basePrice']
-        if 'additions' in item:
-            for addition in item['additions']:
-                order_total += addition['price']
-    
+    for item in order["items"]:
+        order_total += item["basePrice"]
+        if "additions" in item:
+            for addition in item["additions"]:
+                order_total += addition["price"]
+
     calculated = order_total * rate
     output = max(calculated, minimum)
 
     return round(output, 2)
+
 
 def createUiUrl(path):
     return f"{UI_BASE_URL}/{path}"
@@ -112,7 +122,7 @@ def send_email(ses, destination_email, subject, message):
     print(f"Sent email {response['MessageId']}")
 
 
-def extract_api_key_id(event):
+def _extract_api_key_id(event):
     if (
         "requestContext" in event
         and "identity" in event["requestContext"]
@@ -123,19 +133,16 @@ def extract_api_key_id(event):
         return None
 
 
-def extract_customer_id(event):
-    return extract_api_key_id(event)
-
-def extract_shop_id(event):
-    return extract_api_key_id(event)
-
-def extract_deliverer_id(event):
-    return extract_api_key_id(event)
+def extract_user_id(event):
+    return _extract_api_key_id(event)
 
 
-def get_user_info(api_gateway, api_key_id, user_id):
+def get_user_info(user_id, api_gateway=None):
     try:
-        response = api_gateway.get_api_key(apiKey=api_key_id, includeValue=False)
+        if api_gateway is None:
+            api_gateway = boto3.client("apigateway")
+
+        response = api_gateway.get_api_key(apiKey=user_id, includeValue=False)
         tags = response["tags"]
         email = tags[USER_INFO_EMAIL_TAG]
         username = tags[USER_INFO_USERNAME_TAG]
@@ -150,6 +157,18 @@ def get_user_info(api_gateway, api_key_id, user_id):
         }
     except:
         return None
+
+
+def is_valid_user(user_id, api_gateway=None):
+    return user_has_role(user_id, None, api_gateway)
+
+
+def user_has_role(user_id, role: UserRole, api_gateway=None):
+    user_info = get_user_info(user_id, api_gateway)
+    if user_info is not None:
+        if role is None or role in user_info["roles"]:
+            return True
+    return False
 
 
 def decimal_encoder(d):

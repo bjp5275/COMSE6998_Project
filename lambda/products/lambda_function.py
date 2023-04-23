@@ -8,14 +8,18 @@ from project_utility import (
     COFFEE_TYPES,
     MILK_TYPES,
     ErrorCodes,
+    UserRole,
     build_error_response,
     build_response,
     deserialize_dynamo_object,
+    extract_user_id,
     get_additions_by_id,
     get_query_parameter,
+    is_valid_user,
     serialize_to_dynamo_object,
     to_coffee_type_list,
     to_milk_type_list,
+    user_has_role,
     validate_price,
 )
 
@@ -203,9 +207,19 @@ def lambda_handler(event, context):
     try:
         httpMethod = event["httpMethod"]
         if httpMethod == "GET":
-            response = get_products(event, context)
+            if is_valid_user(extract_user_id(event)):
+                response = get_products(event, context)
+            else:
+                response = build_error_response(
+                    ErrorCodes.NOT_AUTHORIZED, "You must sign up to use this service!"
+                )
         elif httpMethod == "POST":
-            response = upsert_product(event, context)
+            if user_has_role(extract_user_id(event), UserRole.ADMIN):
+                response = upsert_product(event, context)
+            else:
+                response = build_error_response(
+                    ErrorCodes.NOT_AUTHORIZED, "You are not an admin!"
+                )
         else:
             response = build_error_response(
                 ErrorCodes.UNKNOWN_ERROR, f"Unknown method: {httpMethod}"

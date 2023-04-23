@@ -6,15 +6,17 @@ from project_utility import (
     MIN_DELIVERY_FEE,
     ErrorCodes,
     OrderStatus,
+    UserRole,
     build_error_response,
     build_response,
     calculate_order_total_percentage,
     deserialize_dynamo_object,
-    extract_deliverer_id,
+    extract_user_id,
     get_path_parameter,
     get_query_parameter,
     send_order_status_update_message,
     serialize_to_dynamo_object,
+    user_has_role,
 )
 
 # Dynamo Tables
@@ -60,7 +62,7 @@ def build_delivery_orders_from_dynamo_response(items):
 
 
 def get_previous_orders(event, context):
-    deliverer_id = extract_deliverer_id(event)
+    deliverer_id = extract_user_id(event)
 
     print(f"Looking up orders for deliverer {deliverer_id}")
     response = dynamo.scan(
@@ -99,7 +101,7 @@ def get_raw_order(order_id):
 
 
 def get_available_orders(event, context):
-    deliverer_id = extract_deliverer_id(event)
+    deliverer_id = extract_user_id(event)
 
     print(f"Looking up available orders for deliverer {deliverer_id}")
     response = dynamo.scan(
@@ -145,7 +147,7 @@ def get_order_for_deliverer(deliverer_id, order_id):
 
 
 def get_single_order(event, context):
-    deliverer_id = extract_deliverer_id(event)
+    deliverer_id = extract_user_id(event)
 
     order_id = get_path_parameter(event, "id", None)
     if order_id is None:
@@ -159,7 +161,7 @@ def get_single_order(event, context):
 
 
 def secure_order(event, context):
-    deliverer_id = extract_deliverer_id(event)
+    deliverer_id = extract_user_id(event)
 
     order_id = get_path_parameter(event, "id", None)
     if order_id is None:
@@ -184,7 +186,7 @@ def secure_order(event, context):
 
 
 def update_order_status(event, context):
-    deliverer_id = extract_deliverer_id(event)
+    deliverer_id = extract_user_id(event)
 
     order_id = get_path_parameter(event, "id", None)
     if order_id is None:
@@ -225,25 +227,30 @@ def lambda_handler(event, context):
     print(f"Context: {context}")
 
     try:
-        httpMethod = event["httpMethod"]
-        resource = event["resource"]
-        if httpMethod == "GET":
-            if resource == "/deliveries":
-                response = get_previous_orders(event, context)
-            elif resource == "/deliveries/available":
-                response = get_available_orders(event, context)
-            else:
-                response = get_single_order(event, context)
-        elif httpMethod == "POST":
-            if resource == "/deliveries/{id}/secure":
-                response = secure_order(event, context)
-            else:
-                response = update_order_status(event, context)
-        else:
+        if not user_has_role(extract_user_id(event), UserRole.DELIVERER):
             response = build_error_response(
-                ErrorCodes.UNKNOWN_ERROR,
-                f"Unknown resource: {httpMethod} {resource}",
+                ErrorCodes.NOT_AUTHORIZED, "You are not a deliverer!"
             )
+        else:
+            httpMethod = event["httpMethod"]
+            resource = event["resource"]
+            if httpMethod == "GET":
+                if resource == "/deliveries":
+                    response = get_previous_orders(event, context)
+                elif resource == "/deliveries/available":
+                    response = get_available_orders(event, context)
+                else:
+                    response = get_single_order(event, context)
+            elif httpMethod == "POST":
+                if resource == "/deliveries/{id}/secure":
+                    response = secure_order(event, context)
+                else:
+                    response = update_order_status(event, context)
+            else:
+                response = build_error_response(
+                    ErrorCodes.UNKNOWN_ERROR,
+                    f"Unknown resource: {httpMethod} {resource}",
+                )
     except Exception as e:
         print("Error", e)
         response = build_error_response(ErrorCodes.UNKNOWN_ERROR, "Internal Exception")

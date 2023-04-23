@@ -6,15 +6,17 @@ from project_utility import (
     MIN_COMMISSION,
     ErrorCodes,
     OrderStatus,
+    UserRole,
     build_error_response,
     build_response,
     calculate_order_total_percentage,
     deserialize_dynamo_object,
-    extract_shop_id,
+    extract_user_id,
     get_path_parameter,
     get_query_parameter,
     send_order_status_update_message,
     serialize_to_dynamo_object,
+    user_has_role,
 )
 
 # Dynamo Tables
@@ -59,7 +61,7 @@ def build_pending_orders_from_dynamo_response(items):
 
 
 def get_previous_orders(event, context):
-    shop_id = extract_shop_id(event)
+    shop_id = extract_user_id(event)
 
     print(f"Looking up orders for shop {shop_id}")
     response = dynamo.scan(
@@ -98,7 +100,7 @@ def get_raw_order(order_id):
 
 
 def get_available_orders(event, context):
-    shop_id = extract_shop_id(event)
+    shop_id = extract_user_id(event)
 
     print(f"Looking up available orders for shop {shop_id}")
     response = dynamo.scan(
@@ -139,7 +141,7 @@ def get_order_for_shop(shop_id, order_id):
 
 
 def get_single_order(event, context):
-    shop_id = extract_shop_id(event)
+    shop_id = extract_user_id(event)
 
     order_id = get_path_parameter(event, "id", None)
     if order_id is None:
@@ -153,7 +155,7 @@ def get_single_order(event, context):
 
 
 def secure_order(event, context):
-    shop_id = extract_shop_id(event)
+    shop_id = extract_user_id(event)
 
     order_id = get_path_parameter(event, "id", None)
     if order_id is None:
@@ -177,7 +179,7 @@ def secure_order(event, context):
 
 
 def update_order_status(event, context):
-    shop_id = extract_shop_id(event)
+    shop_id = extract_user_id(event)
 
     order_id = get_path_parameter(event, "id", None)
     if order_id is None:
@@ -208,25 +210,30 @@ def lambda_handler(event, context):
     print(f"Context: {context}")
 
     try:
-        httpMethod = event["httpMethod"]
-        resource = event["resource"]
-        if httpMethod == "GET":
-            if resource == "/pending-orders":
-                response = get_previous_orders(event, context)
-            elif resource == "/pending-orders/available":
-                response = get_available_orders(event, context)
-            else:
-                response = get_single_order(event, context)
-        elif httpMethod == "POST":
-            if resource == "/pending-orders/{id}/secure":
-                response = secure_order(event, context)
-            else:
-                response = update_order_status(event, context)
-        else:
+        if not user_has_role(extract_user_id(event), UserRole.SHOP_OWNER):
             response = build_error_response(
-                ErrorCodes.UNKNOWN_ERROR,
-                f"Unknown resource: {httpMethod} {resource}",
+                ErrorCodes.NOT_AUTHORIZED, "You are not a shop owner!"
             )
+        else:
+            httpMethod = event["httpMethod"]
+            resource = event["resource"]
+            if httpMethod == "GET":
+                if resource == "/pending-orders":
+                    response = get_previous_orders(event, context)
+                elif resource == "/pending-orders/available":
+                    response = get_available_orders(event, context)
+                else:
+                    response = get_single_order(event, context)
+            elif httpMethod == "POST":
+                if resource == "/pending-orders/{id}/secure":
+                    response = secure_order(event, context)
+                else:
+                    response = update_order_status(event, context)
+            else:
+                response = build_error_response(
+                    ErrorCodes.UNKNOWN_ERROR,
+                    f"Unknown resource: {httpMethod} {resource}",
+                )
     except Exception as e:
         print("Error", e)
         response = build_error_response(ErrorCodes.UNKNOWN_ERROR, "Internal Exception")
