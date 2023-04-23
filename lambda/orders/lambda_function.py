@@ -1,5 +1,6 @@
 import json
 import os
+import traceback
 import uuid
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -135,7 +136,8 @@ def submit_order_rating(event, context):
         )
     validated_rating["orderId"] = order_id
 
-    order_item_ids = [item["id"] for item in raw_order["items"]]
+    order_items = build_orders_from_dynamo_response([raw_order])[0]["items"]
+    order_item_ids = [item["id"] for item in order_items]
     if (
         "orderItemId" not in input_rating
         or str(input_rating["orderItemId"]) not in order_item_ids
@@ -435,7 +437,8 @@ def lambda_handler(event, context):
             elif httpMethod == "PUT" and resource == "/orders/{id}/ratings":
                 response = submit_order_rating(event, context)
     except Exception as e:
-        print("Error", e)
+        error_string = traceback.format_exc()
+        print(error_string)
         response = build_error_response(ErrorCodes.UNKNOWN_ERROR, "Internal Exception")
 
     print("Response", response)

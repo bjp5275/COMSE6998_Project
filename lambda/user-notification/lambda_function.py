@@ -1,4 +1,5 @@
 import json
+import traceback
 
 import boto3
 from project_utility import (
@@ -65,7 +66,8 @@ def lambda_handler(event, context):
 
             response["batchItemFailures"] = batch_item_failures
     except Exception as e:
-        print("Error", e)
+        error_string = traceback.format_exc()
+        print(error_string)
 
     print("Response", response)
     return response

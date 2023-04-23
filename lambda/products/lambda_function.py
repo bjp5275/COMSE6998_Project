@@ -1,5 +1,6 @@
 import json
 import os
+import traceback
 import uuid
 from decimal import Decimal
 
@@ -225,7 +226,8 @@ def lambda_handler(event, context):
                 ErrorCodes.UNKNOWN_ERROR, f"Unknown method: {httpMethod}"
             )
     except Exception as e:
-        print("Error", e)
+        error_string = traceback.format_exc()
+        print(error_string)
         response = build_error_response(ErrorCodes.UNKNOWN_ERROR, "Internal Exception")
 
     print("Response", response)

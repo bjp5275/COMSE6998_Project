@@ -1,4 +1,5 @@
 import os
+import traceback
 
 import boto3
 from project_utility import (
@@ -253,7 +254,8 @@ def lambda_handler(event, context):
                 elif resource == "/deliveries/{id}/status":
                     response = update_order_status(event, context)
     except Exception as e:
-        print("Error", e)
+        error_string = traceback.format_exc()
+        print(error_string)
         response = build_error_response(ErrorCodes.UNKNOWN_ERROR, "Internal Exception")
 
     print("Response", response)

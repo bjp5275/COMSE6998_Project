@@ -1,4 +1,5 @@
 import json
+import traceback
 
 import boto3
 from project_utility import (
@@ -47,7 +48,8 @@ def lambda_handler(event, context):
                 ErrorCodes.UNKNOWN_ERROR, f"Unknown method: {httpMethod}"
             )
     except Exception as e:
-        print("Error", e)
+        error_string = traceback.format_exc()
+        print(error_string)
         response = build_error_response(ErrorCodes.UNKNOWN_ERROR, "Internal Exception")
 
     print("Response", response)
