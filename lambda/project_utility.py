@@ -164,10 +164,15 @@ def is_valid_user(user_id, api_gateway=None):
 
 
 def user_has_role(user_id, role: UserRole, api_gateway=None):
+    print(f"Validating {user_id} roles...")
     user_info = get_user_info(user_id, api_gateway)
     if user_info is not None:
-        if role is None or role in user_info["roles"]:
+        print(f"User roles: {user_info['roles']}")
+        if role is None or role.value in user_info["roles"]:
+            print(f"User has role ({role.name})")
             return True
+    
+    print(f"User does not have role ({role.name})")
     return False
 
 
