@@ -29,10 +29,17 @@
           {{ convertMilkTypeToString(expandedOrderItem.orderItem.milkType) }}
         </div>
         <div *ngIf="expandedOrderItem.orderItem.additions?.length">
-          {{
-            expandedOrderItem.orderItem.additions!.length
-              | i18nPlural : additionsMapping
-          }}
+          <ng-container *ngIf="listOutAdditions; else simpleAdditionsInfo">
+            <div *ngFor="let addition of expandedOrderItem.orderItem.additions">
+              {{ addition.name }}
+            </div>
+          </ng-container>
+          <ng-template #simpleAdditionsInfo>
+            {{
+              expandedOrderItem.orderItem.additions!.length
+                | i18nPlural : additionsMapping
+            }}
+          </ng-template>
         </div>
       </mat-card-content>
       <mat-card-actions *ngIf="actions">

@@ -24,9 +24,9 @@
         scrolling="no"
         [src]="
           'https://maps.google.com/maps?width=100%25&amp;height=600&amp;hl=en&amp;q=' +
-            ((order.orderStatus == 'PICKED_UP'
-              ? order.deliveryLocation
-              : order.preparedLocation
+            ((order.orderStatus == 'MADE'
+              ? order.preparedLocation
+              : order.deliveryLocation
             ) | locationAddress) +
             '+()&amp;t=&amp;z=15&amp;ie=UTF8&amp;iwloc=B&amp;output=embed'
             | safeUrl : true
@@ -40,9 +40,7 @@
         </mat-chip>
         <mat-chip disableRipple>
           <mat-icon matChipAvatar>place</mat-icon>
-          <span>{{
-            order.deliveryLocation.name || order.deliveryLocation.streetAddress
-          }}</span>
+          <span>{{ order.deliveryLocation.streetAddress }}</span>
         </mat-chip>
         <mat-chip disableRipple>
           <mat-icon matChipAvatar>paid</mat-icon>

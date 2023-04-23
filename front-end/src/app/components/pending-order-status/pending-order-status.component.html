@@ -1,6 +1,6 @@
 <div class="container" *ngIf="order$ | async as order; else loadingOrder">
   <div class="order-item-details">
-    <app-order-item-list [orderItems]="order.items"></app-order-item-list>
+    <app-order-item-list [orderItems]="order.items" [listOutAdditions]="true"></app-order-item-list>
   </div>
   <div class="order-status">
     <div class="inner-order-status">
@@ -37,9 +37,7 @@
         </mat-chip>
         <mat-chip disableRipple>
           <mat-icon matChipAvatar>place</mat-icon>
-          <span>{{
-            order.deliveryLocation.name || order.deliveryLocation.streetAddress
-          }}</span>
+          <span>{{ order.deliveryLocation.streetAddress }}</span>
         </mat-chip>
         <mat-chip disableRipple>
           <mat-icon matChipAvatar>paid</mat-icon>

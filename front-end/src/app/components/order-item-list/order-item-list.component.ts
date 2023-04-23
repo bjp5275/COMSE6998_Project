@@ -50,6 +50,7 @@ export class OrderItemListComponent implements OnInit, OnChanges {
 
   @Input() orderItems!: OrderItem[];
   @Input() actions?: OrderItemAction[];
+  @Input() listOutAdditions?: boolean = false;
 
   columns = 1;
   loadingProductMap = true;
@@ -107,6 +108,9 @@ export class OrderItemListComponent implements OnInit, OnChanges {
     }
     if (changes['actions']) {
       this.actions = changes['actions'].currentValue;
+    }
+    if (changes['listOutAdditions']) {
+      this.listOutAdditions = changes['listOutAdditions'].currentValue;
     }
   }
 
