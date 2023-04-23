@@ -159,7 +159,7 @@ def submit_order_rating(event, context):
                     ErrorCodes.INVALID_DATA, "Rating must be an integer between 1 and 5"
                 )
 
-            validated_rating["orderItemId"] = str(input_rating["orderItemId"])
+            validated_rating["rating"] = rating_value
         except:
             return build_error_response(ErrorCodes.INVALID_DATA, "Invalid rating value")
 
