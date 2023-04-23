@@ -5,6 +5,7 @@ from project_utility import (
     DELIVERY_FEE_RATE,
     MIN_DELIVERY_FEE,
     ErrorCodes,
+    OrderStatus,
     build_error_response,
     build_response,
     calculate_order_total_percentage,
@@ -106,7 +107,7 @@ def get_available_orders(event, context):
         FilterExpression="attribute_not_exists(delivererId) AND orderStatus = :orderStatus",
         ExpressionAttributeValues={
             ":orderStatus": {
-                "S": "MADE",
+                "S": OrderStatus.MADE.value,
             },
         },
     )
@@ -168,7 +169,7 @@ def secure_order(event, context):
     order = get_raw_order(order_id)
     if order is None or "delivererId" in order:
         return build_error_response(ErrorCodes.INVALID_DATA, "Order is already taken")
-    elif order["orderStatus"] != "MADE":
+    elif order["orderStatus"] != OrderStatus.MADE.value:
         return build_error_response(ErrorCodes.INVALID_DATA, "Order is not available")
 
     order["delivererId"] = deliverer_id
@@ -197,9 +198,13 @@ def update_order_status(event, context):
     ):
         return build_error_response(ErrorCodes.NOT_FOUND, "Order not found")
 
-    new_status = get_query_parameter(event, "newStatus", "PICKED_UP")
-    if (order["orderStatus"] == "MADE" and new_status != "PICKED_UP") or (
-        order["orderStatus"] == "PICKED_UP" and new_status != "DELIVERED"
+    new_status = get_query_parameter(event, "newStatus", OrderStatus.PICKED_UP.value)
+    if (
+        order["orderStatus"] == OrderStatus.MADE.value
+        and new_status != OrderStatus.PICKED_UP.value
+    ) or (
+        order["orderStatus"] == OrderStatus.PICKED_UP.value
+        and new_status != OrderStatus.DELIVERED.value
     ):
         return build_error_response(
             ErrorCodes.INVALID_DATA, f"Invalid new status: {new_status}"

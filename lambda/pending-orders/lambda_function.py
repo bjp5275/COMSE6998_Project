@@ -5,6 +5,7 @@ from project_utility import (
     COMMISSION_RATE,
     MIN_COMMISSION,
     ErrorCodes,
+    OrderStatus,
     build_error_response,
     build_response,
     calculate_order_total_percentage,
@@ -12,8 +13,8 @@ from project_utility import (
     extract_shop_id,
     get_path_parameter,
     get_query_parameter,
-    serialize_to_dynamo_object,
     send_order_status_update_message,
+    serialize_to_dynamo_object,
 )
 
 # Dynamo Tables
@@ -164,7 +165,7 @@ def secure_order(event, context):
         return build_error_response(ErrorCodes.INVALID_DATA, "Order is already taken")
 
     order["shopId"] = shop_id
-    order["orderStatus"] = "BREWING"
+    order["orderStatus"] = OrderStatus.BREWING.value
     order["commission"] = calculate_commission(order)
     dynamo.put_item(TableName=ORDERS_TABLE, Item=serialize_to_dynamo_object(order))
 
@@ -182,8 +183,8 @@ def update_order_status(event, context):
     if order_id is None:
         return build_error_response(ErrorCodes.MISSING_DATA, "Must specify an order ID")
 
-    new_status = get_query_parameter(event, "newStatus", "MADE")
-    if new_status != "MADE":
+    new_status = get_query_parameter(event, "newStatus", OrderStatus.MADE.value)
+    if new_status != OrderStatus.MADE.value:
         return build_error_response(
             ErrorCodes.INVALID_DATA, f"Invalid new status: {new_status}"
         )

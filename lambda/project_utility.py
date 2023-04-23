@@ -52,6 +52,14 @@ class UserNotificationTypes(UserNotificationType, Enum):
     ORDER_STATUS_UPDATE = "ORDER_STATUS_UPDATE"
 
 
+class OrderStatus(Enum):
+    RECEIVED = "RECEIVED" 
+    BREWING = "BREWING" 
+    MADE = "MADE" 
+    PICKED_UP = "PICKED_UP" 
+    DELIVERED = "DELIVERED"
+
+
 def calculate_order_total_percentage(order, rate, minimum):
     order_total = Decimal(0)
     for item in order['items']:
@@ -125,7 +133,7 @@ def extract_deliverer_id(event):
     return extract_api_key_id(event)
 
 
-def get_user_info(api_gateway, api_key_id, customer_id):
+def get_user_info(api_gateway, api_key_id, user_id):
     try:
         response = api_gateway.get_api_key(apiKey=api_key_id, includeValue=False)
         tags = response["tags"]
@@ -134,7 +142,7 @@ def get_user_info(api_gateway, api_key_id, customer_id):
         display_name = tags[USER_INFO_DISPLAY_NAME_TAG]
         roles = tags[USER_INFO_ROLES_TAG].split(":")
         return {
-            "id": customer_id,
+            "id": user_id,
             "username": username,
             "name": display_name,
             "email": email,

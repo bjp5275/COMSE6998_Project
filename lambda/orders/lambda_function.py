@@ -7,6 +7,7 @@ from decimal import Decimal
 import boto3
 from project_utility import (
     ErrorCodes,
+    OrderStatus,
     build_error_response,
     build_response,
     deserialize_dynamo_object,
@@ -202,7 +203,11 @@ def validate_order_item(item, index, known_products, known_additions):
 
 def create_order(customer_id, order):
     id = str(uuid.uuid4())
-    validated_order = {"customerId": customer_id, "id": id, "orderStatus": "RECEIVED"}
+    validated_order = {
+        "customerId": customer_id,
+        "id": id,
+        "orderStatus": OrderStatus.RECEIVED.value,
+    }
 
     print("Validating order...")
 
