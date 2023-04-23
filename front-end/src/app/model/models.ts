@@ -257,6 +257,8 @@ export function isMilkType(milkType: string): milkType is MilkType {
   );
 }
 
+export const MIN_RATING = 1;
+export const MAX_RATING = 5;
 /**
  * Rating for an item within an order
  */

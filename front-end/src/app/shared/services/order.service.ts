@@ -121,7 +121,7 @@ export class OrderService {
     const ratings: OrderRating[] = this.orderRatings.get(id) || [];
     ratings.push(orderRating);
     this.orderRatings.set(id, ratings);
-    return of(false).pipe(delay(2500));
+    return of(true).pipe(delay(2500));
   }
 
   /**

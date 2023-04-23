@@ -4,13 +4,15 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Navigation, Router } from '@angular/router';
 import {
   BehaviorSubject,
+  EMPTY,
   Observable,
   catchError,
+  combineLatest,
   concat,
   first,
+  map,
   of,
   switchMap,
-  tap,
 } from 'rxjs';
 import {
   FavoriteOrder,
@@ -33,6 +35,11 @@ interface RouteState {
   order?: Order;
 }
 
+interface OrderDetails {
+  order: Order;
+  orderRatings?: OrderRating[];
+}
+
 @Component({
   selector: 'app-order-details',
   templateUrl: './order-details.component.html',
@@ -45,22 +52,25 @@ export class OrderDetailsComponent {
       color: 'primary',
       onClick: (product, orderItem, _index) =>
         this.rateItem(orderItem, product),
+      show: (_product, orderItem, _index, rating) =>
+        !rating && !this.submittedRatingsItemIds.includes(orderItem.id!),
     },
   ];
 
   routeState: RouteState;
   orderId: string;
-  order$: Observable<Order | null>;
+  order$: Observable<Order>;
   orderRatings$: Observable<OrderRating[]>;
   pullOrderRatings$ = new BehaviorSubject(null);
-  order?: Order;
+  orderDetails$: Observable<OrderDetails>;
+  submittedRatingsItemIds: string[] = [];
   isFavorite = false;
 
   constructor(
     private userService: UserService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
-    private orderService: OrderService,
+    orderService: OrderService,
     router: Router,
     activatedRoute: ActivatedRoute
   ) {
@@ -78,13 +88,12 @@ export class OrderDetailsComponent {
         takeWhilePredicate: (value) =>
           value.orderStatus != OrderStatus.DELIVERED,
       }),
-      tap((order) => (this.order = order)),
       catchError((err: HttpError) => {
         this.snackBar.open(
           `Failed to load order: ${err.errorMessage}`,
           'Dismiss'
         );
-        return of(null);
+        return EMPTY;
       })
     );
 
@@ -97,6 +106,10 @@ export class OrderDetailsComponent {
     } else {
       this.order$ = orderPolling$;
     }
+
+    this.orderDetails$ = combineLatest([this.order$, this.orderRatings$]).pipe(
+      map(([order, orderRatings]) => ({ order, orderRatings }))
+    );
   }
 
   private _getRouteState(navigation: Navigation | null): RouteState {
@@ -106,7 +119,7 @@ export class OrderDetailsComponent {
 
   rateItem(orderItem: OrderItem, product: Product) {
     const ratingInput: RatingInput = {
-      order: this.order!,
+      orderId: this.orderId,
       orderItem,
       product,
     };
@@ -116,6 +129,7 @@ export class OrderDetailsComponent {
       .afterClosed()
       .subscribe((success: boolean) => {
         if (success) {
+          this.submittedRatingsItemIds.push(orderItem.id!);
           this.pullOrderRatings$.next(null);
         }
       });

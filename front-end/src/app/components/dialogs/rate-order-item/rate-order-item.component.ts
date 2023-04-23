@@ -3,11 +3,11 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { catchError, finalize, first, of } from 'rxjs';
-import { Order, OrderItem, OrderRating, Product } from 'src/app/model/models';
+import { OrderItem, OrderRating, Product } from 'src/app/model/models';
 import { OrderService } from 'src/app/shared/services/order.service';
 
 export interface RatingInput {
-  order: Order;
+  orderId: string;
   orderItem: OrderItem;
   product: Product;
 }
@@ -34,7 +34,7 @@ export class RateOrderItemDialog {
   submitForm(ratingInfo = this.ratingForm.value): void {
     if (this.ratingForm.valid) {
       this.savingRating = true;
-      const orderId = this.input.order.id!;
+      const orderId = this.input.orderId;
       const ratingValue = ratingInfo.rating!;
       const rating: OrderRating = {
         orderId,
@@ -43,7 +43,7 @@ export class RateOrderItemDialog {
       };
 
       this.orderService
-        .rateOrderItem(this.input.order.id!, rating)
+        .rateOrderItem(this.input.orderId, rating)
         .pipe(
           first(),
           catchError(() => of(false)),

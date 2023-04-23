@@ -9,7 +9,10 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Observable, catchError, first, map, of, shareReplay, tap } from 'rxjs';
 import {
+  MAX_RATING,
+  MIN_RATING,
   OrderItem,
+  OrderRating,
   Product,
   convertCoffeeTypeToString,
   convertMilkTypeToString,
@@ -25,14 +28,45 @@ export interface OrderItemAction {
    * @param product order item's product
    * @param orderItem underlying order item
    * @param index index within input orderItems array
+   * @param rating rating for the item (if one is found)
    */
-  onClick: (product: Product, orderItem: OrderItem, index: number) => void;
+  onClick: (
+    product: Product,
+    orderItem: OrderItem,
+    index: number,
+    rating?: OrderRating
+  ) => void;
+  /**
+   * Whether to show this action
+   * @param product order item's product
+   * @param orderItem underlying order item
+   * @param index index within input orderItems array
+   * @param rating rating for the item (if one is found)
+   * @returns true if the action should be shown
+   */
+  show?: (
+    product: Product,
+    orderItem: OrderItem,
+    index: number,
+    rating?: OrderRating
+  ) => boolean;
 }
 
 interface ExpandedOrderItem {
   orderItem: OrderItem;
   product: Product;
+  rating?: OrderRating;
+  rating_filledStars?: number;
+  rating_emptyStars?: number;
 }
+
+interface RatingDetails {
+  rating?: OrderRating;
+  rating_filledStars?: number;
+  rating_emptyStars?: number;
+}
+
+const MAX_RATING_STAR_COUNT = MAX_RATING - MIN_RATING + 1;
 
 @Component({
   selector: 'app-order-item-list[orderItems]',
@@ -51,10 +85,12 @@ export class OrderItemListComponent implements OnInit, OnChanges {
   @Input() orderItems!: OrderItem[];
   @Input() actions?: OrderItemAction[];
   @Input() listOutAdditions?: boolean = false;
+  @Input() ratings?: OrderRating[];
 
   columns = 1;
   loadingProductMap = true;
   productMap$: Observable<Map<string, Product>>;
+  ratingsMap?: Map<string, OrderRating>;
 
   constructor(
     productService: ProductsService,
@@ -104,19 +140,67 @@ export class OrderItemListComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     ClassUtils.processChanges(this, changes);
+    this.recalculateRatingsMap();
+  }
+
+  recalculateRatingsMap() {
+    if (!this.ratings) {
+      this.ratingsMap = undefined;
+      return;
+    }
+
+    const ratingsMap = new Map<string, OrderRating>();
+    this.ratings.forEach((rating) =>
+      ratingsMap.set(rating.orderItemId, rating)
+    );
+    this.ratingsMap = ratingsMap;
   }
 
   expandOrderItems(
     orderItems: OrderItem[],
-    productLookup?: Map<string, Product>
+    productLookup?: Map<string, Product>,
+    ratingsMap?: Map<string, OrderRating>
   ): ExpandedOrderItem[] {
     return orderItems.map((orderItem) => {
+      let ratingInfo: RatingDetails = {};
+      if (ratingsMap?.has(orderItem.id!)) {
+        const rating = ratingsMap.get(orderItem.id!)!;
+        const rating_filledStars = rating.rating - MIN_RATING + 1;
+        const rating_emptyStars = MAX_RATING_STAR_COUNT - rating_filledStars;
+
+        ratingInfo = {
+          rating,
+          rating_filledStars,
+          rating_emptyStars,
+        };
+      }
+
       const value: ExpandedOrderItem = {
         orderItem,
         product: productLookup?.get(orderItem.productId!)!,
+        ...ratingInfo,
       };
       return value;
     });
+  }
+
+  hasActiveAction(
+    expandedOrderItem: ExpandedOrderItem,
+    index: number,
+    actions: OrderItemAction[]
+  ): boolean {
+    return (
+      actions.find(
+        (action) =>
+          !action.show ||
+          action.show(
+            expandedOrderItem.product,
+            expandedOrderItem.orderItem,
+            index,
+            expandedOrderItem.rating
+          )
+      ) != undefined
+    );
   }
 
   onClick(

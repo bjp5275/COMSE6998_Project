@@ -5,7 +5,11 @@
 >
   <mat-grid-tile
     *ngFor="
-      let expandedOrderItem of expandOrderItems(orderItems, productMap);
+      let expandedOrderItem of expandOrderItems(
+        orderItems,
+        productMap,
+        ratingsMap
+      );
       let index = index
     "
   >
@@ -41,16 +45,46 @@
             }}
           </ng-template>
         </div>
+        <div class="rating" *ngIf="expandedOrderItem.rating">
+          <mat-icon
+            color="primary"
+            *ngFor="
+              let i of [].constructor(expandedOrderItem.rating_filledStars)
+            "
+          >
+            star
+          </mat-icon>
+          <mat-icon
+            color="primary"
+            *ngFor="
+              let i of [].constructor(expandedOrderItem.rating_emptyStars)
+            "
+          >
+            star_outlined
+          </mat-icon>
+        </div>
       </mat-card-content>
-      <mat-card-actions *ngIf="actions">
-        <button
-          mat-raised-button
-          *ngFor="let action of actions"
-          [color]="action.color"
-          (click)="onClick(action, expandedOrderItem, index)"
-        >
-          {{ action.buttonText }}
-        </button>
+      <mat-card-actions
+        *ngIf="actions && hasActiveAction(expandedOrderItem, index, actions)"
+      >
+        <ng-container *ngFor="let action of actions">
+          <button
+            mat-raised-button
+            *ngIf="
+              !action.show ||
+              action.show(
+                expandedOrderItem.product,
+                expandedOrderItem.orderItem,
+                index,
+                expandedOrderItem.rating
+              )
+            "
+            [color]="action.color"
+            (click)="onClick(action, expandedOrderItem, index)"
+          >
+            {{ action.buttonText }}
+          </button>
+        </ng-container>
       </mat-card-actions>
     </mat-card>
   </mat-grid-tile>

@@ -1,8 +1,12 @@
-<div class="container" *ngIf="order$ | async as order; else loadingOrder">
+<div
+  class="container"
+  *ngIf="orderDetails$ | async as orderDetails; else loadingOrder"
+>
   <div class="order-item-details">
     <app-order-item-list
-      [orderItems]="order.items"
+      [orderItems]="orderDetails.order.items"
       [actions]="ACTIONS"
+      [ratings]="orderDetails.orderRatings"
     ></app-order-item-list>
   </div>
   <div class="order-status">
@@ -10,7 +14,7 @@
       <mat-progress-bar
         class="order-progress"
         mode="determinate"
-        [value]="(order.orderStatus | orderStatusPercentage) || 5"
+        [value]="(orderDetails.order.orderStatus | orderStatusPercentage) || 5"
       ></mat-progress-bar>
       <div class="order-progress-states">
         <span>Received</span>
@@ -27,7 +31,7 @@
         scrolling="no"
         [src]="
           'https://maps.google.com/maps?width=100%25&amp;height=600&amp;hl=en&amp;q=' +
-            (order.deliveryLocation | locationAddress) +
+            (orderDetails.order.deliveryLocation | locationAddress) +
             '+()&amp;t=&amp;z=15&amp;ie=UTF8&amp;iwloc=B&amp;output=embed'
             | safeUrl : true
         "
@@ -36,21 +40,24 @@
       <mat-chip-set class="order-detail-chips">
         <mat-chip disableRipple>
           <mat-icon matChipAvatar>schedule</mat-icon>
-          <span>{{ order.deliveryTime | date : "shortTime" }}</span>
+          <span>{{
+            orderDetails.order.deliveryTime | date : "shortTime"
+          }}</span>
         </mat-chip>
         <mat-chip disableRipple>
           <mat-icon matChipAvatar>place</mat-icon>
           <span>{{
-            order.deliveryLocation.name || order.deliveryLocation.streetAddress
+            orderDetails.order.deliveryLocation.name ||
+              orderDetails.order.deliveryLocation.streetAddress
           }}</span>
         </mat-chip>
         <mat-chip disableRipple>
           <mat-icon matChipAvatar>credit_card</mat-icon>
-          <span>{{ order.payment.cardNumber.slice(-4) }}</span>
+          <span>{{ orderDetails.order.payment.cardNumber.slice(-4) }}</span>
         </mat-chip>
         <mat-chip disableRipple>
           <mat-icon matChipAvatar>paid</mat-icon>
-          <span>{{ order.items | orderItemsPrice }}</span>
+          <span>{{ orderDetails.order.items | orderItemsPrice }}</span>
         </mat-chip>
       </mat-chip-set>
       <br />
@@ -59,7 +66,7 @@
           mat-raised-button
           color="primary"
           [disabled]="isFavorite"
-          (click)="saveAsFavorite(order)"
+          (click)="saveAsFavorite(orderDetails.order)"
         >
           <mat-icon>favorite_border</mat-icon>
           Save Order as Favorite
