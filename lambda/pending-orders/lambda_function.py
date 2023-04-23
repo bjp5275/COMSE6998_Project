@@ -1,6 +1,7 @@
 import os
 
 import boto3
+from decimal import Decimal
 from project_utility import (
     ErrorCodes,
     build_error_response,
@@ -10,6 +11,7 @@ from project_utility import (
     get_path_parameter,
     get_query_parameter,
     serialize_to_dynamo_object,
+    COMMISSION_RATE,
 )
 
 # Dynamo Tables
@@ -28,6 +30,16 @@ TRANFER_FIELDS = [
     "commission",
     "items",
 ]
+
+def calculate_commission(order):
+    order_total = Decimal(0)
+    for item in order['items']:
+        order_total += item['basePrice']
+        if 'additions' in item:
+            for addition in item['additions']:
+                order_total += addition['price']
+    
+    return order_total * COMMISSION_RATE
 
 
 def transfer_field(raw_order, destination_order, field, required=False):
@@ -100,6 +112,10 @@ def get_available_orders(event, context):
 
     print(f"Found {len(orders)} orders")
     orders = build_pending_orders_from_dynamo_response(orders)
+
+    for order in orders:
+        order['commission'] = calculate_commission(order)
+
     return build_response(200, orders)
 
 
@@ -153,6 +169,7 @@ def secure_order(event, context):
 
     order["shopId"] = shop_id
     order["orderStatus"] = "BREWING"
+    order["commission"] = calculate_commission(order)
     dynamo.put_item(TableName=ORDERS_TABLE, Item=serialize_to_dynamo_object(order))
 
     print("Order secured")

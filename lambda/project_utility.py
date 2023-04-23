@@ -22,6 +22,8 @@ USER_INFO_USERNAME_TAG = "username"
 USER_INFO_DISPLAY_NAME_TAG = "displayName"
 USER_INFO_ROLES_TAG = "roles"
 
+COMMISSION_RATE = Decimal("0.20")
+
 
 # Classes
 class ErrorCode:
