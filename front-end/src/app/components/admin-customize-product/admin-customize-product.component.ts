@@ -23,6 +23,7 @@ import {
   convertMilkTypeToString,
 } from 'src/app/model/models';
 import { ProductsService } from 'src/app/shared/services/products.service';
+import { UserService } from 'src/app/shared/services/user.service';
 import { CustomValidators, HttpError } from 'src/app/shared/utility';
 
 interface RouteState {
@@ -77,7 +78,8 @@ export class AdminCustomizeProductComponent implements OnInit {
     private location: Location,
     private fb: FormBuilder,
     private snackBar: MatSnackBar,
-    private productService: ProductsService
+    private productService: ProductsService,
+    private userService: UserService
   ) {
     this.routeState = this._getRouteState(router.getCurrentNavigation());
 
@@ -180,6 +182,31 @@ export class AdminCustomizeProductComponent implements OnInit {
     }
 
     return additions;
+  }
+
+  onImageSelected(event: Event) {
+    const target = event.target;
+    let imageFile: File;
+    if (
+      !(target instanceof HTMLInputElement) ||
+      !target.files ||
+      !target.files[0]
+    ) {
+      console.log('No image selected');
+      return;
+    } else {
+      imageFile = target.files[0];
+    }
+
+    this.userService
+      .uploadImage(imageFile)
+      .pipe(first())
+      .subscribe({
+        next: (imageUrl) =>
+          this.productForm.get('imageUrl')!.setValue(imageUrl),
+        error: () =>
+          this.snackBar.open('Failed to upload image. Please try again', 'OK'),
+      });
   }
 
   onSubmit(form = this.productForm.value) {

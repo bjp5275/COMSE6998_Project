@@ -17,6 +17,24 @@
       <mat-label>Image URL</mat-label>
       <input matInput type="text" formControlName="imageUrl" />
     </mat-form-field>
+    <div class="image-upload">
+      <input
+        hidden="true"
+        type="file"
+        accept=".jpg,.jpeg,.png"
+        (change)="onImageSelected($event)"
+        #imageUpload
+      />
+      <button
+        mat-raised-button
+        color="primary"
+        type="button"
+        (click)="imageUpload.click()"
+      >
+        <mat-icon>add_photo_alternate</mat-icon>
+        Upload Image
+      </button>
+    </div>
   </div>
   <div class="product-details">
     <div class="inner-product-details">

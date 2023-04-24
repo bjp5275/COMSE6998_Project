@@ -19,10 +19,19 @@
   .product {
     grid-area: product;
     max-width: min(400px, 30vw);
+    text-align: center;
     margin: auto;
+
+    mat-form-field {
+      width: 100%;
+    }
 
     .product-card {
       margin-bottom: 1em;
+    }
+
+    .image-upload {
+      text-align: center;
     }
   }
 

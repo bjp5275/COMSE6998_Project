@@ -58,6 +58,8 @@ export class ObservableUtils {
 
 export class HttpUtils {
   static AUTHORIZATION_HEADER = 'X-Api-Key';
+  static PHOTO_BUCKET_HEADER = 'Photo-Bucket';
+  static PHOTO_KEY_HEADER = 'Photo-Key';
   static RETRY_ATTEMPTS = 2;
   static userService: UserService;
 

@@ -7,6 +7,7 @@ import {
   delay,
   map,
   of,
+  switchMap,
   tap,
   throwError,
 } from 'rxjs';
@@ -222,5 +223,37 @@ export class UserService {
     }
 
     return of(true).pipe(delay(500));
+  }
+
+  public uploadImage(image: File): Observable<string> {
+    const url = `${environment.backendUrl}/upload`;
+
+    let headers = HttpUtils.getBaseHeaders().set('Content-Type', image.type);
+
+    return this.http
+      .put<string>(url, image, {
+        observe: 'response',
+        headers,
+      })
+      .pipe(
+        tap((response) => console.log('Got image upload response', response)),
+        switchMap((response) => {
+          if (response.ok) {
+            const headers = response.headers;
+            const bucket = headers.get(HttpUtils.PHOTO_BUCKET_HEADER);
+            const key = headers.get(HttpUtils.PHOTO_KEY_HEADER);
+
+            if (bucket && key) {
+              return of(`https://${bucket}.s3.amazonaws.com/${key}`);
+            }
+          }
+
+          return throwError(() => response.body);
+        }),
+        catchError((error) => {
+          console.log('Got upload error: ', error);
+          return throwError(() => new Error('Failed to upload photo'));
+        })
+      );
   }
 }
