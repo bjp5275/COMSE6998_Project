@@ -5,6 +5,7 @@ import boto3
 from project_utility import (
     COMMISSION_RATE,
     MIN_COMMISSION,
+    EnvironmentVariables,
     ErrorCodes,
     OrderStatus,
     UserRole,
@@ -19,10 +20,6 @@ from project_utility import (
     serialize_to_dynamo_object,
     user_has_role,
 )
-
-# Dynamo Tables
-PRODUCTS_TABLE = os.environ["PRODUCTS_TABLE"]
-ORDERS_TABLE = os.environ["ORDERS_TABLE"]
 
 # Clients
 dynamo = boto3.client("dynamodb")
@@ -66,7 +63,7 @@ def get_previous_orders(event, context):
 
     print(f"Looking up orders for shop {shop_id}")
     response = dynamo.scan(
-        TableName=ORDERS_TABLE,
+        TableName=EnvironmentVariables.ORDERS_TABLE.value,
         FilterExpression="shopId = :shopId",
         ExpressionAttributeValues={
             ":shopId": {
@@ -84,7 +81,7 @@ def get_previous_orders(event, context):
 def get_raw_order(order_id):
     print(f"Looking up {order_id}")
     response = dynamo.scan(
-        TableName=ORDERS_TABLE,
+        TableName=EnvironmentVariables.ORDERS_TABLE.value,
         FilterExpression="id = :orderId",
         ExpressionAttributeValues={
             ":orderId": {
@@ -105,7 +102,7 @@ def get_available_orders(event, context):
 
     print(f"Looking up available orders for shop {shop_id}")
     response = dynamo.scan(
-        TableName=ORDERS_TABLE,
+        TableName=EnvironmentVariables.ORDERS_TABLE.value,
         FilterExpression="attribute_not_exists(shopId)",
     )
     orders = response["Items"]
@@ -122,7 +119,7 @@ def get_available_orders(event, context):
 def get_order_for_shop(shop_id, order_id):
     print(f"Getting order {order_id} for shop {shop_id}")
     response = dynamo.scan(
-        TableName=ORDERS_TABLE,
+        TableName=EnvironmentVariables.ORDERS_TABLE.value,
         FilterExpression="id = :orderId AND shopId = :shopId",
         ExpressionAttributeValues={
             ":orderId": {
@@ -170,7 +167,10 @@ def secure_order(event, context):
     order["shopId"] = shop_id
     order["orderStatus"] = OrderStatus.BREWING.value
     order["commission"] = calculate_commission(order)
-    dynamo.put_item(TableName=ORDERS_TABLE, Item=serialize_to_dynamo_object(order))
+    dynamo.put_item(
+        TableName=EnvironmentVariables.ORDERS_TABLE.value,
+        Item=serialize_to_dynamo_object(order),
+    )
 
     print("Order secured")
     send_order_status_update_message(
@@ -197,7 +197,10 @@ def update_order_status(event, context):
         return build_error_response(ErrorCodes.NOT_FOUND, "Order not found")
 
     order["orderStatus"] = new_status
-    dynamo.put_item(TableName=ORDERS_TABLE, Item=serialize_to_dynamo_object(order))
+    dynamo.put_item(
+        TableName=EnvironmentVariables.ORDERS_TABLE.value,
+        Item=serialize_to_dynamo_object(order),
+    )
 
     print("Order Updated")
     send_order_status_update_message(

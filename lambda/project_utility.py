@@ -6,11 +6,19 @@ from enum import Enum
 import boto3
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 
-# Dynamo Tables
-PRODUCTS_TABLE = os.environ["PRODUCTS_TABLE"]
-ORDERS_TABLE = os.environ["ORDERS_TABLE"]
-UI_BASE_URL = os.environ["UI_BASE_URL"]
-USER_NOTIFICATION_QUEUE_URL = os.environ["USER_NOTIFICATION_QUEUE_URL"]
+
+# Environment Variables
+class EnvironmentVariables(Enum):
+    STACK_ID = os.environ["STACK_ID"]
+    PRODUCTS_TABLE = os.environ["PRODUCTS_TABLE"]
+    ORDERS_TABLE = os.environ["ORDERS_TABLE"]
+    ORDER_RATINGS_TABLE = os.environ["ORDER_RATINGS_TABLE"]
+    USER_NOTIFICATION_QUEUE_URL = os.environ["USER_NOTIFICATION_QUEUE_URL"]
+    UI_BASE_URL = os.environ["UI_BASE_URL"]
+
+    def __str__(self):
+        return self.name
+
 
 # Constants
 PRODUCT_TYPE = "PRODUCT"
@@ -55,7 +63,7 @@ class UserNotificationType:
 
 class UserNotificationTypes(UserNotificationType, Enum):
     ORDER_STATUS_UPDATE = "ORDER_STATUS_UPDATE"
-    
+
     def __str__(self):
         return self.name
 
@@ -96,7 +104,7 @@ def calculate_order_total_percentage(order, rate, minimum):
 
 
 def createUiUrl(path):
-    return f"{UI_BASE_URL}/{path}"
+    return f"{EnvironmentVariables.UI_BASE_URL.value}/{path}"
 
 
 def send_sqs_message(sqs, queue_url, message):
@@ -114,7 +122,9 @@ def send_order_status_update_message(sqs, customer_id, order_id, new_status):
         "orderId": order_id,
         "status": new_status,
     }
-    return send_sqs_message(sqs, USER_NOTIFICATION_QUEUE_URL, message)
+    return send_sqs_message(
+        sqs, EnvironmentVariables.USER_NOTIFICATION_QUEUE_URL.value, message
+    )
 
 
 def send_email(ses, destination_email, subject, message):
@@ -183,7 +193,7 @@ def user_has_role(user_id, role: UserRole, api_gateway=None):
         if role is None or role.value in user_info["roles"]:
             print(f"User has role ({role})")
             return True
-    
+
     print(f"User does not have role ({role})")
     return False
 
@@ -364,13 +374,13 @@ def get_additions_by_id(dynamo, addition_ids):
 
         response = dynamo.batch_get_item(
             RequestItems={
-                PRODUCTS_TABLE: {"Keys": keys},
+                EnvironmentVariables.PRODUCTS_TABLE.value: {"Keys": keys},
             },
         )
-        raw_additions = response["Responses"][PRODUCTS_TABLE]
+        raw_additions = response["Responses"][EnvironmentVariables.PRODUCTS_TABLE.value]
     else:
         response = dynamo.scan(
-            TableName=PRODUCTS_TABLE,
+            TableName=EnvironmentVariables.PRODUCTS_TABLE.value,
             FilterExpression="#TYPE = :type",
             ExpressionAttributeNames={"#TYPE": "_type"},
             ExpressionAttributeValues={
@@ -408,13 +418,13 @@ def get_products_by_id(dynamo, product_ids):
 
         response = dynamo.batch_get_item(
             RequestItems={
-                PRODUCTS_TABLE: {"Keys": keys},
+                EnvironmentVariables.PRODUCTS_TABLE.value: {"Keys": keys},
             },
         )
-        raw_products = response["Responses"][PRODUCTS_TABLE]
+        raw_products = response["Responses"][EnvironmentVariables.PRODUCTS_TABLE.value]
     else:
         response = dynamo.scan(
-            TableName=PRODUCTS_TABLE,
+            TableName=EnvironmentVariables.PRODUCTS_TABLE.value,
             FilterExpression="#TYPE = :type",
             ExpressionAttributeNames={"#TYPE": "_type"},
             ExpressionAttributeValues={

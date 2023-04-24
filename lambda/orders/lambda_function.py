@@ -7,6 +7,7 @@ from decimal import Decimal
 
 import boto3
 from project_utility import (
+    EnvironmentVariables,
     ErrorCodes,
     OrderStatus,
     UserRole,
@@ -25,11 +26,6 @@ from project_utility import (
     validate_location,
     validate_payment_information,
 )
-
-# Dynamo Tables
-PRODUCTS_TABLE = os.environ["PRODUCTS_TABLE"]
-ORDERS_TABLE = os.environ["ORDERS_TABLE"]
-ORDER_RATINGS_TABLE = os.environ["ORDER_RATINGS_TABLE"]
 
 # Clients
 dynamo = boto3.client("dynamodb")
@@ -63,7 +59,7 @@ def get_orders(event, context):
 
     print(f"Getting all orders for customer {customer_id}")
     response = dynamo.query(
-        TableName=ORDERS_TABLE,
+        TableName=EnvironmentVariables.ORDERS_TABLE.value,
         KeyConditionExpression="customerId = :customerId",
         ExpressionAttributeValues={
             ":customerId": {
@@ -99,7 +95,7 @@ def get_order_ratings(event, context):
 
     print(f"Getting all order ratings for order {order_id}")
     response = dynamo.query(
-        TableName=ORDER_RATINGS_TABLE,
+        TableName=EnvironmentVariables.ORDER_RATINGS_TABLE.value,
         KeyConditionExpression="orderId = :orderId",
         ExpressionAttributeValues={
             ":orderId": {
@@ -166,7 +162,8 @@ def submit_order_rating(event, context):
     print("Validated. Saving to Dynamo...", validated_rating)
 
     dynamo.put_item(
-        TableName=ORDER_RATINGS_TABLE, Item=serialize_to_dynamo_object(validated_rating)
+        TableName=EnvironmentVariables.ORDER_RATINGS_TABLE.value,
+        Item=serialize_to_dynamo_object(validated_rating),
     )
 
     print("Order rating saved")
@@ -176,7 +173,7 @@ def submit_order_rating(event, context):
 def get_raw_order_for_user(user_id, order_id):
     print(f"Getting order {order_id} for customer {user_id}")
     response = dynamo.get_item(
-        TableName=ORDERS_TABLE,
+        TableName=EnvironmentVariables.ORDERS_TABLE.value,
         Key={
             "customerId": {
                 "S": user_id,
@@ -380,7 +377,8 @@ def create_order(customer_id, order):
     print("Validated. Saving to Dynamo...", validated_order)
 
     dynamo.put_item(
-        TableName=ORDERS_TABLE, Item=serialize_to_dynamo_object(validated_order)
+        TableName=EnvironmentVariables.ORDERS_TABLE.value,
+        Item=serialize_to_dynamo_object(validated_order),
     )
 
     print("Order saved")

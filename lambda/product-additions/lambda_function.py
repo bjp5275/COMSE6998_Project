@@ -6,6 +6,7 @@ from decimal import Decimal
 
 import boto3
 from project_utility import (
+    EnvironmentVariables,
     ErrorCodes,
     UserRole,
     build_error_response,
@@ -18,9 +19,6 @@ from project_utility import (
     user_has_role,
     validate_price,
 )
-
-# Dynamo Tables
-PRODUCTS_TABLE = os.environ["PRODUCTS_TABLE"]
 
 # Clients
 dynamo = boto3.client("dynamodb")
@@ -66,7 +64,7 @@ def get_additions(event, context):
         f"Getting all additions ({'including' if include_disabled else 'excluding'} disabled additions)"
     )
     response = dynamo.scan(
-        TableName=PRODUCTS_TABLE,
+        TableName=EnvironmentVariables.PRODUCTS_TABLE.value,
         FilterExpression=filterExpression,
         ExpressionAttributeNames=expressionNames,
         ExpressionAttributeValues=filterExpressionValues,
@@ -114,7 +112,8 @@ def create_addition(addition):
     print("Validated. Saving to Dynamo...", validated_addition)
 
     dynamo.put_item(
-        TableName=PRODUCTS_TABLE, Item=serialize_to_dynamo_object(validated_addition)
+        TableName=EnvironmentVariables.PRODUCTS_TABLE.value,
+        Item=serialize_to_dynamo_object(validated_addition),
     )
 
     print("Addition saved")
