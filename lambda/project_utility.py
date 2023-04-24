@@ -13,6 +13,7 @@ class EnvironmentVariables(Enum):
     PRODUCTS_TABLE = os.environ["PRODUCTS_TABLE"]
     ORDERS_TABLE = os.environ["ORDERS_TABLE"]
     ORDER_RATINGS_TABLE = os.environ["ORDER_RATINGS_TABLE"]
+    SHOP_INFO_TABLE = os.environ["SHOP_INFO_TABLE"]
     USER_NOTIFICATION_QUEUE_URL = os.environ["USER_NOTIFICATION_QUEUE_URL"]
     UI_BASE_URL = os.environ["UI_BASE_URL"]
 
@@ -443,3 +444,28 @@ def get_products_by_id(dynamo, product_ids):
         products[product["id"]] = product
 
     return products
+
+
+def is_shop_set_up(dynamo, shop_id):
+    shop_info = get_shop_by_id(dynamo, shop_id)
+    if shop_info is not None and "location" in shop_info:
+        return True
+
+    return False
+
+
+def get_shop_by_id(dynamo, shop_id):
+    print(f"Getting shop {shop_id}")
+    response = dynamo.get_item(
+        TableName=EnvironmentVariables.SHOP_INFO_TABLE.value,
+        Key={
+            "shopId": {
+                "S": shop_id,
+            },
+        },
+    )
+
+    if "Item" in response:
+        return deserialize_dynamo_object(response["Item"])
+    else:
+        return None

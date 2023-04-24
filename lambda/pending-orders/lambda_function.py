@@ -16,6 +16,8 @@ from project_utility import (
     extract_user_id,
     get_path_parameter,
     get_query_parameter,
+    get_shop_by_id,
+    is_shop_set_up,
     send_order_status_update_message,
     serialize_to_dynamo_object,
     user_has_role,
@@ -164,7 +166,10 @@ def secure_order(event, context):
     if order is None or "shopId" in order:
         return build_error_response(ErrorCodes.INVALID_DATA, "Order is already taken")
 
+    shop_info = get_shop_by_id(dynamo, shop_id)
+
     order["shopId"] = shop_id
+    order["preparedLocation"] = shop_info["preparedLocation"]
     order["orderStatus"] = OrderStatus.BREWING.value
     order["commission"] = calculate_commission(order)
     dynamo.put_item(
@@ -214,9 +219,15 @@ def lambda_handler(event, context):
     print(f"Context: {context}")
 
     try:
-        if not user_has_role(extract_user_id(event), UserRole.SHOP_OWNER):
+        user_id = extract_user_id(event)
+
+        if not user_has_role(user_id, UserRole.SHOP_OWNER):
             response = build_error_response(
                 ErrorCodes.NOT_AUTHORIZED, "You are not a shop owner!"
+            )
+        elif not is_shop_set_up(dynamo, user_id):
+            response = build_error_response(
+                ErrorCodes.MISSING_DATA, "Your shop is not set up yet!"
             )
         else:
             httpMethod = event["httpMethod"]

@@ -83,6 +83,24 @@ Resources:
         - Key: Purpose
           Value: "Contains order ratings indexed on order ID"
 
+  ShopInfoTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: shopId
+          AttributeType: S
+      BillingMode: PROVISIONED
+      KeySchema:
+        - AttributeName: shopId
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+      TableName: "shop-info"
+      Tags:
+        - Key: Purpose
+          Value: "Contains shop information indexed on shop ID"
+
   # IAM Roles
   LambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -121,6 +139,7 @@ Resources:
                   - !GetAtt ProductTable.Arn
                   - !GetAtt OrderTable.Arn
                   - !GetAtt OrderRatingsTable.Arn
+                  - !GetAtt ShopInfoTable.Arn
               - Effect: Allow
                 Action:
                   - sqs:ReceiveMessage
@@ -166,6 +185,7 @@ Resources:
           PRODUCTS_TABLE: !Ref ProductTable
           ORDERS_TABLE: !Ref OrderTable
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
+          SHOP_INFO_TABLE: !Ref ShopInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-user-notification-${ResourceSuffix}"
@@ -190,6 +210,7 @@ Resources:
           PRODUCTS_TABLE: !Ref ProductTable
           ORDERS_TABLE: !Ref OrderTable
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
+          SHOP_INFO_TABLE: !Ref ShopInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-login-${ResourceSuffix}"
@@ -214,6 +235,7 @@ Resources:
           PRODUCTS_TABLE: !Ref ProductTable
           ORDERS_TABLE: !Ref OrderTable
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
+          SHOP_INFO_TABLE: !Ref ShopInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-pending-orders-${ResourceSuffix}"
@@ -238,6 +260,7 @@ Resources:
           PRODUCTS_TABLE: !Ref ProductTable
           ORDERS_TABLE: !Ref OrderTable
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
+          SHOP_INFO_TABLE: !Ref ShopInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-products-${ResourceSuffix}"
@@ -262,6 +285,7 @@ Resources:
           PRODUCTS_TABLE: !Ref ProductTable
           ORDERS_TABLE: !Ref OrderTable
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
+          SHOP_INFO_TABLE: !Ref ShopInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-product-additions-${ResourceSuffix}"
@@ -286,6 +310,7 @@ Resources:
           PRODUCTS_TABLE: !Ref ProductTable
           ORDERS_TABLE: !Ref OrderTable
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
+          SHOP_INFO_TABLE: !Ref ShopInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-orders-${ResourceSuffix}"
@@ -310,6 +335,7 @@ Resources:
           PRODUCTS_TABLE: !Ref ProductTable
           ORDERS_TABLE: !Ref OrderTable
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
+          SHOP_INFO_TABLE: !Ref ShopInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-deliveries-${ResourceSuffix}"
