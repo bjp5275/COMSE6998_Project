@@ -10,7 +10,7 @@ import {
   tap,
   throwError,
 } from 'rxjs';
-import { OrderStatus, PendingOrder } from 'src/app/model/models';
+import { OrderStatus, PendingOrder, ShopSettings } from 'src/app/model/models';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../utility';
 import { cleanOrderItemsFromService } from './order.service';
@@ -138,5 +138,24 @@ export class ShopService {
       retry(HttpUtils.RETRY_ATTEMPTS),
       catchError((error) => HttpUtils.handleError(error))
     );
+  }
+
+  /**
+   * Get the current shop's settings.
+   * User context used to determine current shop
+   */
+  public getShopSettings(): Observable<ShopSettings> {
+    // TODO - implement
+    return throwError(() => new Error('Undefined'));
+  }
+
+  /**
+   * Update the current shop&#x27;s settings.
+   * User context used to determine which shop to update
+   * @param newSettings
+   */
+  public updateShopSettings(newSettings: ShopSettings): Observable<boolean> {
+    // TODO - implement
+    return throwError(() => new Error('Undefined'));
   }
 }
