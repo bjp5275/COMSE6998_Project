@@ -181,7 +181,7 @@ def secure_order(event, context):
 
     print("Order secured")
     send_order_status_update_message(
-        boto3.client("sqs"), order["customerId"], order["id"], order["orderStatus"]
+        order["customerId"], order["id"], order["orderStatus"]
     )
     return build_response(200, None)
 
@@ -221,7 +221,7 @@ def update_order_status(event, context):
 
     print("Order Updated")
     send_order_status_update_message(
-        boto3.client("sqs"), order["customerId"], order["id"], order["orderStatus"]
+        order["customerId"], order["id"], order["orderStatus"]
     )
     return build_response(200, None)
 

@@ -12,6 +12,7 @@ class EnvironmentVariables(Enum):
     STACK_ID = os.environ["STACK_ID"]
     PRODUCTS_TABLE = os.environ["PRODUCTS_TABLE"]
     ORDERS_TABLE = os.environ["ORDERS_TABLE"]
+    ORDER_STATUS_TABLE = os.environ["ORDER_STATUS_TABLE"]
     ORDER_RATINGS_TABLE = os.environ["ORDER_RATINGS_TABLE"]
     SHOP_INFO_TABLE = os.environ["SHOP_INFO_TABLE"]
     USER_NOTIFICATION_QUEUE_URL = os.environ["USER_NOTIFICATION_QUEUE_URL"]
@@ -113,7 +114,10 @@ def send_sqs_message(sqs, queue_url, message):
     return response["MessageId"]
 
 
-def send_order_status_update_message(sqs, customer_id, order_id, new_status):
+def send_order_status_update_message(customer_id, order_id, new_status, sqs=None):
+    if sqs is None:
+        sqs = boto3.client("sqs")
+
     print(
         f"Sending order status update message for customer {customer_id}'s order {order_id} with status {new_status}"
     )
@@ -469,3 +473,44 @@ def get_shop_by_id(dynamo, shop_id):
         return deserialize_dynamo_object(response["Item"])
     else:
         return None
+
+
+def get_order_status(dynamo, order_id):
+    print(f"Getting order {order_id} status...")
+    response = dynamo.get_item(
+        TableName=EnvironmentVariables.ORDER_STATUS_TABLE.value,
+        Key={
+            "id": {
+                "S": order_id,
+            },
+        },
+    )
+
+    if "Item" in response:
+        return deserialize_dynamo_object(response["Item"])
+    else:
+        return None
+
+
+def update_order_status(
+    dynamo, customer_id, order_id, previous_status_info, new_status, field_updates
+):
+    if previous_status_info is None:
+        previous_status_info = {"id": order_id, "customerId": customer_id}
+
+    new_status_info = {}
+    for key in previous_status_info:
+        new_status_info[key] = previous_status_info[key]
+    for key in field_updates:
+        new_status_info[key] = field_updates[key]
+
+    new_status_info["id"] = order_id
+    new_status_info["customerId"] = customer_id
+    new_status_info["status"] = new_status
+
+    dynamo.put_item(
+        TableName=EnvironmentVariables.ORDER_STATUS_TABLE.value,
+        Item=serialize_to_dynamo_object(new_status_info),
+    )
+
+    send_order_status_update_message(customer_id, order_id, new_status)

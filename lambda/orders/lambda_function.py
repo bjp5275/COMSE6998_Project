@@ -398,9 +398,7 @@ def submit_order(event, context):
     success, order, data = create_order(customer_id, input_order)
 
     if success:
-        send_order_status_update_message(
-            boto3.client("sqs"), customer_id, order["id"], order["orderStatus"]
-        )
+        send_order_status_update_message(customer_id, order["id"], order["orderStatus"])
         return build_response(200, order)
     else:
         return build_error_response(ErrorCodes.INVALID_DATA, data)
