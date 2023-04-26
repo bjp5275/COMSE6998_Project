@@ -5,7 +5,11 @@
   <div class="order-item-details">
     <app-order-item-list
       [orderItems]="orderDetails.order.items"
-      [actions]="ACTIONS"
+      [actions]="
+        orderDetails.order.orderStatus == 'DELIVERED'
+          ? DELIVERED_ACTIONS
+          : undefined
+      "
       [ratings]="orderDetails.orderRatings"
     ></app-order-item-list>
   </div>

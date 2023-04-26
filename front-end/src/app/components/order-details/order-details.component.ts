@@ -46,7 +46,7 @@ interface OrderDetails {
   styleUrls: ['./order-details.component.scss'],
 })
 export class OrderDetailsComponent {
-  readonly ACTIONS: OrderItemAction[] = [
+  readonly DELIVERED_ACTIONS: OrderItemAction[] = [
     {
       buttonText: 'Rate',
       color: 'primary',
