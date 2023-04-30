@@ -42,8 +42,6 @@ export class AppComponent {
     {
       type: 'CATEGORY',
       title: 'User Menu',
-      show: () =>
-        !!this.userInformation?.roles && this.userInformation.roles.length > 1,
       links: [
         {
           type: 'LINK',

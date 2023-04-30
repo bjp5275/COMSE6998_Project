@@ -40,6 +40,9 @@ Parameters:
     Type: String
     Description: "The name to use for the deployed API stage"
     Default: "v1"
+  AdminUserEmail:
+    Type: String
+    Description: "The email to use for the administrator API key"
 
 Resources:
   # Bucket for photos
@@ -136,6 +139,7 @@ Resources:
         ApiGatewayYamlS3ObjectKey: !Ref ApiGatewayYamlS3ObjectKey
         LambdaExecutionRoleName: !GetAtt BackendStack.Outputs.LambdaExecutionRoleName
         StageName: !Ref StageName
+        AdminUserEmail: !Ref AdminUserEmail
         ResourceSuffix: !Select
           - 0
           - !Split

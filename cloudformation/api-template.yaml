@@ -29,6 +29,9 @@ Parameters:
   LambdaExecutionRoleName:
     Type: String
     Description: "The name of the execution role the lambdas use"
+  AdminUserEmail:
+    Type: String
+    Description: "The email to use for the administrator API key"
 
 Resources:
   # API Execution Roles
@@ -135,6 +138,15 @@ Resources:
     DependsOn: RestApiStage
     Properties:
       Enabled: true
+      Tags:
+        - Key: displayName
+          Value: "Ben"
+        - Key: username
+          Value: "bjp2158"
+        - Key: roles
+          Value: "REGULAR_USER:ADMIN:DELIVERER:SHOP_OWNER"
+        - Key: email
+          Value: !Ref AdminUserEmail
   ApiUsagePlan:
     Type: AWS::ApiGateway::UsagePlan
     DependsOn: RestApiStage

@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Coffee Delivery User API Access"
+Parameters:
+  ApiUsagePlanId:
+    Type: String
+    Description: "The ID of the usage plan for the API key"
+  LambdaExecutionRoleName:
+    Type: String
+    Description: "The name of the role the backend Lambdas use"
+  DisplayName:
+    Type: String
+  Username:
+    Type: String
+  UserEmail:
+    Type: String
+    Description: "The email to use for the API key"
+  UserRoles:
+    Type: String
+    Description: "The roles for the user"
+    AllowedPattern: ^(REGULAR_USER|ADMIN|DELIVERER|SHOP_OWNER)(:(REGULAR_USER|ADMIN|DELIVERER|SHOP_OWNER))*$
+    Default: "REGULAR_USER"
+    ConstraintDescription: "Malformed input - Parameter must be a colon-delimeted list of REGULAR_USER|ADMIN|DELIVERER|SHOP_OWNER"
+
+Resources:
+  # API Key Resources
+  ApiKey:
+    Type: AWS::ApiGateway::ApiKey
+    Properties:
+      Enabled: true
+      Tags:
+        - Key: displayName
+          Value: !Ref DisplayName
+        - Key: username
+          Value: !Ref Username
+        - Key: roles
+          Value: !Ref UserRoles
+        - Key: email
+          Value: !Ref UserEmail
+  UsagePlanApiKey:
+    Type: AWS::ApiGateway::UsagePlanKey
+    Properties:
+      KeyId: !Ref ApiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref ApiUsagePlanId
+
+  # API Key Policies for Lambda
+  ApiKeyAccessPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub "coffee-delivery-service-${Username}-policy"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: "*"
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - apigateway:GET
+            Resource:
+              - !Sub "arn:aws:apigateway:${AWS::Region}::/apikeys/${ApiKey}"
+      Roles:
+        - !Ref LambdaExecutionRoleName
+
+Outputs:
+  # API Key
+  ApiKeyId:
+    Description: "ID of the API key granting access to the API"
+    Value: !Ref ApiKey
