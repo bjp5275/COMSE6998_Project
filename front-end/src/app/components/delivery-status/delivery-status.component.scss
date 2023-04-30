@@ -1,60 +1,59 @@
 .container {
-    width: 100%;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+
+  .order-item-details {
+    overflow: auto;
+    padding-bottom: 1em;
+  }
+
+  .order-status {
     height: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    overflow: hidden;
-  
-    .order-item-details {
-      overflow: auto;
-      padding-bottom: 1em;
-    }
-  
-    .order-status {
-      height: 100%;
-      overflow: auto;
-      align-self: center;
-  
-      .inner-order-status {
-        width: calc(100% - 2em);
-        min-width: 20em;
-        padding: 1em 0;
-        margin: auto;
-  
-        mat-progress-bar.order-progress {
-          width: 100%;
-        }
-  
-        div.order-progress-states {
-          width: 100%;
-          display: flex;
-          flex-direction: row;
-          flex-wrap: nowrap;
-          justify-content: space-between;
-        }
-  
-        .order-detail-chips {
-          width: fit-content;
-          margin: 0 auto;
-        }
-  
-        .centered-buttons {
-          width: 100%;
-          display: flex;
-          flex-direction: row;
-          justify-content: center;
-        }
+    overflow: auto;
+    align-self: center;
+
+    .inner-order-status {
+      width: calc(100% - 2em);
+      min-width: 20em;
+      padding: 1em 0;
+      margin: auto;
+
+      mat-progress-bar.order-progress {
+        width: 100%;
+      }
+
+      div.order-progress-states {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+      }
+
+      .order-detail-chips {
+        width: fit-content;
+        margin: 0 auto;
+      }
+
+      .centered-buttons {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
       }
     }
   }
-  
-  .loading-order {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-  }
-  
+}
+
+.loading-order {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}

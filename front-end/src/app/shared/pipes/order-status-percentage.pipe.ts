@@ -21,6 +21,7 @@ export class OrderStatusPercentagePipe implements PipeTransform {
       case OrderStatus.PICKED_UP:
         return this.convert(75, asDecimal);
       case OrderStatus.MADE:
+      case OrderStatus.AWAITING_PICKUP:
         return this.convert(50, asDecimal);
       case OrderStatus.BREWING:
         return this.convert(25, asDecimal);

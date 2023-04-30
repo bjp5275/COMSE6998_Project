@@ -54,15 +54,19 @@
         >
         </ng-container>
       </mat-card-content>
-      <mat-card-actions *ngIf="actions">
-        <button
-          mat-raised-button
-          *ngFor="let action of actions"
-          [color]="action.color"
-          (click)="onClick(action, order, index)"
-        >
-          {{ action.buttonText }}
-        </button>
+      <mat-card-actions
+        *ngIf="actions && hasActiveAction(order, index, actions)"
+      >
+        <ng-container *ngFor="let action of actions">
+          <button
+            mat-raised-button
+            *ngIf="!action.show || action.show(order.items, index, order.data)"
+            [color]="action.color"
+            (click)="onClick(action, order, index)"
+          >
+            {{ action.buttonText }}
+          </button>
+        </ng-container>
       </mat-card-actions>
     </mat-card>
   </div>

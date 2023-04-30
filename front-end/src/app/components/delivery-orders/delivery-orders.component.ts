@@ -50,6 +50,7 @@ export class DeliveryOrdersComponent {
 
   deliveryOrderType$: Observable<DeliveryOrdersType>;
   deliveryOrders$: Observable<CustomOrder<DeliveryOrder>[]>;
+  securingOrder = false;
 
   constructor(
     private deliveryService: DeliveryService,
@@ -109,6 +110,7 @@ export class DeliveryOrdersComponent {
   }
 
   secureOrder(orderId: string) {
+    this.securingOrder = true;
     this.deliveryService
       .secureDelivery(orderId)
       .pipe(
@@ -123,8 +125,27 @@ export class DeliveryOrdersComponent {
       )
       .subscribe((success) => {
         if (success) {
-          this.goToOrder(orderId);
+          this.goToOrderOnceSecured(orderId);
+        } else {
+          this.securingOrder = false;
         }
+      });
+  }
+
+  goToOrderOnceSecured(orderId: string) {
+    this.deliveryService
+      .getDelivery(orderId)
+      .pipe(
+        map(() => true),
+        catchError(() => of(false)),
+        ObservableUtils.pollAfterData({
+          pollInterval: 1000,
+          takeWhilePredicate: (value, _index) => !value,
+          inclusiveTakeWhile: true,
+        })
+      )
+      .subscribe({
+        complete: () => this.goToOrder(orderId),
       });
   }
 

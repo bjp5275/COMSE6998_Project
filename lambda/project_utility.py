@@ -16,6 +16,10 @@ class EnvironmentVariables(Enum):
     ORDER_RATINGS_TABLE = os.environ["ORDER_RATINGS_TABLE"]
     SHOP_INFO_TABLE = os.environ["SHOP_INFO_TABLE"]
     USER_NOTIFICATION_QUEUE_URL = os.environ["USER_NOTIFICATION_QUEUE_URL"]
+    ORDER_UPDATE_QUEUE_URL = os.environ["ORDER_UPDATE_QUEUE_URL"]
+    ORDER_UPDATE_CONFIRMATION_QUEUE_URL = os.environ[
+        "ORDER_UPDATE_CONFIRMATION_QUEUE_URL"
+    ]
     UI_BASE_URL = os.environ["UI_BASE_URL"]
 
     def __str__(self):
@@ -84,6 +88,7 @@ class OrderStatus(Enum):
     RECEIVED = "RECEIVED"
     BREWING = "BREWING"
     MADE = "MADE"
+    AWAITING_PICKUP = "AWAITING_PICKUP"
     PICKED_UP = "PICKED_UP"
     DELIVERED = "DELIVERED"
 
@@ -103,6 +108,14 @@ def calculate_order_total_percentage(order, rate, minimum):
     output = max(calculated, minimum)
 
     return round(output, 2)
+
+
+def calculate_commission(order):
+    return calculate_order_total_percentage(order, COMMISSION_RATE, MIN_COMMISSION)
+
+
+def calculate_delivery_fee(order):
+    return calculate_order_total_percentage(order, DELIVERY_FEE_RATE, MIN_DELIVERY_FEE)
 
 
 def createUiUrl(path):
@@ -125,7 +138,7 @@ def send_order_status_update_message(customer_id, order_id, new_status, sqs=None
         "type": UserNotificationTypes.ORDER_STATUS_UPDATE.type_code,
         "customerId": customer_id,
         "orderId": order_id,
-        "status": new_status,
+        "orderStatus": new_status,
     }
     return send_sqs_message(
         sqs, EnvironmentVariables.USER_NOTIFICATION_QUEUE_URL.value, message
@@ -475,42 +488,138 @@ def get_shop_by_id(dynamo, shop_id):
         return None
 
 
-def get_order_status(dynamo, order_id):
-    print(f"Getting order {order_id} status...")
-    response = dynamo.get_item(
-        TableName=EnvironmentVariables.ORDER_STATUS_TABLE.value,
-        Key={
-            "id": {
-                "S": order_id,
+def initialize_order_status(dynamo, order_status):
+    dynamo.transact_write_items(
+        TransactItems=[
+            {
+                "Put": {
+                    "Item": serialize_to_dynamo_object(order_status),
+                    "TableName": EnvironmentVariables.ORDER_STATUS_TABLE.value,
+                }
             },
-        },
+        ],
     )
 
-    if "Item" in response:
-        return deserialize_dynamo_object(response["Item"])
+
+def get_order_status(dynamo, order_id):
+    print(f"Getting order {order_id} status...")
+    response = dynamo.transact_get_items(
+        TransactItems=[
+            {
+                "Get": {
+                    "Key": {
+                        "id": {
+                            "S": order_id,
+                        },
+                    },
+                    "TableName": EnvironmentVariables.ORDER_STATUS_TABLE.value,
+                }
+            }
+        ]
+    )
+
+    if "Responses" in response:
+        return deserialize_dynamo_object(response["Responses"][0]["Item"])
     else:
         return None
 
 
-def update_order_status(
-    dynamo, customer_id, order_id, previous_status_info, new_status, field_updates
-):
-    if previous_status_info is None:
-        previous_status_info = {"id": order_id, "customerId": customer_id}
+def update_order_status(dynamo, order_id, previous_status, new_status, field_updates):
+    update_expression = "SET orderStatus = :new_status, updating = :new_updating"
+    expression_values = {
+        ":old_status": {
+            "S": previous_status,
+        },
+        ":new_status": {
+            "S": new_status,
+        },
+        ":old_updating": {"BOOL": True},
+        ":new_updating": {"BOOL": False},
+    }
 
-    new_status_info = {}
-    for key in previous_status_info:
-        new_status_info[key] = previous_status_info[key]
     for key in field_updates:
-        new_status_info[key] = field_updates[key]
+        if key != "orderStatus" and key != "updating":
+            update_expression = f"{update_expression}, {key} = :{key}"
+            expression_values[f":{key}"] = {
+                "S": str(field_updates[key]),
+            }
 
-    new_status_info["id"] = order_id
-    new_status_info["customerId"] = customer_id
-    new_status_info["status"] = new_status
+    try:
+        dynamo.transact_write_items(
+            TransactItems=[
+                {
+                    "Update": {
+                        "Key": {
+                            "id": {
+                                "S": order_id,
+                            },
+                        },
+                        "TableName": EnvironmentVariables.ORDER_STATUS_TABLE.value,
+                        "UpdateExpression": update_expression,
+                        "ConditionExpression": "orderStatus = :old_status AND updating = :old_updating",
+                        "ExpressionAttributeValues": expression_values,
+                    }
+                },
+            ],
+        )
+        return True
+    except dynamo.exceptions.TransactionCanceledException:
+        return False
 
-    dynamo.put_item(
-        TableName=EnvironmentVariables.ORDER_STATUS_TABLE.value,
-        Item=serialize_to_dynamo_object(new_status_info),
+
+def mark_order_status_updating(dynamo, order_id, expected_status):
+    try:
+        dynamo.transact_write_items(
+            TransactItems=[
+                {
+                    "Update": {
+                        "Key": {
+                            "id": {
+                                "S": order_id,
+                            },
+                        },
+                        "TableName": EnvironmentVariables.ORDER_STATUS_TABLE.value,
+                        "UpdateExpression": "SET updating = :new_updating",
+                        "ConditionExpression": "orderStatus = :expected_status AND updating = :old_updating",
+                        "ExpressionAttributeValues": {
+                            ":expected_status": {
+                                "S": expected_status,
+                            },
+                            ":old_updating": {"BOOL": False},
+                            ":new_updating": {"BOOL": True},
+                        },
+                    }
+                },
+            ],
+        )
+        return True
+    except dynamo.exceptions.TransactionCanceledException:
+        return False
+
+
+def send_order_update_task(
+    dynamo, customer_id, order_id, old_status, new_status, field_updates, sqs=None
+):
+    if sqs is None:
+        sqs = boto3.client("sqs")
+
+    if field_updates is None:
+        field_updates = {}
+
+    message_body = {
+        "customerId": customer_id,
+        "orderId": order_id,
+        "previousStatus": old_status,
+        "newStatus": new_status,
+        "fieldUpdates": field_updates,
+    }
+
+    print(
+        f"Sending order status update task for customer {customer_id}'s order {order_id} with status {new_status}"
     )
 
-    send_order_status_update_message(customer_id, order_id, new_status)
+    if not mark_order_status_updating(dynamo, order_id, old_status):
+        return None
+    return send_sqs_message(
+        sqs, EnvironmentVariables.ORDER_UPDATE_QUEUE_URL.value, message_body
+    )

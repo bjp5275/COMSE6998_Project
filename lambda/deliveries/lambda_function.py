@@ -1,23 +1,19 @@
-import os
 import traceback
 
 import boto3
 from project_utility import (
-    DELIVERY_FEE_RATE,
-    MIN_DELIVERY_FEE,
     EnvironmentVariables,
     ErrorCodes,
     OrderStatus,
     UserRole,
     build_error_response,
     build_response,
-    calculate_order_total_percentage,
     deserialize_dynamo_object,
     extract_user_id,
+    get_order_status,
     get_path_parameter,
     get_query_parameter,
-    send_order_status_update_message,
-    serialize_to_dynamo_object,
+    send_order_update_task,
     user_has_role,
 )
 
@@ -34,10 +30,6 @@ TRANFER_FIELDS = [
     "deliveryFee",
     "items",
 ]
-
-
-def calculate_delivery_fee(order):
-    return calculate_order_total_percentage(order, DELIVERY_FEE_RATE, MIN_DELIVERY_FEE)
 
 
 def transfer_field(raw_order, destination_order, field, required=False):
@@ -79,25 +71,6 @@ def get_previous_orders(event, context):
     return build_response(200, orders)
 
 
-def get_raw_order(order_id):
-    print(f"Looking up {order_id}")
-    response = dynamo.scan(
-        TableName=EnvironmentVariables.ORDERS_TABLE.value,
-        FilterExpression="id = :orderId",
-        ExpressionAttributeValues={
-            ":orderId": {
-                "S": order_id,
-            },
-        },
-    )
-
-    orders = response["Items"] if "Items" in response else None
-    if orders is None or len(orders) != 1:
-        return None
-
-    return deserialize_dynamo_object(orders[0])
-
-
 def get_available_orders(event, context):
     deliverer_id = extract_user_id(event)
 
@@ -115,9 +88,6 @@ def get_available_orders(event, context):
 
     print(f"Found {len(orders)} orders")
     orders = build_delivery_orders_from_dynamo_response(orders)
-
-    for order in orders:
-        order["deliveryFee"] = calculate_delivery_fee(order)
 
     return build_response(200, orders)
 
@@ -166,23 +136,27 @@ def secure_order(event, context):
         return build_error_response(ErrorCodes.MISSING_DATA, "Must specify an order ID")
 
     print(f"Attempting to secure order {order_id} for deliverer {deliverer_id}")
-    order = get_raw_order(order_id)
-    if order is None or "delivererId" in order:
-        return build_error_response(ErrorCodes.INVALID_DATA, "Order is already taken")
-    elif order["orderStatus"] != OrderStatus.MADE.value:
+    order_status = get_order_status(dynamo, order_id)
+    if order_status is None or order_status["orderStatus"] != OrderStatus.MADE.value:
         return build_error_response(ErrorCodes.INVALID_DATA, "Order is not available")
 
-    order["delivererId"] = deliverer_id
-    order["deliveryFee"] = calculate_delivery_fee(order)
-    dynamo.put_item(
-        TableName=EnvironmentVariables.ORDERS_TABLE.value,
-        Item=serialize_to_dynamo_object(order),
-    )
+    new_order_info = {
+        "delivererId": deliverer_id,
+    }
+    if (
+        send_order_update_task(
+            dynamo,
+            order_status["customerId"],
+            order_id,
+            OrderStatus.MADE.value,
+            OrderStatus.AWAITING_PICKUP.value,
+            new_order_info,
+        )
+        is None
+    ):
+        return build_error_response(ErrorCodes.INVALID_DATA, "Failed to secure order")
 
     print("Order secured")
-    send_order_status_update_message(
-        order["customerId"], order["id"], order["orderStatus"]
-    )
     return build_response(200, None)
 
 
@@ -193,36 +167,40 @@ def update_order_status(event, context):
     if order_id is None:
         return build_error_response(ErrorCodes.MISSING_DATA, "Must specify an order ID")
 
-    order = get_raw_order(order_id)
+    order_status = get_order_status(dynamo, order_id)
     if (
-        order is None
-        or "delivererId" not in order
-        or order["delivererId"] != deliverer_id
+        order_status is None
+        or "delivererId" not in order_status
+        or order_status["delivererId"] != deliverer_id
     ):
         return build_error_response(ErrorCodes.NOT_FOUND, "Order not found")
 
     new_status = get_query_parameter(event, "newStatus", OrderStatus.PICKED_UP.value)
     if (
-        order["orderStatus"] == OrderStatus.MADE.value
+        order_status["orderStatus"] == OrderStatus.MADE.value
         and new_status != OrderStatus.PICKED_UP.value
     ) or (
-        order["orderStatus"] == OrderStatus.PICKED_UP.value
+        order_status["orderStatus"] == OrderStatus.PICKED_UP.value
         and new_status != OrderStatus.DELIVERED.value
     ):
         return build_error_response(
             ErrorCodes.INVALID_DATA, f"Invalid new status: {new_status}"
         )
 
-    order["orderStatus"] = new_status
-    dynamo.put_item(
-        TableName=EnvironmentVariables.ORDERS_TABLE.value,
-        Item=serialize_to_dynamo_object(order),
-    )
+    if (
+        send_order_update_task(
+            dynamo,
+            order_status["customerId"],
+            order_id,
+            order_status["orderStatus"],
+            new_status,
+            None,
+        )
+        is None
+    ):
+        return build_error_response(ErrorCodes.INVALID_DATA, "Failed to update order")
 
     print("Order Updated")
-    send_order_status_update_message(
-        order["customerId"], order["id"], order["orderStatus"]
-    )
     return build_response(200, None)
 
 

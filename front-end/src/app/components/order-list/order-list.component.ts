@@ -28,6 +28,14 @@ export interface OrderAction<T> {
    * @param data input order's custom data object (if any)
    */
   onClick: (orderItems: OrderItem[], index: number, data: T) => void;
+  /**
+   * Whether to show this action
+   * @param orderItems underlying order's items
+   * @param index index within input orders array
+   * @param data input order's custom data object (if any)
+   * @returns true if the action should be shown
+   */
+  show?: (orderItems: OrderItem[], index: number, data: T) => boolean;
 }
 
 export interface CustomOrder<T> {
@@ -101,6 +109,18 @@ export class OrderListComponent<T> implements OnInit, OnChanges {
       };
       return value;
     });
+  }
+
+  hasActiveAction(
+    order: CustomOrder<T>,
+    index: number,
+    actions: OrderAction<T>[]
+  ): boolean {
+    return (
+      actions.find(
+        (action) => !action.show || action.show(order.items, index, order.data)
+      ) != undefined
+    );
   }
 
   onClick(action: OrderAction<T>, order: CustomOrder<T>, index: number) {

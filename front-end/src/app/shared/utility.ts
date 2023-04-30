@@ -22,6 +22,8 @@ export interface PollAfterDataConfig<T> {
   pollInterval?: number;
   /** predicate to determine when to stop polling */
   takeWhilePredicate?: (value: T, index: number) => boolean;
+  /** whether to include the last value after takeWhilePredicate returns false */
+  inclusiveTakeWhile?: boolean;
 }
 
 export class ClassUtils {
@@ -51,7 +53,7 @@ export class ObservableUtils {
     return (source$) =>
       source$.pipe(
         expand(() => timer(pollInterval).pipe(switchMap(() => source$))),
-        takeWhile(takeWhilePredicate)
+        takeWhile(takeWhilePredicate, config?.inclusiveTakeWhile)
       );
   }
 }

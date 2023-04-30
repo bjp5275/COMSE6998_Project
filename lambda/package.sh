@@ -1,15 +1,16 @@
 #!/bin/bash
 
 function usage {
-        echo "Usage: $(basename $0) -d DIRECTORY -c"
+        echo "Usage: $(basename $0) -d DIRECTORY -c [-s SUFFIX]"
         echo "  -d DIRECTORY: Directory where lambda_function.py exists"
         echo "                and optional requirements.txt"
         echo "  -c: Clean out previous packaged resources first"
+        echo "  -s: Optionally override resource suffix on Lambda functions"
         exit 1
 }
 
 CLEAN_FIRST="false"
-while getopts ":d:ch" arg; do
+while getopts ":d:s:ch" arg; do
   case ${arg} in
     d)
       DIRECTORY=${OPTARG}
@@ -19,6 +20,9 @@ while getopts ":d:ch" arg; do
       ;;
     h)
       usage
+      ;;
+    s)
+      SUFFIX=${OPTARG}
       ;;
   esac
 done
@@ -38,7 +42,8 @@ echo "Packaging ${DIRECTORY}..."
 cd $DIRECTORY
 BASENAME=`basename $(pwd)`
 GIT_HASH=`git rev-parse --short HEAD`
-PACKAGE_NAME="${BASENAME}-${GIT_HASH}.zip"
+PACKAGE_SUFFIX="${SUFFIX:-${GIT_HASH}}"
+PACKAGE_NAME="${BASENAME}-${PACKAGE_SUFFIX}.zip"
 
 if [ $CLEAN_FIRST == "true" ]; then
     echo "Cleaning directory..."

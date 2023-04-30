@@ -167,6 +167,8 @@ Resources:
                   - sqs:SendMessage
                 Resource:
                   - !GetAtt UserNotificationQueue.Arn
+                  - !GetAtt OrderUpdateQueue.Arn
+                  - !GetAtt OrderUpdateConfirmationQueue.Arn
               - Effect: Allow
                 Action:
                   - ses:SendEmail
@@ -189,6 +191,35 @@ Resources:
       FunctionResponseTypes:
         - ReportBatchItemFailures
 
+  OrderUpdateQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      Tags:
+        - Key: Purpose
+          Value: "Order updates"
+  OrderUpdateEventSource:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      Enabled: true
+      EventSourceArn: !GetAtt OrderUpdateQueue.Arn
+      FunctionName: !Ref OrderUpdateFunction
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
+  OrderUpdateConfirmationQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      Tags:
+        - Key: Purpose
+          Value: "Order update confirmation"
+  OrderUpdateConfirmationEventSource:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      Enabled: true
+      EventSourceArn: !GetAtt OrderUpdateConfirmationQueue.Arn
+      FunctionName: !Ref OrderUpdateConfirmationFunction
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
+
   # Lambda functions
   UserNotificationFunction:
     Type: AWS::Lambda::Function
@@ -207,8 +238,66 @@ Resources:
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           SHOP_INFO_TABLE: !Ref ShopInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
+          ORDER_UPDATE_QUEUE_URL: !Ref OrderUpdateQueue
+          ORDER_UPDATE_CONFIRMATION_QUEUE_URL: !Ref OrderUpdateConfirmationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-user-notification-${ResourceSuffix}"
+      Handler: "lambda_function.lambda_handler"
+      MemorySize: 128
+      PackageType: "Zip"
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: "python3.9"
+      Timeout: 10
+
+  OrderUpdateFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Architectures:
+        - "x86_64"
+      Code:
+        S3Bucket: !Ref ResourcesBucket
+        S3Key: !Sub "coffee-delivery/order-update-${FunctionS3ObjectKeySuffix}.zip"
+      Environment:
+        Variables:
+          STACK_ID: !Ref "AWS::StackId"
+          PRODUCTS_TABLE: !Ref ProductTable
+          ORDERS_TABLE: !Ref OrderTable
+          ORDER_STATUS_TABLE: !Ref OrderStatusTable
+          ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
+          SHOP_INFO_TABLE: !Ref ShopInfoTable
+          USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
+          ORDER_UPDATE_QUEUE_URL: !Ref OrderUpdateQueue
+          ORDER_UPDATE_CONFIRMATION_QUEUE_URL: !Ref OrderUpdateConfirmationQueue
+          UI_BASE_URL: !Ref FrontEndUrl
+      FunctionName: !Sub "coffee-delivery-order-update-${ResourceSuffix}"
+      Handler: "lambda_function.lambda_handler"
+      MemorySize: 128
+      PackageType: "Zip"
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: "python3.9"
+      Timeout: 10
+
+  OrderUpdateConfirmationFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Architectures:
+        - "x86_64"
+      Code:
+        S3Bucket: !Ref ResourcesBucket
+        S3Key: !Sub "coffee-delivery/order-update-confirmation-${FunctionS3ObjectKeySuffix}.zip"
+      Environment:
+        Variables:
+          STACK_ID: !Ref "AWS::StackId"
+          PRODUCTS_TABLE: !Ref ProductTable
+          ORDERS_TABLE: !Ref OrderTable
+          ORDER_STATUS_TABLE: !Ref OrderStatusTable
+          ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
+          SHOP_INFO_TABLE: !Ref ShopInfoTable
+          USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
+          ORDER_UPDATE_QUEUE_URL: !Ref OrderUpdateQueue
+          ORDER_UPDATE_CONFIRMATION_QUEUE_URL: !Ref OrderUpdateConfirmationQueue
+          UI_BASE_URL: !Ref FrontEndUrl
+      FunctionName: !Sub "coffee-delivery-order-update-confirmation-${ResourceSuffix}"
       Handler: "lambda_function.lambda_handler"
       MemorySize: 128
       PackageType: "Zip"
@@ -233,6 +322,8 @@ Resources:
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           SHOP_INFO_TABLE: !Ref ShopInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
+          ORDER_UPDATE_QUEUE_URL: !Ref OrderUpdateQueue
+          ORDER_UPDATE_CONFIRMATION_QUEUE_URL: !Ref OrderUpdateConfirmationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-login-${ResourceSuffix}"
       Handler: "lambda_function.lambda_handler"
@@ -259,6 +350,8 @@ Resources:
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           SHOP_INFO_TABLE: !Ref ShopInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
+          ORDER_UPDATE_QUEUE_URL: !Ref OrderUpdateQueue
+          ORDER_UPDATE_CONFIRMATION_QUEUE_URL: !Ref OrderUpdateConfirmationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-pending-orders-${ResourceSuffix}"
       Handler: "lambda_function.lambda_handler"
@@ -285,6 +378,8 @@ Resources:
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           SHOP_INFO_TABLE: !Ref ShopInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
+          ORDER_UPDATE_QUEUE_URL: !Ref OrderUpdateQueue
+          ORDER_UPDATE_CONFIRMATION_QUEUE_URL: !Ref OrderUpdateConfirmationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-products-${ResourceSuffix}"
       Handler: "lambda_function.lambda_handler"
@@ -311,6 +406,8 @@ Resources:
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           SHOP_INFO_TABLE: !Ref ShopInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
+          ORDER_UPDATE_QUEUE_URL: !Ref OrderUpdateQueue
+          ORDER_UPDATE_CONFIRMATION_QUEUE_URL: !Ref OrderUpdateConfirmationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-product-additions-${ResourceSuffix}"
       Handler: "lambda_function.lambda_handler"
@@ -337,6 +434,8 @@ Resources:
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           SHOP_INFO_TABLE: !Ref ShopInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
+          ORDER_UPDATE_QUEUE_URL: !Ref OrderUpdateQueue
+          ORDER_UPDATE_CONFIRMATION_QUEUE_URL: !Ref OrderUpdateConfirmationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-orders-${ResourceSuffix}"
       Handler: "lambda_function.lambda_handler"
@@ -363,6 +462,8 @@ Resources:
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           SHOP_INFO_TABLE: !Ref ShopInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
+          ORDER_UPDATE_QUEUE_URL: !Ref OrderUpdateQueue
+          ORDER_UPDATE_CONFIRMATION_QUEUE_URL: !Ref OrderUpdateConfirmationQueue
           UI_BASE_URL: !Ref FrontEndUrl
       FunctionName: !Sub "coffee-delivery-deliveries-${ResourceSuffix}"
       Handler: "lambda_function.lambda_handler"
@@ -380,23 +481,20 @@ Outputs:
 
   # Lambda Outputs
   UserNotificationFunctionArn:
-    Description: "ARN for user notification Lambda"
     Value: !GetAtt UserNotificationFunction.Arn
   LoginFunctionArn:
-    Description: "ARN for login Lambda"
     Value: !GetAtt LoginFunction.Arn
   PendingOrdersFunctionArn:
-    Description: "ARN for pending orders Lambda"
     Value: !GetAtt PendingOrdersFunction.Arn
   ProductsFunctionArn:
-    Description: "ARN for products Lambda"
     Value: !GetAtt ProductsFunction.Arn
   ProductAdditionsFunctionArn:
-    Description: "ARN for product additions Lambda"
     Value: !GetAtt ProductAdditionsFunction.Arn
   OrdersFunctionArn:
-    Description: "ARN for orders Lambda"
     Value: !GetAtt OrdersFunction.Arn
   DeliveriesFunctionArn:
-    Description: "ARN for deliveries Lambda"
     Value: !GetAtt DeliveriesFunction.Arn
+  OrderUpdateFunctionArn:
+    Value: !GetAtt OrderUpdateFunction.Arn
+  OrderUpdateConfirmationFunctionArn:
+    Value: !GetAtt OrderUpdateConfirmationFunction.Arn

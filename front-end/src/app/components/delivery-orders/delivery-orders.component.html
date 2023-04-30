@@ -1,40 +1,50 @@
 <ng-container
   *ngIf="deliveryOrderType$ | async as orderType; else loadingOrders"
 >
-  <app-order-list
-    *ngIf="deliveryOrders$ | async as orders; else loadingOrders"
-    [orders]="orders"
-    [actions]="getOrderActions(orderType)"
-    [showTotalPrice]="false"
-  >
-    <ng-template
-      #customOrderDetails
-      let-order
-      [typedTemplate]="ORDER_TYPE_TEMPLATE"
+  <ng-container *ngIf="!securingOrder; else securingOrderSpinner">
+    <app-order-list
+      *ngIf="deliveryOrders$ | async as orders; else loadingOrders"
+      [orders]="orders"
+      [actions]="getOrderActions(orderType)"
+      [showTotalPrice]="false"
     >
-      <div class="mat-subtitle-2">
-        Pick Up: {{ order.data.preparedLocation | locationAddress }}
-        <br />
-        Delivery: {{ order.data.deliveryLocation | locationAddress }} ({{
-          order.data.deliveryTime | date : "shortTime"
-        }})
-      </div>
-      <div class="mat-subtitle-1">
-        Delivery Fee: {{ order.data.deliveryFee | price }}
-      </div>
-      <div
-        *ngIf="orderType == 'HISTORY' && order.data.orderStatus != 'DELIVERED'"
-        class="in-progress mat-subtitle-1"
+      <ng-template
+        #customOrderDetails
+        let-order
+        [typedTemplate]="ORDER_TYPE_TEMPLATE"
       >
-        <mat-icon color="warn">sync</mat-icon>
-        In Progress
-      </div>
-    </ng-template>
-  </app-order-list>
+        <div class="mat-subtitle-2">
+          Pick Up: {{ order.data.preparedLocation | locationAddress }}
+          <br />
+          Delivery: {{ order.data.deliveryLocation | locationAddress }} ({{
+            order.data.deliveryTime | date : "shortTime"
+          }})
+        </div>
+        <div class="mat-subtitle-1">
+          Delivery Fee: {{ order.data.deliveryFee | price }}
+        </div>
+        <div
+          *ngIf="
+            orderType == 'HISTORY' && order.data.orderStatus != 'DELIVERED'
+          "
+          class="in-progress mat-subtitle-1"
+        >
+          <mat-icon color="warn">sync</mat-icon>
+          In Progress
+        </div>
+      </ng-template>
+    </app-order-list>
+  </ng-container>
 </ng-container>
 <ng-template #loadingOrders>
   <div class="loading">
     <i>Loading orders...</i>
     <mat-progress-bar mode="query"></mat-progress-bar>
+  </div>
+</ng-template>
+<ng-template #securingOrderSpinner>
+  <div class="loading">
+    <i>Securing order...</i>
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
   </div>
 </ng-template>

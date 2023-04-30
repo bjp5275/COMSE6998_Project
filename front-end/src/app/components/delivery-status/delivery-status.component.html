@@ -24,7 +24,8 @@
         scrolling="no"
         [src]="
           'https://maps.google.com/maps?width=100%25&amp;height=600&amp;hl=en&amp;q=' +
-            ((order.orderStatus == 'MADE'
+            ((order.orderStatus == 'MADE' ||
+            order.orderStatus == 'AWAITING_PICKUP'
               ? order.preparedLocation
               : order.deliveryLocation
             ) | locationAddress) +
@@ -50,7 +51,7 @@
       <br />
       <div class="centered-buttons">
         <button
-          *ngIf="order.orderStatus == 'MADE'"
+          *ngIf="order.orderStatus == 'AWAITING_PICKUP'"
           mat-raised-button
           color="primary"
           [disabled]="updatingOrder"

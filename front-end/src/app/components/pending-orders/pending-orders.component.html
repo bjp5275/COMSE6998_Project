@@ -1,33 +1,41 @@
 <ng-container
   *ngIf="pendingOrderType$ | async as orderType; else loadingOrders"
 >
-  <app-order-list
-    *ngIf="pendingOrders$ | async as orders; else loadingOrders"
-    [orders]="orders"
-    [actions]="getOrderActions(orderType)"
-    [showTotalPrice]="false"
-  >
-    <ng-template
-      #customOrderDetails
-      let-order
-      [typedTemplate]="ORDER_TYPE_TEMPLATE"
+  <ng-container *ngIf="!securingOrder; else securingOrderSpinner">
+    <app-order-list
+      *ngIf="pendingOrders$ | async as orders; else loadingOrders"
+      [orders]="orders"
+      [actions]="getOrderActions(orderType)"
+      [showTotalPrice]="false"
     >
-      <div class="mat-subtitle-1">
-        Commission: {{ order.data.commission | price }}
-      </div>
-      <div
-        *ngIf="orderType == 'HISTORY' && order.data.orderStatus == 'BREWING'"
-        class="in-progress mat-subtitle-1"
+      <ng-template
+        #customOrderDetails
+        let-order
+        [typedTemplate]="ORDER_TYPE_TEMPLATE"
       >
-        <mat-icon color="warn">sync</mat-icon>
-        In Progress
-      </div>
-    </ng-template>
-  </app-order-list>
+        <div class="mat-subtitle-1">
+          Commission: {{ order.data.commission | price }}
+        </div>
+        <div
+          *ngIf="orderType == 'HISTORY' && order.data.orderStatus == 'BREWING'"
+          class="in-progress mat-subtitle-1"
+        >
+          <mat-icon color="warn">sync</mat-icon>
+          In Progress
+        </div>
+      </ng-template>
+    </app-order-list>
+  </ng-container>
 </ng-container>
 <ng-template #loadingOrders>
   <div class="loading">
     <i>Loading orders...</i>
     <mat-progress-bar mode="query"></mat-progress-bar>
+  </div>
+</ng-template>
+<ng-template #securingOrderSpinner>
+  <div class="loading">
+    <i>Securing order...</i>
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
   </div>
 </ng-template>

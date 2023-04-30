@@ -1,5 +1,4 @@
 import json
-import os
 import traceback
 import uuid
 from datetime import datetime, timedelta
@@ -13,11 +12,14 @@ from project_utility import (
     UserRole,
     build_error_response,
     build_response,
+    calculate_commission,
+    calculate_delivery_fee,
     deserialize_dynamo_object,
     extract_user_id,
     get_additions_by_id,
     get_path_parameter,
     get_products_by_id,
+    initialize_order_status,
     send_order_status_update_message,
     serialize_to_dynamo_object,
     to_coffee_type,
@@ -374,12 +376,24 @@ def create_order(customer_id, order):
             return False, None, f"Order item {index+1} invalid: {str(item)}"
     validated_order["items"] = validated_items
 
+    print("Calculating fees...")
+    validated_order["commission"] = calculate_commission(validated_order)
+    validated_order["deliveryFee"] = calculate_delivery_fee(validated_order)
+
     print("Validated. Saving to Dynamo...", validated_order)
 
     dynamo.put_item(
         TableName=EnvironmentVariables.ORDERS_TABLE.value,
         Item=serialize_to_dynamo_object(validated_order),
     )
+
+    order_status_info = {
+        "id": id,
+        "customerId": customer_id,
+        "orderStatus": OrderStatus.RECEIVED.value,
+        "updating": False
+    }
+    initialize_order_status(dynamo, order_status_info)
 
     print("Order saved")
     validated_order.pop("customerId")

@@ -49,6 +49,7 @@ export class PendingOrdersComponent {
 
   pendingOrderType$: Observable<PendingOrdersType>;
   pendingOrders$: Observable<CustomOrder<PendingOrder>[]>;
+  securingOrder = false;
 
   constructor(
     private shopService: ShopService,
@@ -108,6 +109,7 @@ export class PendingOrdersComponent {
   }
 
   secureOrder(orderId: string) {
+    this.securingOrder = true;
     this.shopService
       .securePendingOrder(orderId)
       .pipe(
@@ -122,8 +124,27 @@ export class PendingOrdersComponent {
       )
       .subscribe((success) => {
         if (success) {
-          this.goToOrder(orderId);
+          this.goToOrderOnceSecured(orderId);
+        } else {
+          this.securingOrder = false;
         }
+      });
+  }
+
+  goToOrderOnceSecured(orderId: string) {
+    this.shopService
+      .getPendingOrder(orderId)
+      .pipe(
+        map(() => true),
+        catchError(() => of(false)),
+        ObservableUtils.pollAfterData({
+          pollInterval: 1000,
+          takeWhilePredicate: (value, _index) => !value,
+          inclusiveTakeWhile: true,
+        })
+      )
+      .subscribe({
+        complete: () => this.goToOrder(orderId),
       });
   }
 

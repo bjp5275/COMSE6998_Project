@@ -133,12 +133,14 @@ export type OrderStatus =
   | 'RECEIVED'
   | 'BREWING'
   | 'MADE'
+  | 'AWAITING_PICKUP'
   | 'PICKED_UP'
   | 'DELIVERED';
 export const OrderStatus = {
   RECEIVED: 'RECEIVED' as OrderStatus,
   BREWING: 'BREWING' as OrderStatus,
   MADE: 'MADE' as OrderStatus,
+  AWAITING_PICKUP: 'AWAITING_PICKUP' as OrderStatus,
   PICKED_UP: 'PICKED_UP' as OrderStatus,
   DELIVERED: 'DELIVERED' as OrderStatus,
 };
@@ -149,6 +151,8 @@ export function convertOrderStatusToString(orderStatus: OrderStatus): string {
     case OrderStatus.MADE:
     case OrderStatus.DELIVERED:
       return capitalizeFirstLetter(orderStatus);
+    case OrderStatus.AWAITING_PICKUP:
+      return 'Awaiting Pickup'
     case OrderStatus.PICKED_UP:
       return 'Picked Up';
     default:

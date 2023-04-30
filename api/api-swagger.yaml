@@ -1924,6 +1924,7 @@ components:
           - "RECEIVED"
           - "BREWING"
           - "MADE"
+          - "AWAITING_PICKUP"
           - "PICKED_UP"
           - "DELIVERED"
         deliveryTime:
@@ -2070,6 +2071,7 @@ components:
           readOnly: true
           enum:
           - MADE
+          - AWAITING_PICKUP
           - PICKED_UP
           - DELIVERED
         deliveryTime:
@@ -2133,6 +2135,7 @@ components:
           - "RECEIVED"
           - "BREWING"
           - "MADE"
+          - "AWAITING_PICKUP"
           - "PICKED_UP"
           - "DELIVERED"
         deliveryTime:

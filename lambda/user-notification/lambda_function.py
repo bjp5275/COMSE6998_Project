@@ -39,7 +39,7 @@ def process_message(record):
     if message_type == UserNotificationTypes.ORDER_STATUS_UPDATE.type_code:
         customer_id = message_body["customerId"]
         order_id = message_body["orderId"]
-        new_status = message_body["status"]
+        new_status = message_body["orderStatus"]
         email_user_new_status(customer_id, order_id, new_status)
     else:
         print(f"Unknown message type: {message_type}")
@@ -61,6 +61,9 @@ def lambda_handler(event, context):
                 try:
                     process_message(record)
                 except Exception as e:
+                    error_string = traceback.format_exc()
+                    print(error_string)
+                    
                     print(f"Error processing record {record['messageId']}", repr(e))
                     batch_item_failures.append({"itemIdentifier": record["messageId"]})
 

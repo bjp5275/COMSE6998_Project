@@ -87,6 +87,7 @@ export class OrderDetailsComponent {
       ObservableUtils.pollAfterData({
         takeWhilePredicate: (value) =>
           value.orderStatus != OrderStatus.DELIVERED,
+        inclusiveTakeWhile: true,
       }),
       catchError((err: HttpError) => {
         this.snackBar.open(
