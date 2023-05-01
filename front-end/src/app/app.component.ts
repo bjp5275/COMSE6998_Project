@@ -2,12 +2,9 @@ import { Component } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { first } from 'rxjs';
+import { UserInformation, UserRole } from './model/models';
 import { CartService } from './shared/services/cart.service';
-import {
-  UserInformation,
-  UserRole,
-  UserService,
-} from './shared/services/user.service';
+import { UserService } from './shared/services/user.service';
 
 type MenuItem = MenuLink | MenuCategory;
 interface _MenuItem {

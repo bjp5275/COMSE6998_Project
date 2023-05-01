@@ -16,6 +16,7 @@ import {
   FavoriteOrder,
   Location,
   PaymentInformation,
+  UserInformation,
 } from 'src/app/model/models';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../utility';
@@ -46,34 +47,6 @@ const PAYMENT_METHODS: PaymentInformation[] = [
 
 const FAVORITE_ORDERS: FavoriteOrder[] = [];
 
-export type UserRole = 'REGULAR_USER' | 'ADMIN' | 'DELIVERER' | 'SHOP_OWNER';
-export const UserRole = {
-  REGULAR_USER: 'REGULAR_USER' as UserRole,
-  ADMIN: 'ADMIN' as UserRole,
-  DELIVERER: 'DELIVERER' as UserRole,
-  SHOP_OWNER: 'SHOP_OWNER' as UserRole,
-};
-export function convertUserRoleToString(userRole: UserRole): string {
-  switch (userRole) {
-    case UserRole.REGULAR_USER:
-      return 'User';
-    case UserRole.ADMIN:
-      return 'Admin';
-    case UserRole.DELIVERER:
-      return 'Deliverer';
-    case UserRole.SHOP_OWNER:
-      return 'Shop Owner';
-    default:
-      throw new Error(`Unknown user role: ${userRole}`);
-  }
-}
-
-export interface UserInformation {
-  id: string;
-  name: string;
-  username: string;
-  roles: UserRole[];
-}
 
 export interface UserInformationWithSecret extends UserInformation {
   apiKey: string;

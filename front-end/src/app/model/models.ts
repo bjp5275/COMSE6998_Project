@@ -152,7 +152,7 @@ export function convertOrderStatusToString(orderStatus: OrderStatus): string {
     case OrderStatus.DELIVERED:
       return capitalizeFirstLetter(orderStatus);
     case OrderStatus.AWAITING_PICKUP:
-      return 'Awaiting Pickup'
+      return 'Awaiting Pickup';
     case OrderStatus.PICKED_UP:
       return 'Picked Up';
     default:
@@ -389,4 +389,43 @@ export interface ShopSettings {
    * Whether the shop provides its own delivery
    */
   providesOwnDelivery?: boolean;
+}
+
+export type UserRole = 'REGULAR_USER' | 'ADMIN' | 'DELIVERER' | 'SHOP_OWNER';
+export const UserRole = {
+  REGULAR_USER: 'REGULAR_USER' as UserRole,
+  ADMIN: 'ADMIN' as UserRole,
+  DELIVERER: 'DELIVERER' as UserRole,
+  SHOP_OWNER: 'SHOP_OWNER' as UserRole,
+};
+export function convertUserRoleToString(userRole: UserRole): string {
+  switch (userRole) {
+    case UserRole.REGULAR_USER:
+      return 'User';
+    case UserRole.ADMIN:
+      return 'Admin';
+    case UserRole.DELIVERER:
+      return 'Deliverer';
+    case UserRole.SHOP_OWNER:
+      return 'Shop Owner';
+    default:
+      throw new Error(`Unknown user role: ${userRole}`);
+  }
+}
+
+export interface UserInformation {
+  /** System-assigned user ID */
+  id: string;
+  /** Display name */
+  name: string;
+  /** Username for login */
+  username: string;
+  /** The roels the user has */
+  roles: UserRole[];
+  /** Favorites for regular users */
+  favorites?: FavoriteOrder[];
+  /** Saved locations for regular users */
+  locations?: Location[];
+  /** Saved payment methods for regular users */
+  paymentMethods?: PaymentInformation[];
 }

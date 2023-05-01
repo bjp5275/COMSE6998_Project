@@ -4,10 +4,12 @@ import traceback
 import boto3
 from project_utility import (
     ErrorCodes,
+    UserRole,
     build_error_response,
     build_response,
     extract_user_id,
     get_user_info,
+    user_has_role,
 )
 
 # Clients
@@ -41,12 +43,24 @@ def lambda_handler(event, context):
 
     try:
         httpMethod = event["httpMethod"]
-        if httpMethod == "POST":
+        resource = event["resource"]
+        response = build_error_response(
+            ErrorCodes.UNKNOWN_ERROR,
+            f"Unknown resource: {httpMethod} {resource}",
+        )
+
+        if httpMethod == "POST" and resource == "/login":
             response = get_validated_user_info(event, context)
-        else:
-            response = build_error_response(
-                ErrorCodes.UNKNOWN_ERROR, f"Unknown method: {httpMethod}"
-            )
+        elif httpMethod == "POST" and resource == "/user":
+            if not user_has_role(extract_user_id(event), UserRole.REGULAR_USER):
+                response = build_error_response(
+                    ErrorCodes.NOT_AUTHORIZED, "You must sign up to be a customer!"
+                )
+            else:
+                response = build_error_response(
+                    ErrorCodes.UNKNOWN_ERROR, "Not implemented yet"
+                )
+
     except Exception as e:
         error_string = traceback.format_exc()
         print(error_string)
