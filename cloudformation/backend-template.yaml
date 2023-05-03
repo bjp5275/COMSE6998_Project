@@ -101,6 +101,24 @@ Resources:
         - Key: Purpose
           Value: "Contains order ratings indexed on order ID"
 
+  UserInfoTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      BillingMode: PROVISIONED
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+      TableName: "user-info"
+      Tags:
+        - Key: Purpose
+          Value: "Contains user information indexed on user ID"
+
   ShopInfoTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -159,6 +177,7 @@ Resources:
                   - !GetAtt OrderRatingsTable.Arn
                   - !GetAtt ShopInfoTable.Arn
                   - !GetAtt OrderStatusTable.Arn
+                  - !GetAtt UserInfoTable.Arn
               - Effect: Allow
                 Action:
                   - sqs:ReceiveMessage
@@ -237,6 +256,7 @@ Resources:
           ORDER_STATUS_TABLE: !Ref OrderStatusTable
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           SHOP_INFO_TABLE: !Ref ShopInfoTable
+          USER_INFO_TABLE: !Ref UserInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           ORDER_UPDATE_QUEUE_URL: !Ref OrderUpdateQueue
           ORDER_UPDATE_CONFIRMATION_QUEUE_URL: !Ref OrderUpdateConfirmationQueue
@@ -265,6 +285,7 @@ Resources:
           ORDER_STATUS_TABLE: !Ref OrderStatusTable
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           SHOP_INFO_TABLE: !Ref ShopInfoTable
+          USER_INFO_TABLE: !Ref UserInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           ORDER_UPDATE_QUEUE_URL: !Ref OrderUpdateQueue
           ORDER_UPDATE_CONFIRMATION_QUEUE_URL: !Ref OrderUpdateConfirmationQueue
@@ -293,6 +314,7 @@ Resources:
           ORDER_STATUS_TABLE: !Ref OrderStatusTable
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           SHOP_INFO_TABLE: !Ref ShopInfoTable
+          USER_INFO_TABLE: !Ref UserInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           ORDER_UPDATE_QUEUE_URL: !Ref OrderUpdateQueue
           ORDER_UPDATE_CONFIRMATION_QUEUE_URL: !Ref OrderUpdateConfirmationQueue
@@ -321,6 +343,7 @@ Resources:
           ORDER_STATUS_TABLE: !Ref OrderStatusTable
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           SHOP_INFO_TABLE: !Ref ShopInfoTable
+          USER_INFO_TABLE: !Ref UserInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           ORDER_UPDATE_QUEUE_URL: !Ref OrderUpdateQueue
           ORDER_UPDATE_CONFIRMATION_QUEUE_URL: !Ref OrderUpdateConfirmationQueue
@@ -349,6 +372,7 @@ Resources:
           ORDER_STATUS_TABLE: !Ref OrderStatusTable
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           SHOP_INFO_TABLE: !Ref ShopInfoTable
+          USER_INFO_TABLE: !Ref UserInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           ORDER_UPDATE_QUEUE_URL: !Ref OrderUpdateQueue
           ORDER_UPDATE_CONFIRMATION_QUEUE_URL: !Ref OrderUpdateConfirmationQueue
@@ -377,6 +401,7 @@ Resources:
           ORDER_STATUS_TABLE: !Ref OrderStatusTable
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           SHOP_INFO_TABLE: !Ref ShopInfoTable
+          USER_INFO_TABLE: !Ref UserInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           ORDER_UPDATE_QUEUE_URL: !Ref OrderUpdateQueue
           ORDER_UPDATE_CONFIRMATION_QUEUE_URL: !Ref OrderUpdateConfirmationQueue
@@ -405,6 +430,7 @@ Resources:
           ORDER_STATUS_TABLE: !Ref OrderStatusTable
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           SHOP_INFO_TABLE: !Ref ShopInfoTable
+          USER_INFO_TABLE: !Ref UserInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           ORDER_UPDATE_QUEUE_URL: !Ref OrderUpdateQueue
           ORDER_UPDATE_CONFIRMATION_QUEUE_URL: !Ref OrderUpdateConfirmationQueue
@@ -433,6 +459,7 @@ Resources:
           ORDER_STATUS_TABLE: !Ref OrderStatusTable
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           SHOP_INFO_TABLE: !Ref ShopInfoTable
+          USER_INFO_TABLE: !Ref UserInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           ORDER_UPDATE_QUEUE_URL: !Ref OrderUpdateQueue
           ORDER_UPDATE_CONFIRMATION_QUEUE_URL: !Ref OrderUpdateConfirmationQueue
@@ -461,6 +488,7 @@ Resources:
           ORDER_STATUS_TABLE: !Ref OrderStatusTable
           ORDER_RATINGS_TABLE: !Ref OrderRatingsTable
           SHOP_INFO_TABLE: !Ref ShopInfoTable
+          USER_INFO_TABLE: !Ref UserInfoTable
           USER_NOTIFICATION_QUEUE_URL: !Ref UserNotificationQueue
           ORDER_UPDATE_QUEUE_URL: !Ref OrderUpdateQueue
           ORDER_UPDATE_CONFIRMATION_QUEUE_URL: !Ref OrderUpdateConfirmationQueue

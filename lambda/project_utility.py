@@ -15,6 +15,7 @@ class EnvironmentVariables(Enum):
     ORDER_STATUS_TABLE = os.environ["ORDER_STATUS_TABLE"]
     ORDER_RATINGS_TABLE = os.environ["ORDER_RATINGS_TABLE"]
     SHOP_INFO_TABLE = os.environ["SHOP_INFO_TABLE"]
+    USER_INFO_TABLE = os.environ["USER_INFO_TABLE"]
     USER_NOTIFICATION_QUEUE_URL = os.environ["USER_NOTIFICATION_QUEUE_URL"]
     ORDER_UPDATE_QUEUE_URL = os.environ["ORDER_UPDATE_QUEUE_URL"]
     ORDER_UPDATE_CONFIRMATION_QUEUE_URL = os.environ[
@@ -196,6 +197,23 @@ def get_user_info(user_id, api_gateway=None):
             "roles": roles,
         }
     except:
+        return None
+
+
+def get_user_saved_data(dynamo, user_id):
+    print(f"Getting user {user_id}")
+    response = dynamo.get_item(
+        TableName=EnvironmentVariables.USER_INFO_TABLE.value,
+        Key={
+            "id": {
+                "S": user_id,
+            },
+        },
+    )
+
+    if "Item" in response:
+        return deserialize_dynamo_object(response["Item"])
+    else:
         return None
 
 
