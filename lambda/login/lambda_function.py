@@ -100,7 +100,7 @@ def validate_user_data(user_id, input_data, existing_data):
                 return False, None, data
 
         validated_user_data["locations"] = valid_locations
-    elif "locations" in existing_data:
+    elif existing_data is not None and "locations" in existing_data:
         validated_user_data["locations"] = existing_data["locations"]
 
     if "paymentMethods" in input_data:
@@ -115,7 +115,7 @@ def validate_user_data(user_id, input_data, existing_data):
                 return False, None, data
 
         validated_user_data["paymentMethods"] = valid_payment_methods
-    elif "paymentMethods" in existing_data:
+    elif existing_data is not None and "paymentMethods" in existing_data:
         validated_user_data["paymentMethods"] = existing_data["paymentMethods"]
 
     if "paymentMethods" in input_data:
@@ -130,7 +130,7 @@ def validate_user_data(user_id, input_data, existing_data):
                 return False, None, data
 
         validated_user_data["paymentMethods"] = valid_payment_methods
-    elif "paymentMethods" in existing_data:
+    elif existing_data is not None and "paymentMethods" in existing_data:
         validated_user_data["paymentMethods"] = existing_data["paymentMethods"]
 
     if "favorites" in input_data:
@@ -145,7 +145,7 @@ def validate_user_data(user_id, input_data, existing_data):
                 return False, None, data
 
         validated_user_data["favorites"] = valid_favorites
-    elif "favorites" in existing_data:
+    elif existing_data is not None and "favorites" in existing_data:
         validated_user_data["favorites"] = existing_data["favorites"]
 
     print("Validated", validated_user_data)
