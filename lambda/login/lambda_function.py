@@ -22,7 +22,7 @@ from project_utility import (
 
 # Clients
 api_gateway = boto3.client("apigateway")
-dynamo = boto3.client("dynamo")
+dynamo = boto3.client("dynamodb")
 
 
 def get_validated_user_info(event, context):
@@ -59,6 +59,10 @@ def validate_favorite_order_item(item, name):
 def validate_favorite_order(favorite, name):
     validated_favorite = {"id": str(uuid.uuid4())}
 
+    if "id" in favorite:
+        # TODO - Should match up old and new favorites
+        validated_favorite["id"] = str(favorite["id"])
+
     if "name" in favorite:
         validated_favorite["name"] = str(favorite["name"])
     else:
@@ -66,7 +70,7 @@ def validate_favorite_order(favorite, name):
 
     if "items" in favorite:
         validated_favorite_items = []
-        for index, item in favorite["items"]:
+        for index, item in enumerate(favorite["items"]):
             is_valid, data = validate_favorite_order_item(
                 item, f"{name} Item {index + 1}"
             )

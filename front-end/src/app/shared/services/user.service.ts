@@ -155,31 +155,33 @@ export class UserService {
 
     const url = `${environment.backendUrl}/user`;
     const headers = HttpUtils.getBaseHeaders();
-    return this.http.post(url, null, { headers, observe: 'response' }).pipe(
-      retry(HttpUtils.RETRY_ATTEMPTS),
-      catchError((error) => of(HttpUtils.convertError(error))),
-      switchMap((response) => {
-        if ('ok' in response && response.ok) {
-          this.userInformation$.next(next);
-          return of({
-            userInformation: next,
-            updated: true,
-          } as UpdatedUserInformationWithSecret);
-        } else if ('errorCode' in response) {
-          return of({
-            userInformation: current,
-            updated: false,
-            error: response,
-          } as UpdatedUserInformationWithSecret);
-        } else {
-          return of({
-            userInformation: current,
-            updated: false,
-            error: { errorCode: -1, errorMessage: 'Unknown' },
-          } as UpdatedUserInformationWithSecret);
-        }
-      })
-    );
+    return this.http
+      .post(url, updatedValue, { headers, observe: 'response' })
+      .pipe(
+        retry(HttpUtils.RETRY_ATTEMPTS),
+        catchError((error) => of(HttpUtils.convertError(error))),
+        switchMap((response) => {
+          if ('ok' in response && response.ok) {
+            this.userInformation$.next(next);
+            return of({
+              userInformation: next,
+              updated: true,
+            } as UpdatedUserInformationWithSecret);
+          } else if ('errorCode' in response) {
+            return of({
+              userInformation: current,
+              updated: false,
+              error: response,
+            } as UpdatedUserInformationWithSecret);
+          } else {
+            return of({
+              userInformation: current,
+              updated: false,
+              error: { errorCode: -1, errorMessage: 'Unknown' },
+            } as UpdatedUserInformationWithSecret);
+          }
+        })
+      );
   }
 
   public getSavedLocations(): Observable<Location[]> {
