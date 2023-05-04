@@ -181,7 +181,7 @@ def update_user_data(event, context):
         print("User data saved")
         for key in data:
             validated_user_info[key] = data[key]
-        return build_response(200, data)
+        return build_response(200, validated_user_info)
     else:
         return build_error_response(ErrorCodes.INVALID_DATA, message)
 
