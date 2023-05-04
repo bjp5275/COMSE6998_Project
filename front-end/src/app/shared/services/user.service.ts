@@ -244,8 +244,7 @@ export class UserService {
         }
 
         const favorite = val.userInformation.favorites?.find(
-          (val) =>
-            val.name == order.name && Equals.shallow(val.items, order.items)
+          (val) => val.name == order.name
         );
 
         if (!!favorite?.id) {
