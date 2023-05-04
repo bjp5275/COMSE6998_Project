@@ -19,7 +19,7 @@ import {
   UserInformation,
 } from 'src/app/model/models';
 import { environment } from 'src/environments/environment';
-import { Equals, HttpError, HttpUtils } from '../utility';
+import { HttpError, HttpUtils } from '../utility';
 import { cleanOrderItemsFromService } from './order.service';
 
 export interface UserInformationWithSecret extends UserInformation {
@@ -85,7 +85,7 @@ export function cleanUserInfoFromService(
 })
 export class UserService {
   userInformation$ = new BehaviorSubject<UserInformationWithSecret | undefined>(
-    environment.userInformation
+    undefined
   );
 
   constructor(private http: HttpClient) {

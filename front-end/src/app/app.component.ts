@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { first } from 'rxjs';
+import { environment } from 'src/environments/environment';
 import { UserInformation, UserRole } from './model/models';
 import { CartService } from './shared/services/cart.service';
 import { UserService } from './shared/services/user.service';
@@ -132,8 +133,8 @@ export class AppComponent {
 
   userInformation?: UserInformation;
   loginForm = this.fb.group({
-    username: ['', Validators.required],
-    password: ['', Validators.required],
+    username: [environment.userInformation?.username, Validators.required],
+    password: [environment.userInformation?.apiKey, Validators.required],
   });
 
   get cartSize(): number {
