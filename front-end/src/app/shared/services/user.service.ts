@@ -40,7 +40,7 @@ export function cleanUserInfo(
     name: info.name,
     username: info.username,
     roles: info.roles,
-    favorites: cleanFavoriteOrdersFromService(info.favorites),
+    favorites: info.favorites,
     locations: info.locations,
     paymentMethods: info.paymentMethods,
   };
@@ -70,6 +70,16 @@ function cleanFavoriteOrdersFromService(
   return orders;
 }
 
+export function cleanUserInfoFromService(
+  info: UserInformation
+): UserInformation {
+  if (info) {
+    info.favorites = cleanFavoriteOrdersFromService(info.favorites);
+  }
+
+  return info;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -96,6 +106,7 @@ export class UserService {
     const headers = this._addAuthorizationHeader(new HttpHeaders(), apiKey);
 
     return this.http.post<UserInformation>(url, body, { headers }).pipe(
+      map((userInfo) => cleanUserInfoFromService(userInfo)),
       tap((userInfo) => {
         console.log('Login success', userInfo);
         const userInfoWithSecret: UserInformationWithSecret = {
@@ -148,20 +159,22 @@ export class UserService {
       return of({ userInformation: current!, updated: false });
     }
 
-    const next: UserInformationWithSecret = {
-      ...updatedValue,
-      apiKey: current!.apiKey,
-    };
-
     const url = `${environment.backendUrl}/user`;
     const headers = HttpUtils.getBaseHeaders();
     return this.http
-      .post(url, updatedValue, { headers, observe: 'response' })
+      .post<UserInformation>(url, updatedValue, {
+        headers,
+        observe: 'response',
+      })
       .pipe(
         retry(HttpUtils.RETRY_ATTEMPTS),
         catchError((error) => of(HttpUtils.convertError(error))),
         switchMap((response) => {
-          if ('ok' in response && response.ok) {
+          if ('ok' in response && response.ok && response.body) {
+            const next: UserInformationWithSecret = {
+              ...cleanUserInfoFromService(response.body),
+              apiKey: current!.apiKey,
+            };
             this.userInformation$.next(next);
             return of({
               userInformation: next,

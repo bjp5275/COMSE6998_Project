@@ -164,6 +164,10 @@ def update_user_data(event, context):
             ErrorCodes.MISSING_BODY, "Must specify a request body"
         )
 
+    validated_user_info = get_user_info(user_id, api_gateway)
+    if not validated_user_info:
+        return build_error_response(ErrorCodes.INVALID_DATA, "Invalid user information")
+
     input_data = json.loads(event["body"], parse_float=Decimal)
     existing_data = get_user_saved_data(dynamo, user_id)
     is_valid, data, message = validate_user_data(user_id, input_data, existing_data)
@@ -175,7 +179,9 @@ def update_user_data(event, context):
         )
 
         print("User data saved")
-        return build_response(200, None)
+        for key in data:
+            validated_user_info[key] = data[key]
+        return build_response(200, data)
     else:
         return build_error_response(ErrorCodes.INVALID_DATA, message)
 

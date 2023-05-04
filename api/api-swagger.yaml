@@ -114,7 +114,10 @@ paths:
             Access-Control-Allow-Origin:
               schema:
                 type: "string"
-          content: {}
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserInformation"
         "400":
           description: "400 response"
           content:
