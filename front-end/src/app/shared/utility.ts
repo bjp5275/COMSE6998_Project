@@ -78,7 +78,7 @@ export class HttpUtils {
     return headers;
   }
 
-  public static handleError(error: Error): Observable<never> {
+  public static convertError(error: Error): HttpError {
     var errorResponse: HttpError;
     console.log('Handling error', error);
 
@@ -115,7 +115,11 @@ export class HttpUtils {
 
     // return an observable with a user-facing error message
     console.log('Resolved error: ', errorResponse);
-    return throwError(() => errorResponse);
+    return errorResponse;
+  }
+
+  public static handleError(error: Error): Observable<never> {
+    return throwError(() => HttpUtils.convertError(error));
   }
 
   public static convertDecimalFromString(

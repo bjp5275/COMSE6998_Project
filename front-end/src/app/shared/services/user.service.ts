@@ -4,9 +4,9 @@ import {
   BehaviorSubject,
   Observable,
   catchError,
-  delay,
   map,
   of,
+  retry,
   switchMap,
   tap,
   throwError,
@@ -19,37 +19,17 @@ import {
   UserInformation,
 } from 'src/app/model/models';
 import { environment } from 'src/environments/environment';
-import { HttpUtils } from '../utility';
-
-const SAVED_LOCATIONS: Location[] = [
-  {
-    name: 'Home',
-    streetAddress: '45 Rockefeller Plaza',
-    city: 'New York',
-    state: 'NY',
-    zip: '10111',
-  },
-  {
-    streetAddress: '456 Second Avenue',
-    city: 'Gotham',
-    state: 'CD',
-    zip: '54321',
-  },
-];
-
-const PAYMENT_METHODS: PaymentInformation[] = [
-  {
-    nameOnCard: 'Name',
-    cardNumber: '1234987612349876',
-    cvv: '123',
-  },
-];
-
-const FAVORITE_ORDERS: FavoriteOrder[] = [];
-
+import { Equals, HttpError, HttpUtils } from '../utility';
+import { cleanOrderItemsFromService } from './order.service';
 
 export interface UserInformationWithSecret extends UserInformation {
   apiKey: string;
+}
+
+interface UpdatedUserInformationWithSecret {
+  userInformation: UserInformationWithSecret;
+  updated: boolean;
+  error?: HttpError;
 }
 
 export function cleanUserInfo(
@@ -60,6 +40,9 @@ export function cleanUserInfo(
     name: info.name,
     username: info.username,
     roles: info.roles,
+    favorites: cleanFavoriteOrdersFromService(info.favorites),
+    locations: info.locations,
+    paymentMethods: info.paymentMethods,
   };
 }
 
@@ -69,13 +52,28 @@ export function cleanUserInfoSafe(
   return info ? cleanUserInfo(info) : undefined;
 }
 
+function cleanFavoriteOrderFromService(order: FavoriteOrder): FavoriteOrder {
+  if (order) {
+    order.items = cleanOrderItemsFromService(order.items);
+  }
+
+  return order;
+}
+
+function cleanFavoriteOrdersFromService(
+  orders?: FavoriteOrder[]
+): FavoriteOrder[] | undefined {
+  if (orders) {
+    orders = orders.map((order) => cleanFavoriteOrderFromService(order));
+  }
+
+  return orders;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class UserService {
-  locations: Location[] = [...SAVED_LOCATIONS];
-  paymentMethods: PaymentInformation[] = [...PAYMENT_METHODS];
-  favoriteOrders: FavoriteOrder[] = [...FAVORITE_ORDERS];
   userInformation$ = new BehaviorSubject<UserInformationWithSecret | undefined>(
     environment.userInformation
   );
@@ -137,65 +135,134 @@ export class UserService {
     }
   }
 
+  private updateUserInformation(
+    updater: (curInfo: UserInformation) => UserInformation | null
+  ): Observable<UpdatedUserInformationWithSecret> {
+    const current = this.userInformation$.value;
+    let updatedValue: UserInformation | null = null;
+    if (!!current) {
+      updatedValue = updater(cleanUserInfo(current));
+    }
+
+    if (!updatedValue) {
+      return of({ userInformation: current!, updated: false });
+    }
+
+    const next: UserInformationWithSecret = {
+      ...updatedValue,
+      apiKey: current!.apiKey,
+    };
+
+    const url = `${environment.backendUrl}/user`;
+    const headers = HttpUtils.getBaseHeaders();
+    return this.http.post(url, null, { headers, observe: 'response' }).pipe(
+      retry(HttpUtils.RETRY_ATTEMPTS),
+      catchError((error) => of(HttpUtils.convertError(error))),
+      switchMap((response) => {
+        if ('ok' in response && response.ok) {
+          this.userInformation$.next(next);
+          return of({
+            userInformation: next,
+            updated: true,
+          } as UpdatedUserInformationWithSecret);
+        } else if ('errorCode' in response) {
+          return of({
+            userInformation: current,
+            updated: false,
+            error: response,
+          } as UpdatedUserInformationWithSecret);
+        } else {
+          return of({
+            userInformation: current,
+            updated: false,
+            error: { errorCode: -1, errorMessage: 'Unknown' },
+          } as UpdatedUserInformationWithSecret);
+        }
+      })
+    );
+  }
+
   public getSavedLocations(): Observable<Location[]> {
-    // TODO - implement
-    return of(this.locations);
+    return this.userInformation$.pipe(map((info) => info?.locations || []));
   }
 
   public addSavedLocation(location: Location): Observable<boolean> {
-    // TODO - implement
-    this.locations.push(location);
-    return of(true).pipe(delay(500));
+    return this.updateUserInformation((curInfo) => {
+      const locations = curInfo.locations || [];
+      locations.push(location);
+      return { ...curInfo, locations };
+    }).pipe(map((val) => val.updated));
   }
 
   public getSavedPaymentMethods(): Observable<PaymentInformation[]> {
-    // TODO - implement
-    return of(this.paymentMethods);
+    return this.userInformation$.pipe(
+      map((info) => info?.paymentMethods || [])
+    );
   }
 
   public addSavedPaymentMethods(
     paymentMethod: PaymentInformation
   ): Observable<boolean> {
-    // TODO - implement
-    this.paymentMethods.push(paymentMethod);
-    return of(true).pipe(delay(500));
+    return this.updateUserInformation((curInfo) => {
+      const paymentMethods = curInfo.paymentMethods || [];
+      paymentMethods.push(paymentMethod);
+      return { ...curInfo, paymentMethods };
+    }).pipe(map((val) => val.updated));
   }
 
   public getFavoriteOrders(): Observable<FavoriteOrder[]> {
-    // TODO - implement
-    return of(this.favoriteOrders);
+    return this.userInformation$.pipe(map((info) => info?.favorites || []));
   }
 
   public addFavoriteOrder(order: FavoriteOrder): Observable<string> {
-    // TODO - implement
-    const id = new Date().getTime().toString();
-    this.favoriteOrders.push({
-      id,
-      name: order.name,
-      items: order.items,
-    });
+    return this.updateUserInformation((curInfo) => {
+      const favorites = curInfo.favorites || [];
+      favorites.push({
+        name: order.name,
+        items: order.items,
+      });
+      return { ...curInfo, favorites };
+    }).pipe(
+      map((val) => {
+        if (!val.updated) {
+          throw val.error;
+        }
 
-    return of(id).pipe(delay(500));
+        const favorite = val.userInformation.favorites?.find(
+          (val) =>
+            val.name == order.name && Equals.shallow(val.items, order.items)
+        );
+
+        if (!!favorite?.id) {
+          return favorite.id;
+        } else {
+          throw Error('No matching favorite found');
+        }
+      })
+    );
   }
 
   public updateFavoriteOrder(
     id: string,
     updatedOrder: FavoriteOrder
   ): Observable<boolean> {
-    // TODO - implement
-    const order = this.favoriteOrders.find((order) => order.id == id);
-    if (!order) {
-      return throwError(() => new Error('Favorite not found'));
-    }
+    return this.updateUserInformation((curInfo) => {
+      if (curInfo.favorites) {
+        const favorite = curInfo.favorites.find((val) => val.id == id);
+        if (favorite) {
+          if (updatedOrder.name) {
+            favorite.name = updatedOrder.name;
+          }
+          if (updatedOrder.items) {
+            favorite.items = updatedOrder.items;
+          }
 
-    if (updatedOrder.name) {
-      order.name = updatedOrder.name;
-    }
-    if (updatedOrder.items) {
-      order.items = updatedOrder.items;
-    }
+          return curInfo;
+        }
+      }
 
-    return of(true).pipe(delay(500));
+      return null;
+    }).pipe(map((val) => val.updated));
   }
 
   public uploadImage(image: File): Observable<string> {
