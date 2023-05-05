@@ -123,6 +123,10 @@ export class UserService {
     this.userInformation$.next(undefined);
   }
 
+  public getCurrentUserInformation(): UserInformation | undefined {
+    return cleanUserInfoSafe(this.userInformation$.getValue());
+  }
+
   public getUserInformation(): Observable<UserInformation | undefined> {
     return this.userInformation$.pipe(map((info) => cleanUserInfoSafe(info)));
   }

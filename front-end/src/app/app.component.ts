@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { first } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { UserInformation, UserRole } from './model/models';
@@ -33,6 +34,7 @@ interface MenuLink extends _MenuItem {
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
+  readonly UserRole = UserRole;
   readonly MENU_LINK_TYPE_TEMPLATE!: MenuLink;
   readonly MENU_CATEGORY_TYPE_TEMPLATE!: MenuCategory;
   readonly MENU_ITEMS_TYPE_TEMPLATE!: MenuItem[];
@@ -40,6 +42,7 @@ export class AppComponent {
     {
       type: 'CATEGORY',
       title: 'User Menu',
+      show: () => this.userHasRole(UserRole.REGULAR_USER),
       links: [
         {
           type: 'LINK',
@@ -122,12 +125,14 @@ export class AppComponent {
       routerLink: '/favorites',
       icon: 'favorite',
       name: 'Favorites',
+      show: () => this.userHasRole(UserRole.REGULAR_USER),
     },
     {
       type: 'LINK',
       routerLink: '/history',
       icon: 'history',
       name: 'Order History',
+      show: () => this.userHasRole(UserRole.REGULAR_USER),
     },
   ];
 
@@ -149,7 +154,8 @@ export class AppComponent {
     private cartService: CartService,
     private userService: UserService,
     private snackBar: MatSnackBar,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private router: Router
   ) {
     userService.getUserInformation().subscribe({
       next: (info) => (this.userInformation = info),
@@ -185,5 +191,6 @@ export class AppComponent {
 
   logout() {
     this.userService.logout();
+    this.router.navigateByUrl('/');
   }
 }

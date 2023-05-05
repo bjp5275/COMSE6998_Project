@@ -5,7 +5,11 @@
     </button>
     <a class="text-link" routerLink="/">Coffee Delivery Service</a>
     <span class="toolbar-spacer"></span>
-    <button mat-icon-button routerLink="/cart">
+    <button
+      *ngIf="userHasRole(UserRole.REGULAR_USER)"
+      mat-icon-button
+      routerLink="/cart"
+    >
       <mat-icon
         [matBadge]="cartSize"
         [matBadgeHidden]="cartEmpty"

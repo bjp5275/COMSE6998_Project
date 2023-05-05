@@ -14,6 +14,7 @@ import { CustomerProductsComponent } from './components/customer-products/custom
 import { CustomizeProductComponent } from './components/customize-product/customize-product.component';
 import { DeliveryOrdersComponent } from './components/delivery-orders/delivery-orders.component';
 import { DeliveryStatusComponent } from './components/delivery-status/delivery-status.component';
+import { EmptyComponent } from './components/empty/empty.component';
 import { FavoritesComponent } from './components/favorites/favorites.component';
 import { OrderDetailsComponent } from './components/order-details/order-details.component';
 import { OrderHistoryComponent } from './components/order-history/order-history.component';
@@ -74,6 +75,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     CustomizeProductComponent,
     DeliveryOrdersComponent,
     DeliveryStatusComponent,
+    EmptyComponent,
     FavoritesComponent,
     OrderDetailsComponent,
     OrderHistoryComponent,
