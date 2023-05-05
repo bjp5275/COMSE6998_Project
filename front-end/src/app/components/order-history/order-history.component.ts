@@ -2,14 +2,7 @@ import { Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { Observable, catchError, first, map, of, shareReplay } from 'rxjs';
-import {
-  Order,
-  OrderItem,
-  Product,
-  ProductAddition,
-  convertCoffeeTypeToString,
-  convertMilkTypeToString,
-} from 'src/app/model/models';
+import { Order, OrderItem, Product } from 'src/app/model/models';
 import { CartService } from 'src/app/shared/services/cart.service';
 import { OrderService } from 'src/app/shared/services/order.service';
 import { ProductsService } from 'src/app/shared/services/products.service';
@@ -88,113 +81,6 @@ export class OrderHistoryComponent {
     });
   }
 
-  validateOrderItem(
-    orderItem: OrderItem,
-    index: number,
-    productMap: Map<string, Product>,
-    productAdditionsMap: Map<string, Map<string, ProductAddition>>,
-    errors: string[]
-  ): OrderItem | null {
-    const product = productMap.get(orderItem.productId);
-    if (!product) {
-      errors.push(`Order item ${index + 1} is not available`);
-      return null;
-    }
-
-    const newOrderItem = this.productService.convertToOrderItem(product);
-    if (!product.allowedCoffeeTypes.includes(orderItem.coffeeType)) {
-      const defaultedCoffeeType = product.allowedCoffeeTypes[0];
-      errors.push(
-        `${product.name} is not available with ${convertCoffeeTypeToString(
-          orderItem.coffeeType
-        )} - defaulting to ${convertCoffeeTypeToString(defaultedCoffeeType)}`
-      );
-
-      orderItem.coffeeType = defaultedCoffeeType;
-    }
-    newOrderItem.coffeeType = orderItem.coffeeType;
-
-    const milkType = orderItem.milkType;
-    const allowedMilkTypes = product.allowedMilkTypes;
-    if (
-      (!milkType && allowedMilkTypes?.length) ||
-      (milkType && allowedMilkTypes && !allowedMilkTypes.includes(milkType))
-    ) {
-      const defaultedMilkType = allowedMilkTypes[0];
-      errors.push(
-        `${
-          product.name
-        } requires a valid milk selection - defaulting to ${convertMilkTypeToString(
-          defaultedMilkType
-        )}`
-      );
-      orderItem.milkType = defaultedMilkType;
-    } else if (milkType && !allowedMilkTypes?.length) {
-      errors.push(`${product.name} no longer has a milk selection`);
-      orderItem.milkType = undefined;
-    }
-    newOrderItem.milkType = orderItem.milkType;
-
-    if (orderItem.additions?.length) {
-      const validatedAdditions: ProductAddition[] = [];
-      const allowedAdditions = productAdditionsMap.get(product.id)!;
-
-      orderItem.additions.forEach((addition) => {
-        const validAddition = allowedAdditions.get(addition.id!);
-        if (validAddition) {
-          validatedAdditions.push(validAddition);
-        } else {
-          errors.push(`${product.name} no longer allows ${addition.name}.`);
-        }
-      });
-
-      newOrderItem.additions = validatedAdditions;
-    }
-
-    return newOrderItem;
-  }
-
-  validateOrderItems(
-    orderItems: OrderItem[],
-    products: Product[]
-  ): OrderItem[] {
-    const productMap = new Map<string, Product>();
-    const productAdditionsMap = new Map<string, Map<string, ProductAddition>>();
-    products.forEach((product) => {
-      productMap.set(product.id, product);
-      const additionMap = new Map<string, ProductAddition>();
-      productAdditionsMap.set(product.id, additionMap);
-      product.allowedAdditions?.forEach((addition) =>
-        additionMap.set(addition.id!, addition)
-      );
-    });
-
-    const errors: string[] = [];
-    const validatedOrderItems: OrderItem[] = [];
-    orderItems
-      .map((orderItem, index) =>
-        this.validateOrderItem(
-          orderItem,
-          index,
-          productMap,
-          productAdditionsMap,
-          errors
-        )
-      )
-      .filter((item) => item !== null)
-      .forEach((validOrderItem) => validatedOrderItems.push(validOrderItem!));
-
-    if (errors.length) {
-      const issueMessage = `Issues: \n  -${errors.join('\n  -')}`;
-      this.snackBar.open(issueMessage, 'OK', {
-        duration: 8000,
-        panelClass: ['multiline-snackbar'],
-      });
-    }
-
-    return validatedOrderItems;
-  }
-
   reorder(orderItems: OrderItem[]) {
     this.reordering = true;
 
@@ -207,10 +93,22 @@ export class OrderHistoryComponent {
             'OK'
           );
         } else {
-          const validatedOrderItems = this.validateOrderItems(
+          const validation = OrderService.validateOrderItems(
             orderItems,
             products
           );
+          const validatedOrderItems = validation.orderItems;
+
+          if (validation.errors?.length) {
+            const issueMessage = `Issues: \n  -${validation.errors.join(
+              '\n  -'
+            )}`;
+            this.snackBar.open(issueMessage, 'OK', {
+              duration: 8000,
+              panelClass: ['multiline-snackbar'],
+            });
+          }
+
           if (validatedOrderItems.length) {
             validatedOrderItems.forEach((item) =>
               this.cartService.addItem(item)

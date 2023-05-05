@@ -143,7 +143,7 @@ export class ProductsService {
     );
   }
 
-  public convertToOrderItem(product: Product): OrderItem {
+  public static convertToOrderItem(product: Product): OrderItem {
     return {
       productId: product.id,
       basePrice: product.basePrice,

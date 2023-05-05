@@ -1,12 +1,21 @@
-<app-order-list
-  *ngIf="orders$ | async as orders; else loadingOrders"
-  [orders]="orders"
-  [actions]="ORDER_ACTIONS"
->
-</app-order-list>
+<ng-container *ngIf="!reordering; else processingReorder">
+  <app-order-list
+    *ngIf="orders$ | async as orders; else loadingOrders"
+    [orders]="orders"
+    [actions]="ORDER_ACTIONS"
+    [showTotalPrice]="false"
+  >
+  </app-order-list>
+</ng-container>
 <ng-template #loadingOrders>
   <div class="loading-favorites">
     <i>Loading favorites...</i>
     <mat-progress-bar mode="query"></mat-progress-bar>
+  </div>
+</ng-template>
+<ng-template #processingReorder>
+  <div class="loading">
+    <i>Processing reorder request...</i>
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
   </div>
 </ng-template>

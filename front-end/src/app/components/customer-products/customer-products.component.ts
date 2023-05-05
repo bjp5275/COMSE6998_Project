@@ -47,6 +47,6 @@ export class CustomerProductsComponent {
   }
 
   addToCart(product: Product) {
-    this.cartService.addItem(this.productsService.convertToOrderItem(product));
+    this.cartService.addItem(ProductsService.convertToOrderItem(product));
   }
 }
