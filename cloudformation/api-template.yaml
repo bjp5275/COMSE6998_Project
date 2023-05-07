@@ -138,6 +138,7 @@ Resources:
     DependsOn: RestApiStage
     Properties:
       Enabled: true
+      Description: !Sub "API key for super user (${AWS::StackName})"
       Tags:
         - Key: displayName
           Value: "Ben"

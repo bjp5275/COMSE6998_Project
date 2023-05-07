@@ -27,6 +27,7 @@ Resources:
     Type: AWS::ApiGateway::ApiKey
     Properties:
       Enabled: true
+      Description: !Sub "API key for ${AWS::StackName}"
       Tags:
         - Key: displayName
           Value: !Ref DisplayName
